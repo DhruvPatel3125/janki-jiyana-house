@@ -2,12 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { Plus, Trash2, FolderTree, Package, Search, Sparkles, Image as ImageIcon } from 'lucide-react';
 import { api } from '../../services/api';
 import { showSuccessToast, showErrorToast } from '../../utils/toast';
+import { useConfirm } from '../../context/ConfirmContext';
 
 export const AdminCategories = () => {
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const { confirm } = useConfirm();
 
   // Form State
   const [name, setName] = useState('');
@@ -60,7 +62,13 @@ export const AdminCategories = () => {
   };
 
   const handleDeleteCategory = async (id, catName) => {
-    if (!window.confirm(`Are you sure you want to delete category "${catName}"?`)) return;
+    const isConfirmed = await confirm({
+      title: 'Delete Category',
+      message: `Are you sure you want to delete category "${catName}"?`,
+      confirmText: 'Delete Category',
+      isDanger: true
+    });
+    if (!isConfirmed) return;
     try {
       await api.deleteCategory(id);
       setCategories(categories.filter((c) => c._id !== id));

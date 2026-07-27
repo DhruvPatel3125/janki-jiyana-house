@@ -44,9 +44,15 @@ export const LoginPage = () => {
     setError('');
 
     try {
-      await login(identifier, password);
+      const userData = await login(identifier, password);
       showSuccessToast('Logged in successfully! Welcome back.');
-      navigate(redirectTarget);
+      
+      // If the user is an admin, always redirect to /admin
+      if (userData.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate(redirectTarget);
+      }
     } catch (err) {
       const msg = err.message || 'Login failed. Invalid email/phone or password.';
       setError(msg);

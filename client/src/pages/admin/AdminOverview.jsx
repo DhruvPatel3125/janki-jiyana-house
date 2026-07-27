@@ -97,8 +97,8 @@ export const AdminOverview = () => {
     );
   }
 
-  const monthlySalesData = stats?.monthlySalesData?.length > 0 ? stats.monthlySalesData : DEFAULT_MONTHLY_DATA;
-  const categoryDistributionData = stats?.categoryDistributionData?.length > 0 ? stats.categoryDistributionData : DEFAULT_CATEGORY_DATA;
+  const monthlySalesData = stats?.monthlySalesData || [];
+  const categoryDistributionData = stats?.categoryDistributionData || [];
 
   const metricCards = [
     {

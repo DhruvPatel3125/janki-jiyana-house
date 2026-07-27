@@ -3,8 +3,33 @@ import mongoose from 'mongoose';
 import connectDB from './config/db.js';
 import Product from './models/Product.js';
 import User from './models/User.js';
+import Video from './models/Video.js';
 
 dotenv.config();
+
+const sampleVideos = [
+  {
+    title: 'Surat Wholesale Warehouse & Product Range Demo',
+    youtubeUrl: 'https://youtube.com/shorts/xypZguaBxB8?si=s1K6ZsY49o66HVgc',
+    youtubeId: 'xypZguaBxB8',
+    channelName: 'Janki Jiyana House',
+    isActive: true,
+  },
+  {
+    title: 'Ciaza 320mm Mint Sanitary Pads Unboxing & Absorption Test',
+    youtubeUrl: 'https://youtube.com/shorts/xypZguaBxB8',
+    youtubeId: 'xypZguaBxB8',
+    channelName: 'Janki Jiyana House',
+    isActive: true,
+  },
+  {
+    title: 'Complete Premium Adult Diapers & Hygiene Products Range',
+    youtubeUrl: 'https://youtube.com/shorts/xypZguaBxB8',
+    youtubeId: 'xypZguaBxB8',
+    channelName: 'Janki Jiyana House',
+    isActive: true,
+  },
+];
 
 const sampleProducts = [
   {
@@ -136,9 +161,13 @@ const seedData = async () => {
 
     await Product.deleteMany();
     await User.deleteMany();
+    await Video.deleteMany();
 
     const createdProducts = await Product.insertMany(sampleProducts);
     console.log(`Seeded ${createdProducts.length} products successfully!`);
+
+    const createdVideos = await Video.insertMany(sampleVideos);
+    console.log(`Seeded ${createdVideos.length} trending videos successfully!`);
 
     const adminUser = await User.create({
       name: 'Shop Admin',

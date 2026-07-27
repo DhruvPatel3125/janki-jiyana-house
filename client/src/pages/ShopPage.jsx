@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Filter, RefreshCw, Sparkles } from 'lucide-react';
+import { Search, Filter, RefreshCw, ShoppingBag, Sparkles } from 'lucide-react';
 import { api } from '../services/api';
 import { ProductCard } from '../components/ProductCard';
+import { ProductSkeleton } from '../components/skeletons/ProductSkeleton';
 import { useDebounce } from '../hooks/useDebounce';
 
 export const ShopPage = () => {
@@ -146,9 +147,10 @@ export const ShopPage = () => {
 
       {/* Product Grid */}
       {loading ? (
-        <div className="py-20 text-center space-y-3">
-          <div className="w-10 h-10 border-4 border-teal-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="text-slate-500 text-xs font-medium">Filtering catalog...</p>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 items-stretch">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+            <ProductSkeleton key={n} />
+          ))}
         </div>
       ) : products.length === 0 ? (
         <div className="bg-white rounded-3xl p-12 text-center border border-slate-200/80 shadow-sm space-y-4 max-w-md mx-auto">

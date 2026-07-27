@@ -4,6 +4,8 @@ import { ArrowRight, Sparkles, MessageCircle, ChevronLeft, ChevronRight, ShieldC
 import { api } from '../services/api';
 import { ProductCard } from '../components/ProductCard';
 import { TrustBadges } from '../components/TrustBadges';
+import { TrendingVideosSection } from '../components/TrendingVideosSection';
+import { ProductSkeleton } from '../components/skeletons/ProductSkeleton';
 
 export const HomePage = () => {
   const [newProducts, setNewProducts] = useState([]);
@@ -117,10 +119,11 @@ export const HomePage = () => {
 
   return (
     <div className="space-y-10 sm:space-y-16 pb-16">
-      {/* Hero Carousel Section - Mobile Optimized */}
-      <section className="relative mx-3 sm:mx-6 lg:mx-8 mt-3 sm:mt-4">
-        <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 shadow-md min-h-[480px] sm:min-h-[540px] lg:min-h-[580px]">
-          {/* Carousel Track Slider */}
+      {/* ════════ HERO SECTION — D2C Reference Image Style ════════ */}
+      <section className="relative">
+        {/* Main Hero Container */}
+        <div className="relative overflow-hidden bg-gradient-to-br from-pink-50 via-rose-50/40 to-sky-50 min-h-[520px] sm:min-h-[560px] lg:min-h-[580px]">
+          {/* Carousel Track */}
           <div
             className="flex transition-transform duration-700 ease-in-out h-full"
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
@@ -128,42 +131,53 @@ export const HomePage = () => {
             {heroSlides.map((slide) => (
               <div
                 key={slide.id}
-                className={`w-full flex-shrink-0 bg-gradient-to-br ${slide.bgGradient} py-8 sm:py-12 lg:py-14 px-4 sm:px-8 lg:px-14 flex items-center justify-center`}
+                className={`w-full flex-shrink-0 bg-gradient-to-br ${slide.bgGradient} py-10 sm:py-14 lg:py-16 px-6 sm:px-10 lg:px-16 xl:px-24 flex items-center`}
               >
-                <div className="max-w-[1600px] mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-10 lg:gap-12 items-center">
-                  {/* Left Slide Details (7 Columns) */}
-                  <div className="lg:col-span-7 space-y-4 sm:space-y-5 text-center lg:text-left">
-                    <span className="inline-flex items-center gap-1.5 bg-white/90 backdrop-blur-md px-3.5 py-1 rounded-full text-brand-700 text-[10px] sm:text-xs font-bold shadow-sm border border-brand-100 uppercase tracking-wider">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" /> {slide.tag}
+                <div className="max-w-[1400px] mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+                  {/* ─── LEFT COLUMN: Text Content ─── */}
+                  <div className="space-y-5 sm:space-y-6 text-center lg:text-left order-2 lg:order-1">
+                    {/* Tag Badge */}
+                    <span className="inline-flex items-center gap-1.5 bg-white/90 backdrop-blur-md px-4 py-1.5 rounded-full text-brand-700 text-[10px] sm:text-xs font-extrabold shadow-xs border border-brand-100 uppercase tracking-wider">
+                      <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500 shrink-0" /> {slide.tag}
                     </span>
 
-                    <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black text-slate-900 leading-tight tracking-tight">
-                      {slide.title}
+                    {/* Two-Tone Headline */}
+                    <h1 className="text-3xl sm:text-4xl lg:text-[44px] xl:text-5xl font-black text-slate-900 leading-[1.15] tracking-tight">
+                      {slide.title.split(' ').slice(0, -2).join(' ')}{' '}
+                      <span className="text-brand-600 italic">
+                        {slide.title.split(' ').slice(-2).join(' ')}
+                      </span>
                     </h1>
 
-                    <p className="text-slate-600 text-xs sm:text-sm lg:text-base max-w-xl mx-auto lg:mx-0 font-medium leading-relaxed">
+                    {/* Subtitle */}
+                    <p className="text-slate-600 text-xs sm:text-sm lg:text-[15px] max-w-lg mx-auto lg:mx-0 font-medium leading-relaxed">
                       {slide.subtitle}
                     </p>
 
-                    {/* Bullet Highlights in Simple English */}
+                    {/* Feature Badges Row (4 Icons) */}
                     {slide.highlights && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-xl mx-auto lg:mx-0 pt-1 text-left">
-                        {slide.highlights.map((highlight, idx) => (
-                          <div
-                            key={idx}
-                            className="flex items-center gap-2 bg-white/85 backdrop-blur-sm px-3.5 py-2 rounded-xl border border-slate-200/70 shadow-2xs"
-                          >
-                            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                            <span className="text-xs font-bold text-slate-800">{highlight}</span>
+                      <div className="flex flex-wrap items-center justify-center lg:justify-start gap-x-5 gap-y-3 pt-1">
+                        {slide.highlights.map((text, idx) => (
+                          <div key={idx} className="flex items-center gap-2">
+                            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-white shadow-sm border border-slate-200/80 flex items-center justify-center shrink-0">
+                              {idx === 0 && <ShieldCheck className="w-4 h-4 text-emerald-600" />}
+                              {idx === 1 && <Sparkle className="w-4 h-4 text-amber-500 fill-amber-500" />}
+                              {idx === 2 && <Heart className="w-4 h-4 text-rose-500" />}
+                              {idx === 3 && <ShieldCheck className="w-4 h-4 text-teal-600" />}
+                            </div>
+                            <span className="text-[11px] sm:text-xs font-bold text-slate-700 leading-tight max-w-[100px]">
+                              {text}
+                            </span>
                           </div>
                         ))}
                       </div>
                     )}
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-3">
+                    {/* CTA Buttons */}
+                    <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-1">
                       <Link
                         to={slide.link}
-                        className="w-full sm:w-auto bg-accent-orange hover:bg-orange-600 text-white px-7 sm:px-9 py-3.5 sm:py-4 rounded-2xl font-bold text-xs sm:text-sm shadow-md shadow-orange-500/20 transition-all flex items-center justify-center gap-2"
+                        className="w-full sm:w-auto bg-accent-orange hover:bg-orange-600 text-white px-7 py-3.5 rounded-full font-bold text-xs sm:text-sm shadow-lg shadow-orange-500/25 transition-all flex items-center justify-center gap-2 active:scale-95"
                       >
                         {slide.btnText} <ArrowRight className="w-4 h-4" />
                       </Link>
@@ -171,30 +185,38 @@ export const HomePage = () => {
                         href="https://wa.me/919824934361?text=Hello%20Janki%20Jiyana%20House,%20I%20want%20to%20order"
                         target="_blank"
                         rel="noreferrer"
-                        className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-800 px-6 sm:px-7 py-3.5 sm:py-4 rounded-2xl font-bold text-xs sm:text-sm border border-slate-200 shadow-sm flex items-center justify-center gap-2"
+                        className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-800 px-6 py-3.5 rounded-full font-bold text-xs sm:text-sm border border-slate-200 shadow-sm flex items-center justify-center gap-2 active:scale-95"
                       >
                         <MessageCircle className="w-4 h-4 text-emerald-600" /> WhatsApp Order
                       </a>
                     </div>
+
+                    {/* Trust Avatars + Rating Bar */}
+                    <div className="flex items-center justify-center lg:justify-start gap-3 pt-1">
+                      <div className="flex -space-x-2">
+                        {['🧑', '👩', '👨', '👧'].map((emoji, i) => (
+                          <div key={i} className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-100 to-teal-100 border-2 border-white flex items-center justify-center text-sm shadow-xs">
+                            {emoji}
+                          </div>
+                        ))}
+                      </div>
+                      <div>
+                        <div className="flex items-center text-amber-400 gap-0.5 text-sm font-bold">★★★★★</div>
+                        <p className="text-[10px] sm:text-[11px] font-bold text-slate-600">
+                          Trusted by <span className="text-brand-700">10,000+</span> Happy Families
+                        </p>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Right Image Showcase (5 Columns) - High-Res Full Poster Display */}
-                  <div className="lg:col-span-5 relative flex justify-center w-full mt-4 lg:mt-0">
-                    <div className="w-full max-w-sm sm:max-w-md lg:max-w-full h-[340px] sm:h-[440px] lg:h-[480px] xl:h-[520px] rounded-3xl overflow-hidden shadow-2xl border-4 border-white relative group bg-white flex items-center justify-center p-2.5 sm:p-4">
+                  {/* ─── RIGHT COLUMN: Product Poster Image ─── */}
+                  <div className="flex justify-center lg:justify-end w-full order-1 lg:order-2">
+                    <div className="relative w-full max-w-xs sm:max-w-sm lg:max-w-md xl:max-w-lg h-[280px] sm:h-[380px] lg:h-[440px] flex items-center justify-center">
                       <img
                         src={slide.image}
                         alt={slide.title}
-                        className="h-full w-full object-contain group-hover:scale-105 transition-transform duration-500 rounded-2xl drop-shadow-md"
+                        className="h-full w-full object-contain drop-shadow-2xl hover:scale-[1.03] transition-transform duration-500"
                       />
-                      <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-slate-100 shadow-lg flex items-center justify-between">
-                        <div>
-                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">OFFICIAL BRAND</p>
-                          <p className="text-xs sm:text-sm font-extrabold text-slate-800">{slide.badge}</p>
-                        </div>
-                        <div className="flex items-center text-amber-400 gap-0.5 text-xs sm:text-sm font-bold">
-                          ★★★★★
-                        </div>
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -206,30 +228,30 @@ export const HomePage = () => {
           <button
             onClick={prevSlide}
             aria-label="Previous Slide"
-            className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-slate-800 p-2 sm:p-2.5 rounded-full shadow-md border border-slate-100 backdrop-blur-sm transition-all z-20"
+            className="absolute left-3 sm:left-5 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-slate-700 p-2.5 sm:p-3 rounded-full shadow-lg border border-slate-200/80 backdrop-blur-md transition-all z-20 active:scale-95"
           >
             <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
           <button
             onClick={nextSlide}
             aria-label="Next Slide"
-            className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 bg-white/80 hover:bg-white text-slate-800 p-2 sm:p-2.5 rounded-full shadow-md border border-slate-100 backdrop-blur-sm transition-all z-20"
+            className="absolute right-3 sm:right-5 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-slate-700 p-2.5 sm:p-3 rounded-full shadow-lg border border-slate-200/80 backdrop-blur-md transition-all z-20 active:scale-95"
           >
             <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
 
-          {/* Indicator Dots */}
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-20">
+          {/* Dot Indicators */}
+          <div className="absolute bottom-4 left-0 right-0 z-20 flex items-center justify-center gap-2">
             {heroSlides.map((_, idx) => (
               <button
                 key={idx}
                 onClick={() => setCurrentSlide(idx)}
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  currentSlide === idx
-                    ? 'w-6 bg-brand-600 shadow-sm'
-                    : 'w-2 bg-slate-300 hover:bg-slate-400'
-                }`}
                 aria-label={`Go to slide ${idx + 1}`}
+                className={`transition-all duration-300 rounded-full ${
+                  currentSlide === idx
+                    ? 'w-7 sm:w-8 h-2.5 bg-brand-600 shadow-sm'
+                    : 'w-2.5 h-2.5 bg-slate-300 hover:bg-slate-400'
+                }`}
               />
             ))}
           </div>
@@ -276,6 +298,11 @@ export const HomePage = () => {
         </div>
       </section>
 
+      {/* OUR TRENDING VIDEO SHORTS SECTION */}
+      <div className="max-w-[1600px] mx-auto">
+        <TrendingVideosSection />
+      </div>
+
       {/* NEW PRODUCTS SECTION (Horizontally Scrollable) */}
       <section className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 space-y-4 sm:space-y-6">
         <div className="flex items-end justify-between border-b border-slate-100 pb-3">
@@ -307,7 +334,9 @@ export const HomePage = () => {
         {loading ? (
           <div className="flex items-center gap-4 sm:gap-6 overflow-x-auto pb-4">
             {[1, 2, 3, 4].map((n) => (
-              <div key={n} className="w-64 sm:w-80 h-72 sm:h-80 bg-slate-100 animate-pulse rounded-2xl shrink-0"></div>
+              <div key={n} className="w-64 sm:w-80 shrink-0">
+                <ProductSkeleton />
+              </div>
             ))}
           </div>
         ) : (
@@ -355,7 +384,9 @@ export const HomePage = () => {
         {loading ? (
           <div className="flex items-center gap-4 sm:gap-6 overflow-x-auto pb-4">
             {[1, 2, 3, 4].map((n) => (
-              <div key={n} className="w-64 sm:w-80 h-72 sm:h-80 bg-slate-100 animate-pulse rounded-2xl shrink-0"></div>
+              <div key={n} className="w-64 sm:w-80 shrink-0">
+                <ProductSkeleton />
+              </div>
             ))}
           </div>
         ) : (

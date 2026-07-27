@@ -12,6 +12,7 @@ import {
   X,
   ShieldCheck,
   Bell,
+  Youtube,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -26,6 +27,7 @@ export const AdminLayout = () => {
     { label: 'Categories', path: '/admin/categories', icon: FolderTree },
     { label: 'Orders', path: '/admin/orders', icon: ShoppingBag },
     { label: 'Users', path: '/admin/users', icon: Users },
+    { label: 'Trending Videos', path: '/admin/videos', icon: Youtube },
   ];
 
   const handleLogout = () => {
@@ -38,12 +40,7 @@ export const AdminLayout = () => {
       {/* Mobile Header Bar */}
       <div className="md:hidden bg-slate-900 text-white p-4 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-2">
-          <div
-            className="w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm text-white shadow-sm"
-            style={{ background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)' }}
-          >
-            JJ
-          </div>
+          <img src="/logo.png" alt="Janki Jiyana House" className="w-8 h-8 rounded-xl object-contain bg-white shadow-sm" />
           <span className="font-extrabold text-base tracking-tight">Admin Portal</span>
         </div>
         <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-lg bg-slate-800 text-slate-200">
@@ -61,12 +58,7 @@ export const AdminLayout = () => {
           {/* Logo Header */}
           <div className="p-6 border-b border-slate-800 hidden md:flex items-center justify-between">
             <Link to="/admin" className="flex items-center gap-3">
-              <div
-                className="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-black text-lg shadow-md"
-                style={{ background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)' }}
-              >
-                JJ
-              </div>
+              <img src="/logo.png" alt="Janki Jiyana House" className="w-10 h-10 rounded-2xl object-contain bg-white shadow-md p-0.5" />
               <div>
                 <span className="font-extrabold text-white text-base block leading-tight">Admin Portal</span>
                 <span className="text-[10px] text-teal-400 font-semibold uppercase tracking-wider block">

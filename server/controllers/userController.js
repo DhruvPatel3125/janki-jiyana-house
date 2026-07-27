@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { sendOtpEmail } from '../config/nodemailer.js';
 
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'djpatel', {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: '30d',
   });
 };

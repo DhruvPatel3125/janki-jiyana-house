@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Phone, Mail, MapPin, Heart, MessageCircle } from 'lucide-react';
+import { ShieldCheck, Phone, Mail, MapPin, Heart, MessageCircle, Instagram, Facebook, Youtube } from 'lucide-react';
 
 export const Footer = () => {
   const storeAddress = "G-8-9 Apple Square, Near, Lajamni Chowk, Maruti Dham Society, Mota Varachha, Surat, Gujarat 394101, India.";
@@ -34,6 +34,18 @@ export const Footer = () => {
                 className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors shadow-sm"
               >
                 <MessageCircle className="w-4 h-4" /> Order on WhatsApp
+              </a>
+            </div>
+            {/* Social Media Links */}
+            <div className="flex items-center gap-4 pt-6">
+              <a href="https://www.instagram.com/reel/DXyJh7DsEbN/?igsh=NDQ3Z2xoN2V4Z2o5" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-pink-500 transition-colors">
+                <Instagram className="w-5 h-5" />
+              </a>
+              <a href="https://www.facebook.com/share/16p98Xcoiy/" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-blue-500 transition-colors">
+                <Facebook className="w-5 h-5" />
+              </a>
+              <a href="https://youtube.com/@jankijiyanahouse?si=_FMqOxSHBMzx5PgJ" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-red-500 transition-colors">
+                <Youtube className="w-5 h-5" />
               </a>
             </div>
           </div>
@@ -103,7 +115,9 @@ export const Footer = () => {
             <ul className="space-y-3 text-xs">
               <li className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-brand-400 shrink-0 mt-0.5" />
-                <span className="leading-relaxed">{storeAddress}</span>
+                <a href="https://maps.app.goo.gl/sSd4z5fBGNXG1VFX9" target="_blank" rel="noreferrer" className="leading-relaxed hover:text-white transition-colors">
+                  {storeAddress}
+                </a>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-brand-400 shrink-0" />

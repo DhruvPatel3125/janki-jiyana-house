@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Search, Edit2, Trash2, X, Check, Package, Sparkles } from 'lucide-react';
+import { Plus, Search, Edit2, Trash2, X, Check, Package, Sparkles, Upload } from 'lucide-react';
 import { api } from '../../services/api';
 import { useDebounce } from '../../hooks/useDebounce';
 import { showSuccessToast, showErrorToast } from '../../utils/toast';
+import { useConfirm } from '../../context/ConfirmContext';
 
 export const AdminProducts = () => {
   const [products, setProducts] = useState([]);
@@ -10,6 +11,7 @@ export const AdminProducts = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const { confirm } = useConfirm();
 
   // Debounced search query (300ms)
   const debouncedSearch = useDebounce(searchQuery, 300);
@@ -18,6 +20,7 @@ export const AdminProducts = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -85,7 +88,13 @@ export const AdminProducts = () => {
   };
 
   const handleDeleteProduct = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this product?')) return;
+    const isConfirmed = await confirm({
+      title: 'Delete Product',
+      message: 'Are you sure you want to delete this product? This action cannot be undone.',
+      confirmText: 'Delete Product',
+      isDanger: true
+    });
+    if (!isConfirmed) return;
     try {
       await api.deleteProduct(id);
       setProducts(products.filter((p) => p._id !== id));
@@ -136,6 +145,25 @@ export const AdminProducts = () => {
       showErrorToast(err.message || 'Error saving product');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const uploadFileHandler = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const data = await api.uploadFile(file);
+      // Append the new image URL to the textarea (each on a new line)
+      const currentImages = formData.images.trim();
+      const newImages = currentImages ? `${currentImages}\n${data.imageUrl}` : data.imageUrl;
+      setFormData({ ...formData, images: newImages });
+      showSuccessToast('Image uploaded and URL added');
+    } catch (err) {
+      showErrorToast(err.message || 'Image upload failed');
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -335,14 +363,26 @@ export const AdminProducts = () => {
               </div>
 
               <div>
-                <label className="block font-bold text-slate-700 mb-1">Image URLs (One per line)</label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block font-bold text-slate-700">Product Images</label>
+                  <label className="cursor-pointer text-brand-600 hover:text-brand-700 font-bold text-[11px] flex items-center gap-1 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-lg transition-colors">
+                    {uploadingImage ? (
+                      <div className="w-3 h-3 border-2 border-brand-600 border-t-transparent rounded-full animate-spin"></div>
+                    ) : (
+                      <Upload className="w-3 h-3" />
+                    )}
+                    {uploadingImage ? 'Uploading...' : 'Upload Image'}
+                    <input type="file" onChange={uploadFileHandler} className="hidden" accept="image/jpeg, image/png, image/webp" />
+                  </label>
+                </div>
                 <textarea
                   rows={3}
                   value={formData.images}
                   onChange={(e) => setFormData({ ...formData, images: e.target.value })}
-                  placeholder="https://images.unsplash.com/..."
+                  placeholder="Paste external image URLs here (one per line) or use the upload button above..."
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 font-mono text-[11px] focus:outline-none focus:border-brand-500"
                 ></textarea>
+                <p className="text-[10px] text-slate-500 mt-1">You can upload from your computer OR paste direct links.</p>
               </div>
 
               <div>

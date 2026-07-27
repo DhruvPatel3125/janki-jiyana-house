@@ -225,4 +225,63 @@ export const api = {
     });
     return handleResponse(res, 'Failed to remove item from wishlist');
   },
+
+  // Videos & Shorts
+  async getVideos() {
+    const res = await fetch(`${API_BASE}/videos`);
+    return handleResponse(res, 'Failed to fetch trending videos');
+  },
+
+  async getAllVideosAdmin() {
+    const res = await fetch(`${API_BASE}/videos/admin`, {
+      headers: getHeaders(),
+    });
+    return handleResponse(res, 'Failed to fetch admin videos');
+  },
+
+  async createVideo(videoData) {
+    const res = await fetch(`${API_BASE}/videos`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(videoData),
+    });
+    return handleResponse(res, 'Failed to add video');
+  },
+
+  async updateVideo(id, videoData) {
+    const res = await fetch(`${API_BASE}/videos/${id}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(videoData),
+    });
+    return handleResponse(res, 'Failed to update video');
+  },
+
+  async deleteVideo(id) {
+    const res = await fetch(`${API_BASE}/videos/${id}`, {
+      method: 'DELETE',
+      headers: getHeaders(),
+    });
+    return handleResponse(res, 'Failed to delete video');
+  },
+
+  // Upload
+  async uploadFile(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    // Cannot use getHeaders() directly because we shouldn't set Content-Type to application/json for FormData
+    const user = JSON.parse(localStorage.getItem('userInfo') || 'null');
+    const headers = {};
+    if (user && user.token) {
+      headers['Authorization'] = `Bearer ${user.token}`;
+    }
+
+    const res = await fetch(`${API_BASE}/upload`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    return handleResponse(res, 'Failed to upload image');
+  },
 };

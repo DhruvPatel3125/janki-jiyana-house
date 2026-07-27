@@ -19,6 +19,7 @@ import { RegisterPage } from './pages/RegisterPage';
 import { OrdersPage } from './pages/OrdersPage';
 import { ContactPage } from './pages/ContactPage';
 import { WishlistPage } from './pages/WishlistPage';
+import { NotFoundPage } from './pages/NotFoundPage'; // NEW: 404 Page
 
 // Admin imports
 import { AdminRoute } from './components/AdminRoute';
@@ -28,15 +29,18 @@ import { AdminProducts } from './pages/admin/AdminProducts';
 import { AdminCategories } from './pages/admin/AdminCategories';
 import { AdminOrders } from './pages/admin/AdminOrders';
 import { AdminUsers } from './pages/admin/AdminUsers';
+import { AdminVideos } from './pages/admin/AdminVideos';
 
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
+import { ConfirmProvider } from './context/ConfirmContext'; // NEW: Confirmation Modal Context
 
 export function App() {
   return (
     <ErrorBoundary>
-      <AuthProvider>
-        <WishlistProvider>
-          <CartProvider>
+      <ConfirmProvider>
+        <AuthProvider>
+          <WishlistProvider>
+            <CartProvider>
             <Router>
               <OfflineBanner />
               <Toaster position="top-center" reverseOrder={false} containerStyle={{ top: 20 }} toastOptions={{ maxToasts: 1 }} />
@@ -50,6 +54,7 @@ export function App() {
                     <Route path="categories" element={<AdminCategories />} />
                     <Route path="orders" element={<AdminOrders />} />
                     <Route path="users" element={<AdminUsers />} />
+                    <Route path="videos" element={<AdminVideos />} />
                   </Route>
                 </Route>
 
@@ -72,6 +77,9 @@ export function App() {
                           <Route path="/orders" element={<OrdersPage />} />
                           <Route path="/contact" element={<ContactPage />} />
                           <Route path="/wishlist" element={<WishlistPage />} />
+                          
+                          {/* Catch-All 404 Route for Customer Pages */}
+                          <Route path="*" element={<NotFoundPage />} />
                         </Routes>
                       </main>
                       <Footer />
@@ -80,9 +88,10 @@ export function App() {
                 />
               </Routes>
             </Router>
-          </CartProvider>
-        </WishlistProvider>
-      </AuthProvider>
+            </CartProvider>
+          </WishlistProvider>
+        </AuthProvider>
+      </ConfirmProvider>
     </ErrorBoundary>
   );
 }

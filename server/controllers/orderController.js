@@ -187,8 +187,8 @@ export const getAdminStats = async (req, res, next) => {
       const found = monthlyAggregation.find((a) => a._id === idx + 1);
       return {
         month: m,
-        revenue: found ? found.revenue : (idx + 1) * 1500 + Math.floor(Math.random() * 2000),
-        orders: found ? found.orders : (idx + 1) * 2 + Math.floor(Math.random() * 5),
+        revenue: found ? found.revenue : 0,
+        orders: found ? found.orders : 0,
       };
     });
 

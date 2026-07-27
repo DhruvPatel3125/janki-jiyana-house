@@ -3,11 +3,13 @@ import { Users, Search, ShieldCheck, Mail, Phone, Calendar, Ban, CheckCircle, Tr
 import { api } from '../../services/api';
 import { useDebounce } from '../../hooks/useDebounce';
 import { showSuccessToast, showErrorToast } from '../../utils/toast';
+import { useConfirm } from '../../context/ConfirmContext';
 
 export const AdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const { confirm } = useConfirm();
 
   // Debounced Search Hook (300ms)
   const debouncedSearch = useDebounce(searchQuery, 300);
@@ -35,7 +37,14 @@ export const AdminUsers = () => {
     }
 
     const action = user.isBlocked ? 'unblock' : 'block';
-    if (!window.confirm(`Are you sure you want to ${action} user "${user.name}"?`)) return;
+    
+    const isConfirmed = await confirm({
+      title: `${action === 'block' ? 'Block' : 'Unblock'} User`,
+      message: `Are you sure you want to ${action} user "${user.name}"?`,
+      confirmText: action === 'block' ? 'Block User' : 'Unblock User',
+      isDanger: action === 'block'
+    });
+    if (!isConfirmed) return;
 
     try {
       const res = await api.toggleBlockUser(user._id);
@@ -52,7 +61,13 @@ export const AdminUsers = () => {
       return;
     }
 
-    if (!window.confirm(`Are you sure you want to PERMANENTLY DELETE user "${user.name}"? This action cannot be undone.`)) return;
+    const isConfirmed = await confirm({
+      title: 'Delete User Permanently',
+      message: `Are you sure you want to PERMANENTLY DELETE user "${user.name}"? This action cannot be undone.`,
+      confirmText: 'Delete Permanently',
+      isDanger: true
+    });
+    if (!isConfirmed) return;
 
     try {
       await api.deleteUser(user._id);
