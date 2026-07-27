@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { OfflineBanner } from './components/OfflineBanner';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { HomePage } from './pages/HomePage';
@@ -27,50 +29,53 @@ import { AdminUsers } from './pages/admin/AdminUsers';
 
 export function App() {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <Router>
-          <Toaster position="top-center" reverseOrder={false} containerStyle={{ top: 20 }} />
-          <Routes>
-            {/* Protected Admin Section */}
-            <Route path="/admin" element={<AdminRoute />}>
-              <Route element={<AdminLayout />}>
-                <Route index element={<AdminOverview />} />
-                <Route path="products" element={<AdminProducts />} />
-                <Route path="categories" element={<AdminCategories />} />
-                <Route path="orders" element={<AdminOrders />} />
-                <Route path="users" element={<AdminUsers />} />
+    <ErrorBoundary>
+      <AuthProvider>
+        <CartProvider>
+          <Router>
+            <OfflineBanner />
+            <Toaster position="top-center" reverseOrder={false} containerStyle={{ top: 20 }} />
+            <Routes>
+              {/* Protected Admin Section */}
+              <Route path="/admin" element={<AdminRoute />}>
+                <Route element={<AdminLayout />}>
+                  <Route index element={<AdminOverview />} />
+                  <Route path="products" element={<AdminProducts />} />
+                  <Route path="categories" element={<AdminCategories />} />
+                  <Route path="orders" element={<AdminOrders />} />
+                  <Route path="users" element={<AdminUsers />} />
+                </Route>
               </Route>
-            </Route>
 
-            {/* Main Customer Storefront Section */}
-            <Route
-              path="*"
-              element={
-                <div className="flex flex-col min-h-screen">
-                  <Navbar />
-                  <main className="flex-grow">
-                    <Routes>
-                      <Route path="/" element={<HomePage />} />
-                      <Route path="/shop" element={<ShopPage />} />
-                      <Route path="/product/:id" element={<ProductDetailPage />} />
-                      <Route path="/cart" element={<CartPage />} />
-                      <Route path="/checkout" element={<CheckoutPage />} />
-                      <Route path="/order-success/:id" element={<OrderSuccessPage />} />
-                      <Route path="/login" element={<LoginPage />} />
-                      <Route path="/register" element={<RegisterPage />} />
-                      <Route path="/orders" element={<OrdersPage />} />
-                      <Route path="/contact" element={<ContactPage />} />
-                    </Routes>
-                  </main>
-                  <Footer />
-                </div>
-              }
-            />
-          </Routes>
-        </Router>
-      </CartProvider>
-    </AuthProvider>
+              {/* Main Customer Storefront Section */}
+              <Route
+                path="*"
+                element={
+                  <div className="flex flex-col min-h-screen">
+                    <Navbar />
+                    <main className="flex-grow">
+                      <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/shop" element={<ShopPage />} />
+                        <Route path="/product/:id" element={<ProductDetailPage />} />
+                        <Route path="/cart" element={<CartPage />} />
+                        <Route path="/checkout" element={<CheckoutPage />} />
+                        <Route path="/order-success/:id" element={<OrderSuccessPage />} />
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/register" element={<RegisterPage />} />
+                        <Route path="/orders" element={<OrdersPage />} />
+                        <Route path="/contact" element={<ContactPage />} />
+                      </Routes>
+                    </main>
+                    <Footer />
+                  </div>
+                }
+              />
+            </Routes>
+          </Router>
+        </CartProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

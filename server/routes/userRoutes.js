@@ -7,6 +7,8 @@ import {
   getUserProfile,
   updateUserProfile,
   getUsers,
+  toggleBlockUser,
+  deleteUser,
 } from '../controllers/userController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
 import {
@@ -25,5 +27,9 @@ router.post('/login', validateBody(loginSchema), loginUser);
 router.post('/send-otp', validateBody(sendOtpSchema), sendOtp);
 router.post('/verify-otp', validateBody(verifyOtpSchema), verifyOtp);
 router.route('/profile').get(protect, getUserProfile).put(protect, updateUserProfile);
+
+// Admin block and delete user routes
+router.put('/:id/block', protect, admin, toggleBlockUser);
+router.delete('/:id', protect, admin, deleteUser);
 
 export default router;

@@ -38,12 +38,15 @@ export const AdminLayout = () => {
       {/* Mobile Header Bar */}
       <div className="md:hidden bg-slate-900 text-white p-4 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-xl bg-brand-500 flex items-center justify-center font-bold text-sm">
+          <div
+            className="w-8 h-8 rounded-xl flex items-center justify-center font-black text-sm text-white shadow-sm"
+            style={{ background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)' }}
+          >
             JJ
           </div>
           <span className="font-extrabold text-base tracking-tight">Admin Portal</span>
         </div>
-        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-lg bg-slate-800">
+        <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 rounded-lg bg-slate-800 text-slate-200">
           {sidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
       </div>
@@ -58,7 +61,10 @@ export const AdminLayout = () => {
           {/* Logo Header */}
           <div className="p-6 border-b border-slate-800 hidden md:flex items-center justify-between">
             <Link to="/admin" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-brand-500 to-teal-400 flex items-center justify-center text-white font-black text-lg shadow-md">
+              <div
+                className="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-black text-lg shadow-md"
+                style={{ background: 'linear-gradient(135deg, #0d9488 0%, #14b8a6 100%)' }}
+              >
                 JJ
               </div>
               <div>
@@ -86,7 +92,7 @@ export const AdminLayout = () => {
                   className={({ isActive }) =>
                     `flex items-center gap-3 px-4 py-3 rounded-2xl text-sm font-semibold transition-all ${
                       isActive
-                        ? 'bg-brand-600 text-white shadow-lg shadow-brand-600/30'
+                        ? 'bg-teal-600 text-white font-bold shadow-lg shadow-teal-600/30'
                         : 'text-slate-400 hover:bg-slate-800 hover:text-white'
                     }`
                   }
@@ -106,24 +112,25 @@ export const AdminLayout = () => {
             target="_blank"
             className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors"
           >
-            <Store className="w-4 h-4 text-brand-400" />
+            <Store className="w-4 h-4 text-teal-400" />
             <span>Visit Live Store</span>
           </Link>
 
-          <div className="flex items-center justify-between pt-2 px-2">
+          <div className="pt-2 border-t border-slate-800/60 flex items-center justify-between px-2">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-brand-500/20 text-brand-400 flex items-center justify-center font-bold text-xs">
+              <div className="w-8 h-8 rounded-full bg-teal-500/20 text-teal-300 font-black text-xs flex items-center justify-center border border-teal-500/30">
                 A
               </div>
               <div className="text-left leading-tight">
-                <span className="text-xs font-bold text-white block">{user?.name}</span>
-                <span className="text-[10px] text-slate-400 block">Administrator</span>
+                <p className="text-xs font-bold text-white truncate max-w-[100px]">Shop Admin</p>
+                <p className="text-[10px] text-slate-400 truncate max-w-[100px]">{user?.email || 'admin@store.com'}</p>
               </div>
             </div>
+
             <button
               onClick={handleLogout}
+              className="p-2 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-xl transition-colors"
               title="Logout"
-              className="text-slate-400 hover:text-rose-400 p-1.5 rounded-lg transition-colors"
             >
               <LogOut className="w-4 h-4" />
             </button>
@@ -131,34 +138,30 @@ export const AdminLayout = () => {
         </div>
       </aside>
 
-      {/* Main Admin Content Container */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top Header Bar */}
-        <header className="bg-white border-b border-slate-200 px-6 py-4 hidden md:flex items-center justify-between">
-          <div className="flex items-center gap-2 text-xs text-slate-500 font-semibold">
-            <ShieldCheck className="w-4 h-4 text-emerald-500" />
-            <span>Verified Admin Session Active</span>
+      {/* Main Admin Content Body */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Top Navbar */}
+        <header className="bg-white border-b border-slate-200/80 px-6 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 text-xs text-slate-500">
+            <ShieldCheck className="w-4 h-4 text-emerald-600" />
+            <span className="font-semibold text-slate-700">Verified Admin Session Active</span>
           </div>
 
           <div className="flex items-center gap-4">
             <Link
-              to="/"
+              to="/shop"
               target="_blank"
-              className="text-xs font-bold text-brand-600 hover:text-brand-700 bg-brand-50 px-3.5 py-2 rounded-xl flex items-center gap-1.5 transition-colors"
+              className="text-xs font-bold text-teal-700 bg-teal-50 px-3 py-1.5 rounded-xl border border-teal-100 hover:bg-teal-100 transition-colors flex items-center gap-1.5"
             >
-              <Store className="w-4 h-4" /> Open Shop Front
+              <Store className="w-3.5 h-3.5" /> Open Shop Front
             </Link>
 
-            <div className="h-4 w-px bg-slate-200"></div>
-
-            <span className="text-xs font-bold text-slate-700">
-              Welcome, {user?.name}
-            </span>
+            <span className="text-xs font-bold text-slate-700">Welcome, {user?.name || 'Shop Admin'}</span>
           </div>
         </header>
 
-        {/* Dynamic Admin Route Content */}
-        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8">
+        {/* Page View Outlet */}
+        <main className="p-4 sm:p-6 lg:p-8 flex-1">
           <Outlet />
         </main>
       </div>

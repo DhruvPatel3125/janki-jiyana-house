@@ -4,10 +4,13 @@ import { Phone, Mail, MapPin, MessageCircle, Clock, ShieldCheck } from 'lucide-r
 export const ContactPage = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-brand-600 to-teal-600 text-white rounded-3xl p-8 sm:p-12 text-center space-y-3">
-        <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight">Contact Janki Jiyana House</h1>
-        <p className="text-brand-100 text-sm max-w-xl mx-auto">
+      {/* High-Contrast Header */}
+      <div
+        className="text-white rounded-3xl p-8 sm:p-12 text-center space-y-3 shadow-xl border border-slate-700/50"
+        style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0d9488 100%)' }}
+      >
+        <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white">Contact Janki Jiyana House</h1>
+        <p className="text-slate-300 text-xs sm:text-sm max-w-xl mx-auto font-medium">
           Need assistance selecting the right diaper size or sanitary product? Speak directly with our shop caregivers.
         </p>
       </div>
@@ -34,85 +37,62 @@ export const ContactPage = () => {
           </div>
 
           <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-start gap-4">
-            <div className="p-3 bg-brand-50 text-brand-600 rounded-2xl shrink-0">
+            <div className="p-3 bg-teal-50 text-teal-600 rounded-2xl shrink-0">
               <Phone className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-800 text-base">Phone Call Support</h3>
-              <p className="text-xs text-slate-500 mt-1">Available 9:00 AM – 8:00 PM IST (Mon-Sat).</p>
-              <a href="tel:+919876543210" className="inline-block mt-2 font-bold text-slate-900 text-sm hover:underline">
-                +91 98765 43210
-              </a>
+              <h3 className="font-bold text-slate-800 text-base">Customer Helpline</h3>
+              <p className="text-xs text-slate-500 mt-1">Call us directly for order tracking or wholesale bulk inquiry.</p>
+              <p className="font-bold text-slate-800 text-sm mt-2">+91 98765 43210</p>
             </div>
           </div>
 
           <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-start gap-4">
-            <div className="p-3 bg-sky-50 text-sky-600 rounded-2xl shrink-0">
-              <MapPin className="w-6 h-6" />
+            <div className="p-3 bg-teal-50 text-teal-600 rounded-2xl shrink-0">
+              <Mail className="w-6 h-6" />
             </div>
             <div>
-              <h3 className="font-bold text-slate-800 text-base">Store Address</h3>
-              <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                Janki Jiyana House, 123 Care Street, Near Ring Road, Surat, Gujarat - 395003, India.
-              </p>
+              <h3 className="font-bold text-slate-800 text-base">Email Support</h3>
+              <p className="text-xs text-slate-500 mt-1">Email our support team for bulk quotes & distributor inquiries.</p>
+              <p className="font-bold text-slate-800 text-sm mt-2">dhruvjpatel5@gmail.com</p>
             </div>
           </div>
         </div>
 
-        {/* Contact Form */}
+        {/* Operating Hours & Physical Store Location */}
         <div className="lg:col-span-2 bg-white p-8 rounded-3xl border border-slate-100 shadow-sm space-y-6">
-          <h2 className="text-2xl font-extrabold text-slate-900">Send Us a Direct Message</h2>
-          <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); alert('Message sent successfully! We will contact you shortly.'); }}>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Your Name</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Enter your name"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:border-brand-500"
-                />
+          <div className="space-y-2">
+            <h2 className="text-xl font-black text-slate-900">Visit Our Store or Reach Out</h2>
+            <p className="text-slate-500 text-xs leading-relaxed">
+              We specialize in premium baby care (diaper pants, wet wipes) and personal hygiene products (sanitary napkins, adult pull-ups). All orders are packed in 100% plain, unbranded boxes for total privacy.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
+            <div className="space-y-3">
+              <h4 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-teal-600" /> Physical Store Address
+              </h4>
+              <p className="text-xs text-slate-600 leading-relaxed font-medium">
+                Janki Jiyana House<br />
+                Near Main Market,<br />
+                Gujarat, India - 380001
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="font-bold text-slate-800 text-sm flex items-center gap-2">
+                <Clock className="w-4 h-4 text-teal-600" /> Store Operating Hours
+              </h4>
+              <div className="text-xs text-slate-600 space-y-1 font-medium">
+                <p>Monday – Saturday: 9:00 AM – 8:00 PM</p>
+                <p>Sunday: 10:00 AM – 4:00 PM</p>
+                <p className="text-emerald-600 font-bold mt-2 flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5" /> Online Website Open 24/7
+                </p>
               </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Phone / WhatsApp Number</label>
-                <input
-                  type="tel"
-                  required
-                  placeholder="+91 98765 43210"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:border-brand-500"
-                />
-              </div>
             </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Product Category of Interest</label>
-              <select className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:border-brand-500">
-                <option>Sanitary Pads & Female Care</option>
-                <option>Adult Care Diapers & Underwear</option>
-                <option>Children Diaper Pants & Taped</option>
-                <option>Baby Care & Pure Wipes</option>
-                <option>Bulk Order Inquiry</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 mb-1">Your Message or Inquiry</label>
-              <textarea
-                rows={4}
-                required
-                placeholder="Ask about size recommendations, delivery time, or discreet packaging..."
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:border-brand-500"
-              ></textarea>
-            </div>
-
-            <button
-              type="submit"
-              className="bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 px-8 rounded-xl shadow-lg transition-all text-sm"
-            >
-              Send Message
-            </button>
-          </form>
+          </div>
         </div>
       </div>
     </div>

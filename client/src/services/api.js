@@ -9,19 +9,34 @@ const getHeaders = () => {
   return headers;
 };
 
+// Safe Response Parser to prevent "Unexpected end of JSON input" errors
+const handleResponse = async (res, defaultError = 'Request failed') => {
+  const text = await res.text();
+  let data = {};
+  if (text) {
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      data = { message: text };
+    }
+  }
+  if (!res.ok) {
+    throw new Error(data.message || defaultError || `Server returned error status ${res.status}`);
+  }
+  return data;
+};
+
 export const api = {
   // Products
   async getProducts(params = {}) {
     const query = new URLSearchParams(params).toString();
     const res = await fetch(`${API_BASE}/products?${query}`);
-    if (!res.ok) throw new Error('Failed to fetch products');
-    return res.json();
+    return handleResponse(res, 'Failed to fetch products');
   },
 
   async getProductById(id) {
     const res = await fetch(`${API_BASE}/products/${id}`);
-    if (!res.ok) throw new Error('Product not found');
-    return res.json();
+    return handleResponse(res, 'Product not found');
   },
 
   async createProduct(productData) {
@@ -30,9 +45,7 @@ export const api = {
       headers: getHeaders(),
       body: JSON.stringify(productData),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Failed to create product');
-    return data;
+    return handleResponse(res, 'Failed to create product');
   },
 
   async updateProduct(id, productData) {
@@ -41,9 +54,7 @@ export const api = {
       headers: getHeaders(),
       body: JSON.stringify(productData),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Failed to update product');
-    return data;
+    return handleResponse(res, 'Failed to update product');
   },
 
   async deleteProduct(id) {
@@ -51,16 +62,13 @@ export const api = {
       method: 'DELETE',
       headers: getHeaders(),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Failed to delete product');
-    return data;
+    return handleResponse(res, 'Failed to delete product');
   },
 
   // Categories
   async getCategories() {
     const res = await fetch(`${API_BASE}/categories`);
-    if (!res.ok) throw new Error('Failed to fetch categories');
-    return res.json();
+    return handleResponse(res, 'Failed to fetch categories');
   },
 
   async createCategory(categoryData) {
@@ -69,9 +77,7 @@ export const api = {
       headers: getHeaders(),
       body: JSON.stringify(categoryData),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Failed to create category');
-    return data;
+    return handleResponse(res, 'Failed to create category');
   },
 
   async deleteCategory(id) {
@@ -79,9 +85,7 @@ export const api = {
       method: 'DELETE',
       headers: getHeaders(),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Failed to delete category');
-    return data;
+    return handleResponse(res, 'Failed to delete category');
   },
 
   // Auth & User
@@ -91,9 +95,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ emailOrPhone, password }),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Login failed');
-    return data;
+    return handleResponse(res, 'Login failed');
   },
 
   async register(name, email, password, phone = '', address = {}) {
@@ -102,9 +104,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, email, phone, password, address }),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Registration failed');
-    return data;
+    return handleResponse(res, 'Registration failed');
   },
 
   async sendOtp(email, phone = '') {
@@ -113,9 +113,7 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, phone }),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Failed to send OTP email');
-    return data;
+    return handleResponse(res, 'Failed to send OTP email');
   },
 
   async verifyOtp(email, otp, name = '') {
@@ -124,27 +122,37 @@ export const api = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, otp, name }),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'OTP Verification failed');
-    return data;
+    return handleResponse(res, 'OTP Verification failed');
   },
 
   async getProfile() {
     const res = await fetch(`${API_BASE}/users/profile`, {
       headers: getHeaders(),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Failed to load profile');
-    return data;
+    return handleResponse(res, 'Failed to load profile');
   },
 
   async getUsers() {
     const res = await fetch(`${API_BASE}/users`, {
       headers: getHeaders(),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Failed to fetch users');
-    return data;
+    return handleResponse(res, 'Failed to fetch users');
+  },
+
+  async toggleBlockUser(id) {
+    const res = await fetch(`${API_BASE}/users/${id}/block`, {
+      method: 'PUT',
+      headers: getHeaders(),
+    });
+    return handleResponse(res, 'Failed to toggle block status');
+  },
+
+  async deleteUser(id) {
+    const res = await fetch(`${API_BASE}/users/${id}`, {
+      method: 'DELETE',
+      headers: getHeaders(),
+    });
+    return handleResponse(res, 'Failed to delete user');
   },
 
   // Orders
@@ -154,36 +162,28 @@ export const api = {
       headers: getHeaders(),
       body: JSON.stringify(orderData),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Failed to place order');
-    return data;
+    return handleResponse(res, 'Failed to place order');
   },
 
   async getOrderById(id) {
     const res = await fetch(`${API_BASE}/orders/${id}`, {
       headers: getHeaders(),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Order not found');
-    return data;
+    return handleResponse(res, 'Order not found');
   },
 
   async getMyOrders() {
     const res = await fetch(`${API_BASE}/orders/myorders`, {
       headers: getHeaders(),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Failed to fetch orders');
-    return data;
+    return handleResponse(res, 'Failed to fetch orders');
   },
 
   async getAllOrders() {
     const res = await fetch(`${API_BASE}/orders`, {
       headers: getHeaders(),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Failed to fetch all orders');
-    return data;
+    return handleResponse(res, 'Failed to fetch all orders');
   },
 
   async updateOrderStatus(id, status) {
@@ -192,17 +192,13 @@ export const api = {
       headers: getHeaders(),
       body: JSON.stringify({ status }),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Failed to update order status');
-    return data;
+    return handleResponse(res, 'Failed to update order status');
   },
 
   async getAdminStats() {
     const res = await fetch(`${API_BASE}/orders/stats`, {
       headers: getHeaders(),
     });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || 'Failed to fetch admin stats');
-    return data;
+    return handleResponse(res, 'Failed to fetch admin stats');
   },
 };

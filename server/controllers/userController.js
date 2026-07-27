@@ -50,6 +50,7 @@ export const registerUser = async (req, res, next) => {
       name: user.name,
       email: user.email,
       phone: user.phone,
+      isBlocked: user.isBlocked,
       address: user.address,
       role: user.role,
       token: generateToken(user._id),
@@ -78,6 +79,10 @@ export const loginUser = async (req, res, next) => {
       ],
     });
 
+    if (user && user.isBlocked) {
+      return res.status(403).json({ message: 'Your account has been blocked by store administrator. Please contact support.' });
+    }
+
     if (user && (await user.matchPassword(password))) {
       res.json({
         _id: user._id,
@@ -85,6 +90,7 @@ export const loginUser = async (req, res, next) => {
         email: user.email,
         phone: user.phone,
         isPhoneVerified: user.isPhoneVerified,
+        isBlocked: user.isBlocked,
         address: user.address,
         role: user.role,
         token: generateToken(user._id),
@@ -108,10 +114,14 @@ export const sendOtp = async (req, res, next) => {
       return res.status(400).json({ message: 'Please enter a valid email address to receive OTP' });
     }
 
+    let user = await User.findOne({ email: targetEmail });
+    if (user && user.isBlocked) {
+      return res.status(403).json({ message: 'Your account has been blocked by store administrator.' });
+    }
+
     const generatedOtp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
-    let user = await User.findOne({ email: targetEmail });
     if (!user) {
       user = new User({
         name: targetEmail.split('@')[0],
@@ -154,6 +164,10 @@ export const verifyOtp = async (req, res, next) => {
 
     const user = await User.findOne({ email: targetEmail });
 
+    if (user && user.isBlocked) {
+      return res.status(403).json({ message: 'Your account has been blocked by store administrator.' });
+    }
+
     if (!user || !user.otp || !user.otpExpires) {
       return res.status(400).json({ message: 'No OTP requested for this email address' });
     }
@@ -181,6 +195,7 @@ export const verifyOtp = async (req, res, next) => {
       email: user.email,
       phone: user.phone,
       isPhoneVerified: user.isPhoneVerified,
+      isBlocked: user.isBlocked,
       address: user.address,
       role: user.role,
       token: generateToken(user._id),
@@ -202,6 +217,7 @@ export const getUserProfile = async (req, res, next) => {
         email: user.email,
         phone: user.phone,
         isPhoneVerified: user.isPhoneVerified,
+        isBlocked: user.isBlocked,
         address: user.address,
         role: user.role,
       });
@@ -236,6 +252,7 @@ export const updateUserProfile = async (req, res, next) => {
         email: updatedUser.email,
         phone: updatedUser.phone,
         isPhoneVerified: updatedUser.isPhoneVerified,
+        isBlocked: updatedUser.isBlocked,
         address: updatedUser.address,
         role: updatedUser.role,
         token: generateToken(updatedUser._id),
@@ -254,6 +271,46 @@ export const getUsers = async (req, res, next) => {
   try {
     const users = await User.find({}).select('-password').sort({ createdAt: -1 });
     res.json(users);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Toggle block status of a user (admin)
+// @route   PUT /api/users/:id/block
+export const toggleBlockUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    if (user.role === 'admin') {
+      return res.status(400).json({ message: 'Cannot block an admin account' });
+    }
+    user.isBlocked = !user.isBlocked;
+    await user.save();
+    res.json({
+      message: user.isBlocked ? 'User blocked successfully' : 'User unblocked successfully',
+      isBlocked: user.isBlocked,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Delete a user (admin)
+// @route   DELETE /api/users/:id
+export const deleteUser = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    if (user.role === 'admin') {
+      return res.status(400).json({ message: 'Cannot delete an admin account' });
+    }
+    await user.deleteOne();
+    res.json({ message: 'User deleted successfully' });
   } catch (error) {
     next(error);
   }
