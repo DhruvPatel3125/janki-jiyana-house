@@ -1,31 +1,55 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Star, Trash2 } from 'lucide-react';
+import { ShoppingBag, Star, Trash2, Heart, Plus, Minus } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import { showCartToast, showSuccessToast } from '../utils/toast';
 
 export const ProductCard = ({ product }) => {
-  const { addToCart, removeFromCart, cartItems } = useCart();
+  const { addToCart, removeFromCart, updateQuantity, cartItems } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
   const navigate = useNavigate();
 
-  const isItemInCart = cartItems.some((item) => item.product === product._id);
+  const cartItem = cartItems.find((item) => item.product === product._id);
+  const isItemInCart = !!cartItem;
+  const isWishlisted = isInWishlist(product._id);
+
   const discountPercent =
     product.mrp && product.mrp > product.price
       ? Math.round(((product.mrp - product.price) / product.mrp) * 100)
       : 0;
 
-  const handleCartToggle = (e) => {
+  const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
     if (product.stock <= 0) return;
+    addToCart(product, 1);
+    showCartToast(product.name, () => navigate('/cart'));
+  };
 
-    if (isItemInCart) {
+  const handleDecrease = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!cartItem) return;
+    if (cartItem.quantity <= 1) {
       removeFromCart(product._id);
       showSuccessToast(`${product.name} removed from cart`);
     } else {
-      addToCart(product, 1);
-      showCartToast(product.name, () => navigate('/cart'));
+      updateQuantity(product._id, cartItem.quantity - 1);
     }
+  };
+
+  const handleIncrease = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!cartItem || cartItem.quantity >= product.stock) return;
+    updateQuantity(product._id, cartItem.quantity + 1);
+  };
+
+  const handleWishlistToggle = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleWishlist(product);
   };
 
   return (
@@ -37,9 +61,22 @@ export const ProductCard = ({ product }) => {
         </span>
       )}
 
+      {/* Wishlist Heart Button */}
+      <button
+        onClick={handleWishlistToggle}
+        aria-label={isWishlisted ? 'Remove from Wishlist' : 'Add to Wishlist'}
+        className="absolute top-2.5 right-2.5 z-10 p-2 rounded-full bg-white/90 backdrop-blur-md shadow-md hover:scale-110 active:scale-95 transition-all border border-slate-100"
+      >
+        <Heart
+          className={`w-4 h-4 transition-colors ${
+            isWishlisted ? 'fill-rose-500 text-rose-500' : 'text-slate-400 hover:text-rose-500'
+          }`}
+        />
+      </button>
+
       {/* Stock Status Badge */}
       {product.stock <= 0 && (
-        <span className="absolute top-2.5 right-2.5 z-10 bg-slate-900/85 backdrop-blur-sm text-white text-[10px] sm:text-[11px] font-bold px-2 sm:px-2.5 py-0.5 rounded-full">
+        <span className="absolute top-10 right-2.5 z-10 bg-slate-900/85 backdrop-blur-sm text-white text-[10px] sm:text-[11px] font-bold px-2 sm:px-2.5 py-0.5 rounded-full">
           Out of Stock
         </span>
       )}
@@ -86,30 +123,54 @@ export const ProductCard = ({ product }) => {
             )}
           </div>
 
-          {/* Toggle Add / Remove Button */}
-          <button
-            onClick={handleCartToggle}
-            disabled={product.stock <= 0}
-            className={`w-full py-2 sm:py-2.5 px-2.5 sm:px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 sm:gap-2 shadow-sm transition-all duration-200 active:scale-95 ${
-              product.stock <= 0
-                ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
-                : isItemInCart
-                ? 'bg-rose-500 hover:bg-rose-600 text-white'
-                : 'bg-accent-orange hover:bg-orange-600 text-white'
-            }`}
-          >
-            {isItemInCart ? (
-              <>
-                <Trash2 className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">Remove</span>
-              </>
-            ) : (
-              <>
-                <ShoppingBag className="w-3.5 h-3.5 shrink-0" />
-                <span className="truncate">Add to Cart</span>
-              </>
-            )}
-          </button>
+          {/* Interactive Bestzone-style Cart Quantity Pill Button */}
+          {product.stock <= 0 ? (
+            <button
+              disabled
+              className="w-full py-2.5 px-4 rounded-xl font-bold text-xs bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
+            >
+              Out of Stock
+            </button>
+          ) : isItemInCart ? (
+            <div className="w-full h-10 bg-brand-600 text-white rounded-xl flex items-center justify-between px-1.5 font-bold shadow-md transition-all">
+              <button
+                onClick={handleDecrease}
+                className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-brand-700 active:scale-90 transition-all text-white"
+                title={cartItem.quantity === 1 ? 'Remove from cart' : 'Decrease quantity'}
+              >
+                {cartItem.quantity === 1 ? (
+                  <Trash2 className="w-4 h-4 text-white shrink-0" />
+                ) : (
+                  <Minus className="w-4 h-4 text-white shrink-0" />
+                )}
+              </button>
+
+              <span className="text-sm font-black px-2 select-none text-white">
+                {cartItem.quantity}
+              </span>
+
+              <button
+                onClick={handleIncrease}
+                disabled={cartItem.quantity >= product.stock}
+                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all text-white ${
+                  cartItem.quantity >= product.stock
+                    ? 'opacity-40 cursor-not-allowed'
+                    : 'hover:bg-brand-700 active:scale-90'
+                }`}
+                title="Increase quantity"
+              >
+                <Plus className="w-4 h-4 text-white shrink-0" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={handleAddToCart}
+              className="w-full py-2.5 px-4 bg-brand-600 hover:bg-brand-700 text-white rounded-xl font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 shadow-md shadow-brand-500/20 transition-all active:scale-95"
+            >
+              <Plus className="w-4 h-4 shrink-0" />
+              <span>Add to cart</span>
+            </button>
+          )}
         </div>
       </div>
     </div>

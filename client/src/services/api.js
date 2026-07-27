@@ -201,4 +201,28 @@ export const api = {
     });
     return handleResponse(res, 'Failed to fetch admin stats');
   },
+
+  // Wishlist
+  async getWishlist() {
+    const res = await fetch(`${API_BASE}/wishlist`, {
+      headers: getHeaders(),
+    });
+    return handleResponse(res, 'Failed to fetch wishlist');
+  },
+
+  async toggleWishlist(productId) {
+    const res = await fetch(`${API_BASE}/wishlist/toggle/${productId}`, {
+      method: 'POST',
+      headers: getHeaders(),
+    });
+    return handleResponse(res, 'Failed to update wishlist');
+  },
+
+  async removeFromWishlist(productId) {
+    const res = await fetch(`${API_BASE}/wishlist/${productId}`, {
+      method: 'DELETE',
+      headers: getHeaders(),
+    });
+    return handleResponse(res, 'Failed to remove item from wishlist');
+  },
 };

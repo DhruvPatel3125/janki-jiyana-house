@@ -21,36 +21,54 @@ export const HomePage = () => {
   const heroSlides = [
     {
       id: 1,
-      tag: 'BABY CARE & DIAPER PANTS',
-      title: 'Ultra-Soft 12-Hour Leakproof Baby Diapers',
-      subtitle: 'Infused with organic aloe vera lotion to protect delicate skin for uninterrupted sleep.',
-      btnText: 'Explore Baby Care',
-      link: '/shop?category=Children%20Diapers',
-      image: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?w=900&auto=format&fit=crop&q=80',
-      badge: '10,000+ Happy Babies Served',
-      bgGradient: 'from-teal-50 via-emerald-50/50 to-brand-50',
+      tag: 'FEMININE HYGIENE & MINT FRESHNESS',
+      title: '320mm Mint Cooling Sanitary Pads',
+      subtitle: 'Extra long 320mm sanitary pads with cooling mint freshness. Provides 100% leak protection, odour control, and soft cotton feel for heavy flow days.',
+      highlights: [
+        'Cooling Mint Effect',
+        '320mm Extra Long Coverage',
+        'Anion Odour Control Chip',
+        '100% Soft & Rash-Free Cotton'
+      ],
+      btnText: 'Shop Sanitary Pads',
+      link: '/shop?category=Sanitary%20Pads',
+      image: '/hero/slide_1.jpg',
+      badge: '100% Rash-Free & Mint Fresh',
+      bgGradient: 'from-pink-50 via-rose-50/60 to-purple-50',
     },
     {
       id: 2,
-      tag: 'FEMININE HYGIENE & ULTRA PADS',
-      title: 'Cottony Soft Ultra Pads for Heavy Flow',
-      subtitle: 'Advanced leak-guard core & double wide wings for complete all-night protection and zero rashes.',
-      btnText: 'Shop Sanitary Pads',
-      link: '/shop?category=Sanitary%20Pads',
-      image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=900&auto=format&fit=crop&q=80',
-      badge: '100% Rash-Free Guarantee',
-      bgGradient: 'from-rose-50 via-pink-50/50 to-amber-50',
+      tag: 'ADULT CARE & COMFORT PANTS',
+      title: 'Super Absorbent Adult Diapers & Pants',
+      subtitle: 'Premium adult diapers designed for high absorption, 360° stretch fit comfort, and skin-friendly day & night leak protection.',
+      highlights: [
+        'Super Rapid Dry Core',
+        'Soft & Breathable Fabric',
+        'Pant & Tape Style Options',
+        '12-Hour Day & Night Protection'
+      ],
+      btnText: 'Shop Adult Care',
+      link: '/shop?category=Adult%20Diapers',
+      image: '/hero/slide_2.jpg',
+      badge: '100% Plain Discreet Box Delivery',
+      bgGradient: 'from-sky-50 via-blue-50/60 to-teal-50',
     },
     {
       id: 3,
-      tag: 'ADULT CARE & COMFORT PANTS',
-      title: 'Dignified & Absorbent Adult Care Diapers',
-      subtitle: '360° flexible stretch fit with rapid-dry core, delivered in 100% plain unbranded boxes.',
-      btnText: 'Shop Adult Care',
-      link: '/shop?category=Adult%20Diapers',
-      image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=900&auto=format&fit=crop&q=80',
-      badge: '100% Plain Discreet Packaging',
-      bgGradient: 'from-sky-50 via-indigo-50/50 to-teal-50',
+      tag: 'HYGIENE & HEALTHCARE BRAND - CIAZA',
+      title: 'Complete Hygiene Care For Entire Family',
+      subtitle: 'One trusted brand for Baby Diapers, Sanitary Pads, Adult Diapers, and Disposable Period Panties with 100% leak-proof quality.',
+      highlights: [
+        'Soft Baby Diaper Pants',
+        'Sanitary & Period Panties',
+        'Dignified Adult Diapers',
+        'Fast Cash On Delivery (COD)'
+      ],
+      btnText: 'Explore All Products',
+      link: '/shop',
+      image: '/hero/slide_3.jpg',
+      badge: 'Quality & Trust Guaranteed',
+      bgGradient: 'from-emerald-50 via-teal-50/60 to-sky-50',
     },
   ];
 
@@ -101,7 +119,7 @@ export const HomePage = () => {
     <div className="space-y-10 sm:space-y-16 pb-16">
       {/* Hero Carousel Section - Mobile Optimized */}
       <section className="relative mx-3 sm:mx-6 lg:mx-8 mt-3 sm:mt-4">
-        <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 shadow-md min-h-[440px] sm:min-h-[500px] lg:min-h-[540px]">
+        <div className="relative overflow-hidden rounded-3xl border border-slate-200/80 shadow-md min-h-[480px] sm:min-h-[540px] lg:min-h-[580px]">
           {/* Carousel Track Slider */}
           <div
             className="flex transition-transform duration-700 ease-in-out h-full"
@@ -110,55 +128,70 @@ export const HomePage = () => {
             {heroSlides.map((slide) => (
               <div
                 key={slide.id}
-                className={`w-full flex-shrink-0 bg-gradient-to-br ${slide.bgGradient} py-8 sm:py-12 lg:py-16 px-4 sm:px-8 lg:px-14 flex items-center justify-center`}
+                className={`w-full flex-shrink-0 bg-gradient-to-br ${slide.bgGradient} py-8 sm:py-12 lg:py-14 px-4 sm:px-8 lg:px-14 flex items-center justify-center`}
               >
-                <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 lg:gap-12 items-center">
-                  {/* Left Slide Details */}
-                  <div className="space-y-4 sm:space-y-6 text-center lg:text-left">
+                <div className="max-w-[1600px] mx-auto w-full grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-10 lg:gap-12 items-center">
+                  {/* Left Slide Details (7 Columns) */}
+                  <div className="lg:col-span-7 space-y-4 sm:space-y-5 text-center lg:text-left">
                     <span className="inline-flex items-center gap-1.5 bg-white/90 backdrop-blur-md px-3.5 py-1 rounded-full text-brand-700 text-[10px] sm:text-xs font-bold shadow-sm border border-brand-100 uppercase tracking-wider">
                       <Sparkles className="w-3.5 h-3.5 text-amber-500 shrink-0" /> {slide.tag}
                     </span>
 
-                    <h1 className="text-2xl sm:text-4xl lg:text-5xl font-black text-slate-900 leading-tight tracking-tight">
+                    <h1 className="text-2xl sm:text-3xl lg:text-4xl xl:text-5xl font-black text-slate-900 leading-tight tracking-tight">
                       {slide.title}
                     </h1>
 
-                    <p className="text-slate-600 text-xs sm:text-base max-w-xl mx-auto lg:mx-0 font-normal leading-relaxed">
+                    <p className="text-slate-600 text-xs sm:text-sm lg:text-base max-w-xl mx-auto lg:mx-0 font-medium leading-relaxed">
                       {slide.subtitle}
                     </p>
 
-                    <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-1">
+                    {/* Bullet Highlights in Simple English */}
+                    {slide.highlights && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-w-xl mx-auto lg:mx-0 pt-1 text-left">
+                        {slide.highlights.map((highlight, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center gap-2 bg-white/85 backdrop-blur-sm px-3.5 py-2 rounded-xl border border-slate-200/70 shadow-2xs"
+                          >
+                            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+                            <span className="text-xs font-bold text-slate-800">{highlight}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 sm:gap-4 pt-3">
                       <Link
                         to={slide.link}
-                        className="w-full sm:w-auto bg-accent-orange hover:bg-orange-600 text-white px-6 sm:px-8 py-3 sm:py-3.5 rounded-2xl font-bold text-xs sm:text-sm shadow-md shadow-orange-500/20 transition-all flex items-center justify-center gap-2"
+                        className="w-full sm:w-auto bg-accent-orange hover:bg-orange-600 text-white px-7 sm:px-9 py-3.5 sm:py-4 rounded-2xl font-bold text-xs sm:text-sm shadow-md shadow-orange-500/20 transition-all flex items-center justify-center gap-2"
                       >
                         {slide.btnText} <ArrowRight className="w-4 h-4" />
                       </Link>
                       <a
-                        href="https://wa.me/919876543210?text=Hello%20Janki%20Jiyana%20House,%20I%20want%20to%20order"
+                        href="https://wa.me/919824934361?text=Hello%20Janki%20Jiyana%20House,%20I%20want%20to%20order"
                         target="_blank"
                         rel="noreferrer"
-                        className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-800 px-5 sm:px-6 py-3 sm:py-3.5 rounded-2xl font-bold text-xs sm:text-sm border border-slate-200 shadow-sm flex items-center justify-center gap-2"
+                        className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-800 px-6 sm:px-7 py-3.5 sm:py-4 rounded-2xl font-bold text-xs sm:text-sm border border-slate-200 shadow-sm flex items-center justify-center gap-2"
                       >
                         <MessageCircle className="w-4 h-4 text-emerald-600" /> WhatsApp Order
                       </a>
                     </div>
                   </div>
 
-                  {/* Right Image Showcase */}
-                  <div className="relative flex justify-center hidden sm:flex">
-                    <div className="w-full max-w-xs sm:max-w-md aspect-square rounded-3xl overflow-hidden shadow-xl border-4 border-white relative group">
+                  {/* Right Image Showcase (5 Columns) - High-Res Full Poster Display */}
+                  <div className="lg:col-span-5 relative flex justify-center w-full mt-4 lg:mt-0">
+                    <div className="w-full max-w-sm sm:max-w-md lg:max-w-full h-[340px] sm:h-[440px] lg:h-[480px] xl:h-[520px] rounded-3xl overflow-hidden shadow-2xl border-4 border-white relative group bg-white flex items-center justify-center p-2.5 sm:p-4">
                       <img
                         src={slide.image}
                         alt={slide.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                        className="h-full w-full object-contain group-hover:scale-105 transition-transform duration-500 rounded-2xl drop-shadow-md"
                       />
-                      <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-md p-3 rounded-2xl border border-slate-100 shadow-md flex items-center justify-between">
+                      <div className="absolute bottom-3 left-3 right-3 bg-white/95 backdrop-blur-md p-2.5 sm:p-3 rounded-2xl border border-slate-100 shadow-lg flex items-center justify-between">
                         <div>
-                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">ASSURANCE</p>
-                          <p className="text-xs font-extrabold text-slate-800">{slide.badge}</p>
+                          <p className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">OFFICIAL BRAND</p>
+                          <p className="text-xs sm:text-sm font-extrabold text-slate-800">{slide.badge}</p>
                         </div>
-                        <div className="flex items-center text-amber-400 gap-0.5 text-xs">
+                        <div className="flex items-center text-amber-400 gap-0.5 text-xs sm:text-sm font-bold">
                           ★★★★★
                         </div>
                       </div>
@@ -204,7 +237,7 @@ export const HomePage = () => {
       </section>
 
       {/* Round Circular Category Section ("Shop by Category") */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 space-y-4 sm:space-y-6">
         <div className="flex items-end justify-between border-b border-slate-100 pb-3">
           <div>
             <h2 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight">Shop by Category</h2>
@@ -244,7 +277,7 @@ export const HomePage = () => {
       </section>
 
       {/* NEW PRODUCTS SECTION (Horizontally Scrollable) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 space-y-4 sm:space-y-6">
         <div className="flex items-end justify-between border-b border-slate-100 pb-3">
           <div>
             <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-extrabold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full uppercase tracking-wider mb-1">
@@ -292,7 +325,7 @@ export const HomePage = () => {
       </section>
 
       {/* BEST-SELLING PRODUCTS SECTION (Horizontally Scrollable) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4 sm:space-y-6">
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 space-y-4 sm:space-y-6">
         <div className="flex items-end justify-between border-b border-slate-100 pb-3">
           <div>
             <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-extrabold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full uppercase tracking-wider mb-1">
@@ -343,7 +376,7 @@ export const HomePage = () => {
       <TrustBadges />
 
       {/* Discreet Packaging Banner */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12">
         <div className="bg-slate-900 text-white rounded-3xl p-6 sm:p-10 lg:p-12 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8">
           <div className="space-y-3 max-w-xl text-center md:text-left z-10">
             <span className="bg-brand-500/20 text-brand-300 text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">

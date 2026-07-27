@@ -94,10 +94,14 @@ export const RegisterPage = () => {
   return (
     <div className="max-w-md mx-auto px-3 sm:px-4 py-12 sm:py-16">
       <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200/80 shadow-xl space-y-6">
-        <div className="text-center space-y-2">
-          <span className="inline-flex items-center gap-1 bg-brand-50 text-brand-700 text-[11px] font-extrabold px-3 py-1 rounded-full border border-brand-100 uppercase tracking-wider">
-            <ShieldCheck className="w-3.5 h-3.5 text-brand-600" /> Create Secure Account
-          </span>
+        <div className="text-center space-y-3">
+          <div className="flex justify-center">
+            <img
+              src="/logo.png"
+              alt="Janki Jiyana House Logo"
+              className="h-14 w-auto object-contain bg-white p-1 rounded-2xl shadow-sm"
+            />
+          </div>
           <h2 className="text-2xl sm:text-3xl font-black text-slate-900">Register Account</h2>
           <p className="text-slate-500 text-xs">Join Janki Jiyana House for fast reordering and order tracking.</p>
         </div>

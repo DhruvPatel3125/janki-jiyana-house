@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { CheckCircle2, Package, MapPin, Truck, ShoppingBag, PhoneCall, MessageCircle } from 'lucide-react';
+import { CheckCircle2, Package, MapPin, Truck, ShoppingBag, PhoneCall, MessageCircle,ShieldCheck } from 'lucide-react';
 import { api } from '../services/api';
 
 export const OrderSuccessPage = () => {
@@ -102,22 +102,34 @@ export const OrderSuccessPage = () => {
           </div>
         )}
 
-        {/* Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
-          <Link
-            to="/shop"
-            className="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white font-bold text-sm px-8 py-3.5 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2"
-          >
-            <ShoppingBag className="w-4 h-4" /> Continue Shopping
-          </Link>
-          <a
-            href={`https://wa.me/919876543210?text=Hello%20Janki%20Jiyana%20House,%20I%20placed%20order%20${order?._id || id}`}
-            target="_blank"
-            rel="noreferrer"
-            className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm px-6 py-3.5 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2"
-          >
-            <MessageCircle className="w-4 h-4" /> Track on WhatsApp
-          </a>
+        {/* Order Actions */}
+        <div className="space-y-4 pt-4 border-t border-slate-100">
+          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 text-xs text-slate-600 space-y-1">
+            <p className="font-bold text-slate-800 flex items-center justify-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-600" /> Need to Cancel or Change Order?
+            </p>
+            <p className="text-[11px] text-slate-500">
+              If you placed this order by mistake or want to change your items/address, click WhatsApp below to inform us instantly.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link
+              to="/shop"
+              className="w-full sm:w-auto bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs sm:text-sm px-6 py-3 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2"
+            >
+              <ShoppingBag className="w-4 h-4" /> Continue Shopping
+            </Link>
+
+            <a
+              href={`https://wa.me/919824934361?text=Hello%20Janki%20Jiyana%20House,%20I%20want%20to%20track/manage%20my%20Order%20%23${order?._id || id}`}
+              target="_blank"
+              rel="noreferrer"
+              className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm px-6 py-3 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2"
+            >
+              <MessageCircle className="w-4 h-4" /> Track / Cancel on WhatsApp
+            </a>
+          </div>
         </div>
       </div>
     </div>

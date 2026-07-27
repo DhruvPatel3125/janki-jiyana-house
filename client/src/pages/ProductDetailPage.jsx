@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ShoppingBag, Star, ShieldCheck, Truck, ArrowLeft, Check, Plus, Minus, Package, Trash2, Sparkles, ImageOff } from 'lucide-react';
+import { ShoppingBag, Star, ShieldCheck, Truck, ArrowLeft, Check, Plus, Minus, Package, Trash2, Sparkles, ImageOff, Heart } from 'lucide-react';
 import { api } from '../services/api';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import { ProductCard } from '../components/ProductCard';
 import { showCartToast, showSuccessToast } from '../utils/toast';
 
@@ -12,6 +13,7 @@ export const ProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { addToCart, removeFromCart, cartItems } = useCart();
+  const { isInWishlist, toggleWishlist } = useWishlist();
 
   const [product, setProduct] = useState(null);
   const [similarProducts, setSimilarProducts] = useState([]);
@@ -285,6 +287,14 @@ export const ProductDetailPage = () => {
                 className="flex-1 bg-brand-600 hover:bg-brand-700 text-white font-bold py-3.5 px-6 rounded-2xl shadow-md transition-all active:scale-95 text-sm"
               >
                 Buy Now
+              </button>
+              <button
+                onClick={() => toggleWishlist(product)}
+                aria-label="Wishlist"
+                title={isInWishlist(id) ? 'Remove from Wishlist' : 'Add to Wishlist'}
+                className="p-3.5 rounded-2xl border border-slate-200 bg-white hover:bg-rose-50 text-slate-600 hover:text-rose-600 shadow-sm transition-all active:scale-95 flex items-center justify-center shrink-0"
+              >
+                <Heart className={`w-5 h-5 ${isInWishlist(id) ? 'fill-rose-500 text-rose-500' : 'text-slate-400'}`} />
               </button>
             </div>
 

@@ -3,9 +3,11 @@ import toast from 'react-hot-toast';
 import { CheckCircle2, XCircle, ShoppingBag, ArrowRight, AlertCircle } from 'lucide-react';
 
 /**
- * Custom Toast matching modern D2C e-commerce design (like QuickMart demo screenshot)
+ * Custom Toast matching modern D2C e-commerce design
+ * Prevents toast stacking by dismissing prior active toasts and setting fixed ID
  */
 export const showCartToast = (productName, onNavigateCart) => {
+  toast.dismiss(); // Dismiss all active toasts to prevent stacking multiple banners
   toast.custom(
     (t) => (
       <div
@@ -38,11 +40,12 @@ export const showCartToast = (productName, onNavigateCart) => {
         </button>
       </div>
     ),
-    { duration: 4000 }
+    { id: 'cart-added-toast', duration: 3000 }
   );
 };
 
 export const showSuccessToast = (message) => {
+  toast.dismiss(); // Dismiss all active toasts to prevent stacking
   toast.custom(
     (t) => (
       <div
@@ -56,11 +59,12 @@ export const showSuccessToast = (message) => {
         <p className="text-xs font-bold text-slate-800 leading-snug flex-1">{message}</p>
       </div>
     ),
-    { duration: 3500 }
+    { id: 'app-success-toast', duration: 3000 }
   );
 };
 
 export const showErrorToast = (message) => {
+  toast.dismiss(); // Dismiss all active toasts to prevent stacking
   toast.custom(
     (t) => (
       <div
@@ -74,6 +78,6 @@ export const showErrorToast = (message) => {
         <p className="text-xs font-bold text-slate-800 leading-snug flex-1">{message}</p>
       </div>
     ),
-    { duration: 4000 }
+    { id: 'app-error-toast', duration: 3500 }
   );
 };

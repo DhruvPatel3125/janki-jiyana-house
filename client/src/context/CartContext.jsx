@@ -1,16 +1,45 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { useAuth } from './AuthContext';
 
 const CartContext = createContext();
 
 export const CartProvider = ({ children }) => {
+  const { user } = useAuth();
+
+  // Helper to generate user-scoped localStorage key
+  const getCartKey = (u) => (u && u._id ? `cartItems_${u._id}` : 'cartItems_guest');
+
+  // Initialize cart state for current logged-in user or guest
   const [cartItems, setCartItems] = useState(() => {
-    const saved = localStorage.getItem('cartItems');
+    // Remove legacy un-scoped key if present
+    const legacySaved = localStorage.getItem('cartItems');
+    if (legacySaved) {
+      localStorage.removeItem('cartItems');
+    }
+    const currentUser = JSON.parse(localStorage.getItem('userInfo') || 'null');
+    const key = currentUser && currentUser._id ? `cartItems_${currentUser._id}` : 'cartItems_guest';
+    const saved = localStorage.getItem(key);
     return saved ? JSON.parse(saved) : [];
   });
 
+  const prevUserIdRef = useRef(user?._id);
+
+  // Sync and isolate cart items whenever active user changes (Login / Logout / Switch User)
   useEffect(() => {
-    localStorage.setItem('cartItems', JSON.stringify(cartItems));
-  }, [cartItems]);
+    const currentUserId = user?._id;
+    if (prevUserIdRef.current !== currentUserId) {
+      prevUserIdRef.current = currentUserId;
+      const key = getCartKey(user);
+      const saved = localStorage.getItem(key);
+      setCartItems(saved ? JSON.parse(saved) : []);
+    }
+  }, [user]);
+
+  // Persist active cart items under current user's scoped key
+  useEffect(() => {
+    const key = getCartKey(user);
+    localStorage.setItem(key, JSON.stringify(cartItems));
+  }, [cartItems, user]);
 
   const addToCart = (product, quantity = 1) => {
     setCartItems((prev) => {
@@ -27,7 +56,7 @@ export const CartProvider = ({ children }) => {
           {
             product: product._id,
             name: product.name,
-            image: product.images[0] || '',
+            image: product.images && product.images.length > 0 ? product.images[0] : '',
             price: product.price,
             stock: product.stock,
             quantity,
@@ -57,6 +86,8 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = () => {
     setCartItems([]);
+    const key = getCartKey(user);
+    localStorage.removeItem(key);
   };
 
   const totalItemsCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
@@ -80,3 +111,4 @@ export const CartProvider = ({ children }) => {
 };
 
 export const useCart = () => useContext(CartContext);
+

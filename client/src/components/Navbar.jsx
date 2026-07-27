@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { ShoppingBag, Search, User, Menu, X, ShieldCheck, PhoneCall, ChevronRight } from 'lucide-react';
+import { ShoppingBag, Search, User, Menu, X, ShieldCheck, PhoneCall, ChevronRight, MapPin, MessageCircle, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
 
 export const Navbar = () => {
   const { totalItemsCount } = useCart();
+  const { wishlistCount } = useWishlist();
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,54 +42,72 @@ export const Navbar = () => {
     }
   };
 
+  const storeAddress = "G-8-9 Apple Square, Near, Lajamni Chowk, Maruti Dham Society, Mota Varachha, Surat, Gujarat 394101, India.";
+  const shortAddress = "G-8-9 Apple Square, Near Lajamni Chowk, Mota Varachha, Surat - 394101";
+  const storePhone = "+91 98249 34361";
+  const whatsappUrl = "https://wa.me/919824934361?text=Hello%20Janki%20Jiyana%20House,%20I%20have%20an%20inquiry";
+
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-200/80">
-      {/* Top Banner Announcement Bar */}
-      <div className="bg-brand-600 text-white text-[11px] sm:text-xs py-1.5 px-3 sm:px-4">
-        <div className="max-w-7xl mx-auto flex items-center justify-between text-center font-medium">
-          <p className="flex items-center justify-center gap-1 mx-auto sm:mx-0 truncate">
-            <ShieldCheck className="w-3.5 h-3.5 shrink-0 text-teal-300" />
-            <span className="truncate">100% Plain Discreet Box & Fast COD Shipping</span>
-          </p>
-          <div className="hidden sm:flex items-center gap-4 font-semibold shrink-0">
-            <a href="tel:+919876543210" className="flex items-center gap-1 hover:underline">
-              <PhoneCall className="w-3 h-3" /> Call: +91 98765 43210
+      {/* Top Banner Announcement & Address Bar */}
+      <div className="bg-slate-900 text-white text-[11px] sm:text-xs py-1.5 px-4 sm:px-8 lg:px-12 border-b border-slate-800">
+        <div className="w-full mx-auto flex flex-wrap items-center justify-between gap-2">
+          {/* Address */}
+          <div className="flex items-center gap-1.5 text-slate-300 truncate max-w-full sm:max-w-2xl">
+            <MapPin className="w-3.5 h-3.5 shrink-0 text-brand-400" />
+            <span className="truncate text-[11px] font-medium" title={storeAddress}>
+              {shortAddress}
+            </span>
+          </div>
+
+          {/* Contact Details & WhatsApp */}
+          <div className="flex items-center gap-3 sm:gap-5 font-semibold text-[11px] shrink-0 ml-auto sm:ml-0">
+            <a
+              href="tel:+919824934361"
+              className="flex items-center gap-1 hover:text-brand-300 transition-colors"
+            >
+              <PhoneCall className="w-3 h-3 text-brand-400" /> Call: {storePhone}
             </a>
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="hidden sm:flex items-center gap-1 bg-emerald-600 hover:bg-emerald-500 text-white px-2.5 py-0.5 rounded-full transition-colors font-bold"
+            >
+              <MessageCircle className="w-3 h-3" /> WhatsApp
+            </a>
+            <span className="hidden md:inline-flex items-center gap-1 text-slate-400">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> 100% Plain Discreet Shipping
+            </span>
           </div>
         </div>
       </div>
 
       {/* Main Header Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 sm:h-20">
-          {/* Logo & Brand Name */}
-          <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
-            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-brand-600 to-teal-400 flex items-center justify-center text-white font-black text-base sm:text-xl shadow-md group-hover:scale-105 transition-transform">
-              JJ
-            </div>
-            <div>
-              <span className="font-black text-lg sm:text-2xl text-slate-900 tracking-tight block leading-tight">
-                Janki Jiyana <span className="text-brand-600">House</span>
-              </span>
-              <span className="text-[9px] sm:text-[10px] text-slate-500 font-semibold tracking-wider uppercase block -mt-0.5">
-                Baby Care & Hygiene Store
-              </span>
-            </div>
+      <div className="w-full mx-auto px-4 sm:px-8 lg:px-12">
+        <div className="flex items-center justify-between h-16 sm:h-20 gap-4 sm:gap-8">
+          {/* Logo Only (Text removed as it's already inside logo graphic) */}
+          <Link to="/" className="flex items-center group shrink-0 py-1">
+            <img
+              src="/logo.png"
+              alt="Janki Jiyana House Logo"
+              className="h-12 sm:h-16 lg:h-20 w-auto object-contain group-hover:scale-105 transition-transform duration-300"
+            />
           </Link>
 
           {/* Desktop Search Bar */}
-          <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-md mx-8 relative">
+          <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-xl relative mx-2">
             <input
               type="text"
-              placeholder="Search diapers, sanitary pads, baby wipes..."
+              placeholder="Search kids wear, toys, diapers, sanitary pads..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200/80 rounded-full py-2.5 pl-4 pr-10 text-xs focus:outline-none focus:border-brand-500 focus:bg-white transition-all shadow-inner"
+              className="w-full bg-slate-50 border border-slate-200/90 rounded-full py-2.5 pl-4 pr-10 text-xs font-medium focus:outline-none focus:border-brand-500 focus:bg-white transition-all shadow-inner"
             />
             <button
               type="submit"
               aria-label="Search"
-              className="absolute right-1.5 top-1.5 bg-brand-600 hover:bg-brand-700 text-white p-1.5 rounded-full transition-colors"
+              className="absolute right-1.5 top-1.5 bg-brand-600 hover:bg-brand-700 text-white p-1.5 rounded-full transition-colors shadow-sm"
             >
               <Search className="w-4 h-4" />
             </button>
@@ -95,18 +115,30 @@ export const Navbar = () => {
 
           {/* Desktop & Mobile Actions */}
           <div className="flex items-center gap-2 sm:gap-4">
+            {/* Quick Navigation Links */}
             <Link
               to="/shop"
-              className="hidden lg:inline-flex text-xs font-bold text-slate-700 hover:text-brand-600 transition-colors px-2 py-1"
+              className="hidden lg:inline-flex text-xs font-bold text-slate-700 hover:text-brand-600 transition-colors px-2.5 py-1"
             >
               All Products
             </Link>
             <Link
               to="/contact"
-              className="hidden lg:inline-flex text-xs font-bold text-slate-700 hover:text-brand-600 transition-colors px-2 py-1"
+              className="hidden lg:inline-flex text-xs font-bold text-slate-700 hover:text-brand-600 transition-colors px-2.5 py-1"
             >
               Contact Us
             </Link>
+
+            {/* Direct WhatsApp CTA Button */}
+            <a
+              href={whatsappUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="hidden sm:inline-flex items-center gap-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-bold px-3.5 py-2 rounded-xl transition-colors shadow-xs"
+            >
+              <MessageCircle className="w-4 h-4 text-emerald-600" />
+              <span>WhatsApp Order</span>
+            </a>
 
             {/* Auth status / Profile Dropdown */}
             {user ? (
@@ -149,6 +181,21 @@ export const Navbar = () => {
               </Link>
             )}
 
+            {/* Wishlist Button */}
+            <Link
+              to="/wishlist"
+              aria-label="My Wishlist"
+              title="My Wishlist"
+              className="relative bg-rose-50 hover:bg-rose-100 p-2 sm:p-2.5 rounded-2xl text-rose-600 transition-colors flex items-center gap-1.5"
+            >
+              <Heart className="w-5 h-5 sm:w-6 sm:h-6 fill-rose-500 text-rose-500" />
+              {wishlistCount > 0 && (
+                <span className="bg-rose-600 text-white text-[10px] sm:text-xs font-black w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center shadow-sm">
+                  {wishlistCount}
+                </span>
+              )}
+            </Link>
+
             {/* Shopping Cart Button */}
             <Link
               to="/cart"
@@ -179,7 +226,7 @@ export const Navbar = () => {
           <form onSubmit={handleSearchSubmit} className="relative">
             <input
               type="text"
-              placeholder="Search sanitary pads, diapers, wipes..."
+              placeholder="Search kids wear, toys, diapers, pads..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-slate-100/80 rounded-full py-2 pl-4 pr-10 text-xs focus:outline-none focus:bg-white border border-slate-200"
@@ -191,9 +238,36 @@ export const Navbar = () => {
         </div>
       </div>
 
+      {/* Sub-Header Navigation Links for Desktop */}
+      
+
       {/* Mobile Navigation Drawer */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-white border-t border-slate-100 px-4 py-5 space-y-4 shadow-2xl">
+          {/* Quick Contact Header in Drawer */}
+          <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200/80 space-y-2 text-xs">
+            <div className="flex items-start gap-2 text-slate-700">
+              <MapPin className="w-4 h-4 text-brand-600 shrink-0 mt-0.5" />
+              <p className="font-medium text-[11px] leading-tight">{storeAddress}</p>
+            </div>
+            <div className="flex items-center justify-between pt-2 border-t border-slate-200">
+              <a
+                href="tel:+919824934361"
+                className="flex items-center gap-1 text-slate-900 font-bold text-xs"
+              >
+                <PhoneCall className="w-3.5 h-3.5 text-brand-600" /> {storePhone}
+              </a>
+              <a
+                href={whatsappUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="flex items-center gap-1 bg-emerald-600 text-white font-bold text-[11px] px-3 py-1 rounded-full"
+              >
+                <MessageCircle className="w-3.5 h-3.5" /> WhatsApp
+              </a>
+            </div>
+          </div>
+
           <div className="space-y-1">
             <Link
               to="/"
@@ -255,3 +329,4 @@ export const Navbar = () => {
     </header>
   );
 };
+

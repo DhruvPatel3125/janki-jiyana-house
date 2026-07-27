@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Package, Clock, CheckCircle2, ChevronRight, ShoppingBag } from 'lucide-react';
+import { Package, Clock, CheckCircle2, ChevronRight, ShoppingBag, MessageCircle, XCircle } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -22,6 +22,12 @@ export const OrdersPage = () => {
     };
     if (user) fetchOrders();
   }, [user]);
+
+  const getWhatsAppCancelUrl = (order) => {
+    const itemsList = order.items.map((i) => `${i.name} (x${i.quantity})`).join(', ');
+    const text = `Hello Janki Jiyana House,%0A%0AI want to request *Cancellation / Return* for my order.%0A%0A*Order ID:* ${order._id}%0A*Items:* ${itemsList}%0A*Total Amount:* ₹${order.totalAmount}%0A*Payment:* ${order.paymentMethod}%0A%0APlease assist me with the cancellation/refund.`;
+    return `https://wa.me/919824934361?text=${text}`;
+  };
 
   if (!user) {
     return (
@@ -52,7 +58,7 @@ export const OrdersPage = () => {
       </div>
 
       {orders.length === 0 ? (
-        <div className="bg-white p-12 rounded-3xl border border-slate-100 text-center space-y-4">
+        <div className="bg-white p-12 rounded-3xl border border-slate-100 text-center space-y-4 shadow-sm">
           <Package className="w-12 h-12 text-slate-300 mx-auto" />
           <h3 className="text-lg font-bold text-slate-800">No Orders Placed Yet</h3>
           <p className="text-slate-500 text-sm">When you place orders, they will appear here with live status tracking.</p>
@@ -83,7 +89,13 @@ export const OrdersPage = () => {
                       year: 'numeric',
                     })}
                   </span>
-                  <span className="bg-emerald-50 text-emerald-700 font-bold px-2.5 py-0.5 rounded-full">
+                  <span
+                    className={`font-bold px-2.5 py-0.5 rounded-full ${
+                      order.status === 'Cancelled'
+                        ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                        : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                    }`}
+                  >
                     {order.status}
                   </span>
                 </div>
@@ -104,10 +116,25 @@ export const OrdersPage = () => {
                 ))}
               </div>
 
-              <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-                <span className="text-xs text-slate-500 font-medium">Payment: {order.paymentMethod}</span>
-                <div className="flex items-center gap-4">
-                  <span className="font-extrabold text-slate-900 text-sm">Total: ₹{order.totalAmount}</span>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-slate-100">
+                <span className="text-xs text-slate-500 font-medium">Payment Method: {order.paymentMethod}</span>
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="font-extrabold text-slate-900 text-sm mr-2">Total: ₹{order.totalAmount}</span>
+                  
+                  {/* WhatsApp Order Cancel / Return Request Button */}
+                  {order.status !== 'Cancelled' && (
+                    <a
+                      href={getWhatsAppCancelUrl(order)}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors"
+                      title="Cancel or Request Return on WhatsApp"
+                    >
+                      <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Cancel / Return</span>
+                    </a>
+                  )}
+
                   <Link
                     to={`/order-success/${order._id}`}
                     className="inline-flex items-center text-xs font-bold text-brand-600 hover:underline"

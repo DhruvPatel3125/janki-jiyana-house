@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { WishlistProvider } from './context/WishlistContext';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { OfflineBanner } from './components/OfflineBanner';
 import { Navbar } from './components/Navbar';
@@ -17,6 +18,7 @@ import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
 import { OrdersPage } from './pages/OrdersPage';
 import { ContactPage } from './pages/ContactPage';
+import { WishlistPage } from './pages/WishlistPage';
 
 // Admin imports
 import { AdminRoute } from './components/AdminRoute';
@@ -27,53 +29,59 @@ import { AdminCategories } from './pages/admin/AdminCategories';
 import { AdminOrders } from './pages/admin/AdminOrders';
 import { AdminUsers } from './pages/admin/AdminUsers';
 
+import { FloatingWhatsApp } from './components/FloatingWhatsApp';
+
 export function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <CartProvider>
-          <Router>
-            <OfflineBanner />
-            <Toaster position="top-center" reverseOrder={false} containerStyle={{ top: 20 }} />
-            <Routes>
-              {/* Protected Admin Section */}
-              <Route path="/admin" element={<AdminRoute />}>
-                <Route element={<AdminLayout />}>
-                  <Route index element={<AdminOverview />} />
-                  <Route path="products" element={<AdminProducts />} />
-                  <Route path="categories" element={<AdminCategories />} />
-                  <Route path="orders" element={<AdminOrders />} />
-                  <Route path="users" element={<AdminUsers />} />
+        <WishlistProvider>
+          <CartProvider>
+            <Router>
+              <OfflineBanner />
+              <Toaster position="top-center" reverseOrder={false} containerStyle={{ top: 20 }} toastOptions={{ maxToasts: 1 }} />
+              <FloatingWhatsApp />
+              <Routes>
+                {/* Protected Admin Section */}
+                <Route path="/admin" element={<AdminRoute />}>
+                  <Route element={<AdminLayout />}>
+                    <Route index element={<AdminOverview />} />
+                    <Route path="products" element={<AdminProducts />} />
+                    <Route path="categories" element={<AdminCategories />} />
+                    <Route path="orders" element={<AdminOrders />} />
+                    <Route path="users" element={<AdminUsers />} />
+                  </Route>
                 </Route>
-              </Route>
 
-              {/* Main Customer Storefront Section */}
-              <Route
-                path="*"
-                element={
-                  <div className="flex flex-col min-h-screen">
-                    <Navbar />
-                    <main className="flex-grow">
-                      <Routes>
-                        <Route path="/" element={<HomePage />} />
-                        <Route path="/shop" element={<ShopPage />} />
-                        <Route path="/product/:id" element={<ProductDetailPage />} />
-                        <Route path="/cart" element={<CartPage />} />
-                        <Route path="/checkout" element={<CheckoutPage />} />
-                        <Route path="/order-success/:id" element={<OrderSuccessPage />} />
-                        <Route path="/login" element={<LoginPage />} />
-                        <Route path="/register" element={<RegisterPage />} />
-                        <Route path="/orders" element={<OrdersPage />} />
-                        <Route path="/contact" element={<ContactPage />} />
-                      </Routes>
-                    </main>
-                    <Footer />
-                  </div>
-                }
-              />
-            </Routes>
-          </Router>
-        </CartProvider>
+                {/* Main Customer Storefront Section */}
+                <Route
+                  path="*"
+                  element={
+                    <div className="flex flex-col min-h-screen">
+                      <Navbar />
+                      <main className="flex-grow">
+                        <Routes>
+                          <Route path="/" element={<HomePage />} />
+                          <Route path="/shop" element={<ShopPage />} />
+                          <Route path="/product/:id" element={<ProductDetailPage />} />
+                          <Route path="/cart" element={<CartPage />} />
+                          <Route path="/checkout" element={<CheckoutPage />} />
+                          <Route path="/order-success/:id" element={<OrderSuccessPage />} />
+                          <Route path="/login" element={<LoginPage />} />
+                          <Route path="/register" element={<RegisterPage />} />
+                          <Route path="/orders" element={<OrdersPage />} />
+                          <Route path="/contact" element={<ContactPage />} />
+                          <Route path="/wishlist" element={<WishlistPage />} />
+                        </Routes>
+                      </main>
+                      <Footer />
+                    </div>
+                  }
+                />
+              </Routes>
+            </Router>
+          </CartProvider>
+        </WishlistProvider>
       </AuthProvider>
     </ErrorBoundary>
   );
