@@ -92,6 +92,33 @@ export const verifyOtpSchema = Joi.object({
   name: Joi.string().allow('').optional(),
 });
 
+// Product Schema (Create/Update)
+export const productSchema = Joi.object({
+  name: Joi.string().trim().required().messages({
+    'string.empty': 'Product name is required'
+  }),
+  category: Joi.string().trim().required().messages({
+    'string.empty': 'Category is required'
+  }),
+  price: Joi.number().min(0).required().messages({
+    'number.base': 'Price must be a valid number',
+    'number.min': 'Price cannot be negative',
+    'any.required': 'Product price is required'
+  }),
+  mrp: Joi.number().min(0).optional().allow(null, ''),
+  stock: Joi.number().integer().min(0).required().messages({
+    'number.base': 'Stock must be a valid number',
+    'number.min': 'Stock cannot be negative',
+    'any.required': 'Stock quantity is required'
+  }),
+  images: Joi.array().items(Joi.string().trim().allow('')).required(),
+  description: Joi.string().trim().required().messages({
+    'string.empty': 'Description is required'
+  }),
+  features: Joi.array().items(Joi.string().trim().allow('')).optional(),
+  isFeatured: Joi.boolean().optional(),
+});
+
 // Express Validation Middleware
 export const validateBody = (schema) => (req, res, next) => {
   const { error } = schema.validate(req.body, { abortEarly: false });

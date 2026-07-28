@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Sparkles, MessageCircle, ChevronLeft, ChevronRight, ShieldCheck, Heart, Flame, Sparkle } from 'lucide-react';
+import { ArrowRight, Sparkles, MessageCircle, ChevronLeft, ChevronRight, ShieldCheck, Heart, Flame, Sparkle, AlertCircle, RefreshCw } from 'lucide-react';
 import { api } from '../services/api';
 import { ProductCard } from '../components/ProductCard';
 import { TrustBadges } from '../components/TrustBadges';
@@ -12,6 +12,7 @@ export const HomePage = () => {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   // Carousel Slider State
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -86,6 +87,7 @@ export const HomePage = () => {
         setCategories(catsData);
       } catch (err) {
         console.error('Failed to load homepage data', err);
+        setError('Unable to connect to the server. Please check your internet connection or try again later.');
       } finally {
         setLoading(false);
       }
@@ -116,6 +118,24 @@ export const HomePage = () => {
       ref.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
     }
   };
+
+  if (error) {
+    return (
+      <div className="min-h-[60vh] flex flex-col items-center justify-center p-6 text-center space-y-4">
+        <div className="w-16 h-16 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center border border-rose-100 shadow-sm">
+          <AlertCircle className="w-8 h-8" />
+        </div>
+        <h2 className="text-2xl font-black text-slate-900">Oops! Something went wrong</h2>
+        <p className="text-slate-500 text-sm max-w-md mx-auto">{error}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white font-bold px-6 py-3 rounded-xl shadow-md transition-all active:scale-95 mt-2"
+        >
+          <RefreshCw className="w-4 h-4" /> Try Again
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-10 sm:space-y-16 pb-16">

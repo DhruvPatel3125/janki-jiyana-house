@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Filter, RefreshCw, ShoppingBag, Sparkles } from 'lucide-react';
+import { Search, Filter, RefreshCw, ShoppingBag, Sparkles, AlertCircle } from 'lucide-react';
 import { api } from '../services/api';
 import { ProductCard } from '../components/ProductCard';
 import { ProductSkeleton } from '../components/skeletons/ProductSkeleton';
@@ -17,6 +17,7 @@ export const ShopPage = () => {
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [sortBy, setSortBy] = useState('newest');
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   // Debounced search query (350ms) to eliminate unnecessary network requests while typing
   const debouncedSearch = useDebounce(searchQuery, 350);
@@ -30,6 +31,7 @@ export const ShopPage = () => {
         setCategories(names);
       } catch (err) {
         console.error('Failed to fetch dynamic categories', err);
+        setError('Failed to load shop categories.');
       }
     };
     fetchCategories();
@@ -50,8 +52,10 @@ export const ShopPage = () => {
 
       const data = await api.getProducts(params);
       setProducts(data);
+      setError('');
     } catch (err) {
       console.error('Failed to fetch products', err);
+      setError('Unable to fetch products. Please check your internet connection or try again.');
     } finally {
       setLoading(false);
     }
@@ -146,7 +150,21 @@ export const ShopPage = () => {
       </div>
 
       {/* Product Grid */}
-      {loading ? (
+      {error ? (
+        <div className="bg-rose-50 rounded-3xl p-12 text-center border border-rose-200 shadow-sm space-y-4 max-w-md mx-auto">
+          <div className="w-16 h-16 bg-white text-rose-600 rounded-2xl flex items-center justify-center mx-auto border border-rose-100 shadow-sm">
+            <AlertCircle className="w-8 h-8" />
+          </div>
+          <p className="text-slate-900 font-black text-xl">Something went wrong</p>
+          <p className="text-slate-600 text-sm">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="inline-flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white text-xs font-bold px-5 py-2.5 rounded-xl shadow-md transition-all"
+          >
+            <RefreshCw className="w-3.5 h-3.5" /> Try Again
+          </button>
+        </div>
+      ) : loading ? (
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 items-stretch">
           {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
             <ProductSkeleton key={n} />

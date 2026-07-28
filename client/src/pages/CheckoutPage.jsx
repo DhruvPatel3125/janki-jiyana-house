@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ShieldCheck, Truck, Banknote, CreditCard, Lock, CheckCircle2, MailCheck, X, AlertCircle, ShieldAlert } from 'lucide-react';
 import { useCart } from '../context/CartContext';
@@ -11,6 +11,7 @@ export const CheckoutPage = () => {
   const { cartItems, cartSubtotal, clearCart } = useCart();
   const { user, sendOtp, verifyOtp } = useAuth();
   const navigate = useNavigate();
+  const idempotencyKeyRef = useRef(crypto.randomUUID());
 
   const [formData, setFormData] = useState({
     name: user?.name || '',
@@ -106,7 +107,7 @@ export const CheckoutPage = () => {
       })),
     };
 
-    const createdOrder = await api.createOrder(orderPayload);
+    const createdOrder = await api.createOrder(orderPayload, idempotencyKeyRef.current);
     clearCart();
     showSuccessToast('Order placed successfully! Thank you for shopping with us.');
     navigate(`/order-success/${createdOrder._id}`);

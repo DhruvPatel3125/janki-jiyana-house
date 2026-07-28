@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import Order from '../models/Order.js';
 import Product from '../models/Product.js';
 import User from '../models/User.js';
@@ -6,14 +7,28 @@ import { sendOrderConfirmationEmail } from '../config/nodemailer.js';
 // @desc    Create new order
 // @route   POST /api/orders
 export const createOrder = async (req, res, next) => {
+  const idempotencyKey = req.headers['x-idempotency-key'];
+  if (idempotencyKey) {
+    const existingOrder = await Order.findOne({ idempotencyKey });
+    if (existingOrder) {
+      return res.status(409).json({ message: 'Order has already been processed' });
+    }
+  }
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
   try {
     const { items, shippingAddress, paymentMethod, guestInfo } = req.body;
 
     if (!items || items.length === 0) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(400).json({ message: 'No order items specified' });
     }
 
     if (!shippingAddress || !shippingAddress.street || !shippingAddress.city || !shippingAddress.zipCode) {
+      await session.abortTransaction();
+      session.endSession();
       return res.status(400).json({ message: 'Shipping address details are incomplete' });
     }
 
@@ -22,12 +37,22 @@ export const createOrder = async (req, res, next) => {
     const orderItems = [];
 
     for (const item of items) {
-      const product = await Product.findById(item.product);
+      if (item.quantity <= 0) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(400).json({ message: `Invalid quantity for product` });
+      }
+
+      const product = await Product.findById(item.product).session(session);
       if (!product) {
+        await session.abortTransaction();
+        session.endSession();
         return res.status(404).json({ message: `Product ${item.product} not found` });
       }
 
       if (product.stock < item.quantity) {
+        await session.abortTransaction();
+        session.endSession();
         return res.status(400).json({ message: `Insufficient stock for product: ${product.name}` });
       }
 
@@ -44,7 +69,7 @@ export const createOrder = async (req, res, next) => {
 
       // Deduct stock quantity
       product.stock -= item.quantity;
-      await product.save();
+      await product.save({ session });
     }
 
     const order = new Order({
@@ -56,9 +81,13 @@ export const createOrder = async (req, res, next) => {
       totalAmount,
       isPaid: paymentMethod === 'Online' || paymentMethod === 'Razorpay',
       paidAt: paymentMethod === 'Online' || paymentMethod === 'Razorpay' ? Date.now() : undefined,
+      idempotencyKey,
     });
 
-    const createdOrder = await order.save();
+    const createdOrder = await order.save({ session });
+
+    await session.commitTransaction();
+    session.endSession();
 
     // Trigger async order confirmation email to customer & admin
     const recipientEmail = req.user?.email || guestInfo?.email || shippingAddress?.email;
@@ -70,6 +99,14 @@ export const createOrder = async (req, res, next) => {
 
     res.status(201).json(createdOrder);
   } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    
+    // Catch duplicate key error if a concurrent request with the same idempotency key attempts to save simultaneously
+    if (error.code === 11000 && error.keyPattern && error.keyPattern.idempotencyKey) {
+      return res.status(409).json({ message: 'Order has already been processed' });
+    }
+    
     next(error);
   }
 };

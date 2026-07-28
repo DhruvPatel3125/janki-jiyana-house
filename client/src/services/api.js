@@ -80,6 +80,15 @@ export const api = {
     return handleResponse(res, 'Failed to create category');
   },
 
+  async updateCategory(id, categoryData) {
+    const res = await fetch(`${API_BASE}/categories/${id}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(categoryData),
+    });
+    return handleResponse(res, 'Failed to update category');
+  },
+
   async deleteCategory(id) {
     const res = await fetch(`${API_BASE}/categories/${id}`, {
       method: 'DELETE',
@@ -156,10 +165,14 @@ export const api = {
   },
 
   // Orders
-  async createOrder(orderData) {
+  async createOrder(orderData, idempotencyKey) {
+    const headers = getHeaders();
+    if (idempotencyKey) {
+      headers['X-Idempotency-Key'] = idempotencyKey;
+    }
     const res = await fetch(`${API_BASE}/orders`, {
       method: 'POST',
-      headers: getHeaders(),
+      headers,
       body: JSON.stringify(orderData),
     });
     return handleResponse(res, 'Failed to place order');

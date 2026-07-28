@@ -68,6 +68,37 @@ export const createCategory = async (req, res, next) => {
   }
 };
 
+// @desc    Update category (admin)
+// @route   PUT /api/categories/:id
+export const updateCategory = async (req, res, next) => {
+  try {
+    const category = await Category.findById(req.params.id);
+    if (category) {
+      if (req.body.name) {
+        const trimmedName = req.body.name.trim();
+        // Check if another category exists with this name
+        if (trimmedName.toLowerCase() !== category.name.toLowerCase()) {
+          const existing = await Category.findOne({ name: { $regex: new RegExp(`^${trimmedName}$`, 'i') } });
+          if (existing) {
+            return res.status(400).json({ message: 'Category with this name already exists' });
+          }
+        }
+        category.name = trimmedName;
+      }
+      
+      category.description = req.body.description !== undefined ? req.body.description : category.description;
+      category.image = req.body.image !== undefined ? req.body.image : category.image;
+
+      const updatedCategory = await category.save();
+      res.json(updatedCategory);
+    } else {
+      res.status(404).json({ message: 'Category not found' });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Delete category (admin)
 // @route   DELETE /api/categories/:id
 export const deleteCategory = async (req, res, next) => {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Trash2, FolderTree, Package, Search, Sparkles, Image as ImageIcon } from 'lucide-react';
+import { Plus, Trash2, FolderTree, Package, Search, Sparkles, Image as ImageIcon, Upload, Edit2, X } from 'lucide-react';
 import { api } from '../../services/api';
 import { showSuccessToast, showErrorToast } from '../../utils/toast';
 import { useConfirm } from '../../context/ConfirmContext';
@@ -17,6 +17,8 @@ export const AdminCategories = () => {
   const [image, setImage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [editingCategory, setEditingCategory] = useState(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
 
   useEffect(() => {
     fetchData();
@@ -35,29 +37,86 @@ export const AdminCategories = () => {
     }
   };
 
-  const handleCreateCategory = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!name.trim()) return;
     setSubmitting(true);
     setError('');
 
     try {
-      const created = await api.createCategory({
+      let finalImage = image.trim();
+      if (!finalImage) {
+        const PLACEHOLDERS = [
+          'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600',
+          'https://images.unsplash.com/photo-1518444065439-e91be1e541ce?w=600',
+          'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600',
+          'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600',
+          'https://images.unsplash.com/photo-1556228578-0d85b1a4d571?w=600',
+          'https://images.unsplash.com/photo-1572227494541-61cfcb7f10b7?w=600'
+        ];
+        finalImage = PLACEHOLDERS[Math.floor(Math.random() * PLACEHOLDERS.length)];
+      }
+
+      const payload = {
         name: name.trim(),
         description: description.trim(),
-        image: image.trim(),
-      });
-      setCategories([...categories, created]);
+        image: finalImage,
+      };
+
+      if (editingCategory) {
+        const updated = await api.updateCategory(editingCategory._id, payload);
+        setCategories(categories.map(c => c._id === editingCategory._id ? updated : c));
+        showSuccessToast(`Category "${updated.name}" updated successfully!`);
+        setEditingCategory(null);
+      } else {
+        const created = await api.createCategory(payload);
+        setCategories([...categories, created]);
+        showSuccessToast(`Category "${created.name}" created successfully!`);
+      }
+      
       setName('');
       setDescription('');
       setImage('');
-      showSuccessToast(`Category "${created.name}" created successfully!`);
     } catch (err) {
-      const msg = err.message || 'Failed to create category';
+      const msg = err.message || 'Failed to save category';
       setError(msg);
       showErrorToast(msg);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleEditCategory = (cat) => {
+    setEditingCategory(cat);
+    setName(cat.name);
+    setDescription(cat.description || '');
+    setImage(cat.image || '');
+    setError('');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCategory(null);
+    setName('');
+    setDescription('');
+    setImage('');
+    setError('');
+  };
+
+  const uploadFileHandler = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    setUploadingImage(true);
+    try {
+      const data = await api.uploadFile(file);
+      setImage(data.imageUrl);
+      showSuccessToast('Image uploaded successfully');
+    } catch (err) {
+      showErrorToast(err.message || 'Image upload failed');
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
     }
   };
 
@@ -109,12 +168,19 @@ export const AdminCategories = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Add Category Form Card */}
         <div className="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-md space-y-5 h-fit">
-          <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2 border-b border-slate-100 pb-3">
-            <div className="w-8 h-8 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center border border-teal-100">
-              <Plus className="w-4 h-4" />
-            </div>
-            Create New Category
-          </h3>
+          <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center border border-teal-100">
+                {editingCategory ? <Edit2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+              </div>
+              {editingCategory ? 'Edit Category' : 'Create New Category'}
+            </h3>
+            {editingCategory && (
+              <button onClick={handleCancelEdit} type="button" className="p-1.5 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition-colors">
+                <X className="w-4 h-4" />
+              </button>
+            )}
+          </div>
 
           {error && (
             <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-2xl text-xs font-semibold">
@@ -122,7 +188,7 @@ export const AdminCategories = () => {
             </div>
           )}
 
-          <form onSubmit={handleCreateCategory} className="space-y-4 text-xs">
+          <form onSubmit={handleSubmit} className="space-y-4 text-xs">
             <div>
               <label className="block font-bold text-slate-700 mb-1">Category Name *</label>
               <input
@@ -147,12 +213,23 @@ export const AdminCategories = () => {
             </div>
 
             <div>
-              <label className="block font-bold text-slate-700 mb-1">Image URL (Optional)</label>
+              <div className="flex items-center justify-between mb-1">
+                <label className="block font-bold text-slate-700">Image URL</label>
+                <label className="cursor-pointer text-teal-600 hover:text-teal-700 font-bold text-[11px] flex items-center gap-1 bg-teal-50 hover:bg-teal-100 px-3 py-1.5 rounded-lg transition-colors">
+                  {uploadingImage ? (
+                    <div className="w-3 h-3 border-2 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <Upload className="w-3 h-3" />
+                  )}
+                  {uploadingImage ? 'Uploading...' : 'Upload Image'}
+                  <input type="file" onChange={uploadFileHandler} className="hidden" accept="image/jpeg, image/png, image/webp" />
+                </label>
+              </div>
               <input
                 type="url"
                 value={image}
                 onChange={(e) => setImage(e.target.value)}
-                placeholder="https://images.unsplash.com/..."
+                placeholder="https://images.unsplash.com/... or click Upload"
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-mono text-[11px] focus:outline-none focus:border-teal-500"
               />
             </div>
@@ -174,7 +251,7 @@ export const AdminCategories = () => {
               disabled={submitting}
               className="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3.5 rounded-xl shadow-md transition-all text-xs flex items-center justify-center gap-2 active:scale-95"
             >
-              {submitting ? 'Creating Category...' : 'Add Category'}
+              {submitting ? 'Saving...' : editingCategory ? 'Update Category' : 'Add Category'}
             </button>
           </form>
         </div>
@@ -237,13 +314,22 @@ export const AdminCategories = () => {
                       </div>
 
                       {cat._id && (
-                        <button
-                          onClick={() => handleDeleteCategory(cat._id, cat.name)}
-                          className="text-slate-400 hover:text-rose-600 p-1.5 rounded-xl hover:bg-rose-50 transition-colors shrink-0"
-                          title="Delete Category"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleEditCategory(cat)}
+                            className="text-slate-400 hover:text-teal-600 p-1.5 rounded-xl hover:bg-teal-50 transition-colors shrink-0"
+                            title="Edit Category"
+                          >
+                            <Edit2 className="w-4 h-4" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCategory(cat._id, cat.name)}
+                            className="text-slate-400 hover:text-rose-600 p-1.5 rounded-xl hover:bg-rose-50 transition-colors shrink-0"
+                            title="Delete Category"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
                       )}
                     </div>
 
