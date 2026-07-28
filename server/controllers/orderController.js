@@ -183,11 +183,7 @@ export const updateOrderStatus = async (req, res, next) => {
         prevStatus !== 'Cancelled' && prevStatus !== 'Return Requested'
       ) {
         for (const item of order.items) {
-          const product = await Product.findById(item.product);
-          if (product) {
-            product.stock += item.quantity;
-            await product.save();
-          }
+          await Product.updateOne({ _id: item.product }, { $inc: { stock: item.quantity } });
         }
       }
 
@@ -225,11 +221,7 @@ export const requestCancelOrReturn = async (req, res, next) => {
 
     // Restore stock
     for (const item of order.items) {
-      const product = await Product.findById(item.product);
-      if (product) {
-        product.stock += item.quantity;
-        await product.save();
-      }
+      await Product.updateOne({ _id: item.product }, { $inc: { stock: item.quantity } });
     }
 
     const updatedOrder = await order.save();
