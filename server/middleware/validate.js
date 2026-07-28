@@ -1,6 +1,33 @@
 import Joi from 'joi';
 import { parsePhoneNumberWithError } from 'libphonenumber-js';
 
+// List of allowed genuine email providers for D2C customers
+const allowedEmailDomains = [
+  'gmail.com',
+  'yahoo.com',
+  'yahoo.co.in',
+  'hotmail.com',
+  'outlook.com',
+  'icloud.com',
+  'protonmail.com',
+  'rediffmail.com',
+  'aol.com',
+  'ymail.com',
+  'live.com',
+  'msn.com'
+];
+
+// Custom email validator to enforce genuine emails only
+const emailValidator = (value, helpers) => {
+  if (!value) return value;
+  const domain = value.split('@')[1]?.toLowerCase();
+  
+  if (!domain || !allowedEmailDomains.includes(domain)) {
+    return helpers.error('email.disposable');
+  }
+  return value;
+};
+
 // Custom phone validator extension using libphonenumber-js and TRAI regulations
 const phoneValidator = (value, helpers) => {
   if (!value) return value;
@@ -45,9 +72,10 @@ export const registerSchema = Joi.object({
     'string.empty': 'Full Name is required',
     'string.min': 'Full Name must be at least 2 characters long',
   }),
-  email: Joi.string().email().trim().required().messages({
+  email: Joi.string().email().trim().required().custom(emailValidator).messages({
     'string.empty': 'Email address is required',
     'string.email': 'Please enter a valid email address',
+    'email.disposable': 'Temporary or disposable email addresses are not allowed. Please use a genuine email.',
   }),
   phone: Joi.string().required().custom(phoneValidator).messages({
     'string.empty': 'Mobile number is required',
@@ -73,17 +101,19 @@ export const loginSchema = Joi.object({
 
 // Send OTP Schema
 export const sendOtpSchema = Joi.object({
-  email: Joi.string().email().trim().required().messages({
+  email: Joi.string().email().trim().required().custom(emailValidator).messages({
     'string.empty': 'Email address is required to receive OTP',
     'string.email': 'Please enter a valid email address',
+    'email.disposable': 'Temporary emails cannot be used for OTP verification. Please use a genuine email.',
   }),
   phone: Joi.string().allow('').optional(),
 });
 
 // Verify OTP Schema
 export const verifyOtpSchema = Joi.object({
-  email: Joi.string().email().trim().required().messages({
+  email: Joi.string().email().trim().required().custom(emailValidator).messages({
     'string.empty': 'Email address is required',
+    'email.disposable': 'Temporary emails are not allowed.',
   }),
   otp: Joi.string().length(6).required().messages({
     'string.empty': '6-digit OTP code is required',

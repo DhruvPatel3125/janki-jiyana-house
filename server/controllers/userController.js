@@ -71,11 +71,20 @@ export const loginUser = async (req, res, next) => {
       return res.status(400).json({ message: 'Please enter email/phone and password' });
     }
 
+    // Create variations of phone number to match how it might have been saved
+    const cleanPhone = identifier.replace(/\D/g, '').slice(-10);
+
     // Search user by email or phone
     const user = await User.findOne({
       $or: [
         { email: identifier.toLowerCase() },
         { phone: identifier },
+        ...(cleanPhone.length === 10 ? [
+          { phone: cleanPhone },
+          { phone: `+91${cleanPhone}` },
+          { phone: `+91 ${cleanPhone}` },
+          { phone: `91${cleanPhone}` }
+        ] : [])
       ],
     });
 

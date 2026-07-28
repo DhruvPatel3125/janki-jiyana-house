@@ -46,7 +46,7 @@ export const LoginPage = () => {
     try {
       const userData = await login(identifier, password);
       showSuccessToast('Logged in successfully! Welcome back.');
-      
+
       // If the user is an admin, always redirect to /admin
       if (userData.role === 'admin') {
         navigate('/admin');
@@ -94,11 +94,10 @@ export const LoginPage = () => {
                   if (fieldErrors.identifier) setFieldErrors({ ...fieldErrors, identifier: '' });
                 }}
                 placeholder="Enter email or mobile number"
-                className={`w-full border rounded-xl p-3 pl-10 text-xs sm:text-sm font-medium focus:outline-none transition-all ${
-                  fieldErrors.identifier
+                className={`w-full border rounded-xl p-3 pl-10 text-xs sm:text-sm font-medium focus:outline-none transition-all ${fieldErrors.identifier
                     ? 'border-rose-400 bg-rose-50/20 focus:border-rose-500'
                     : 'border-slate-200 bg-slate-50 focus:border-brand-500'
-                }`}
+                  }`}
               />
               <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
             </div>
@@ -121,11 +120,10 @@ export const LoginPage = () => {
                   if (fieldErrors.password) setFieldErrors({ ...fieldErrors, password: '' });
                 }}
                 placeholder="Enter your password"
-                className={`w-full border rounded-xl p-3 pl-10 pr-10 text-xs sm:text-sm font-medium focus:outline-none transition-all ${
-                  fieldErrors.password
+                className={`w-full border rounded-xl p-3 pl-10 pr-10 text-xs sm:text-sm font-medium focus:outline-none transition-all ${fieldErrors.password
                     ? 'border-rose-400 bg-rose-50/20 focus:border-rose-500'
                     : 'border-slate-200 bg-slate-50 focus:border-brand-500'
-                }`}
+                  }`}
               />
               <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
               <button

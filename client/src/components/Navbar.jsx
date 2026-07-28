@@ -239,7 +239,7 @@ export const Navbar = () => {
       </div>
 
       {/* Sub-Header Navigation Links for Desktop */}
-      
+
 
       {/* Mobile Navigation Drawer */}
       {mobileMenuOpen && (

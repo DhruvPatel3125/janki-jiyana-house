@@ -23,10 +23,28 @@ export const OrdersPage = () => {
     if (user) fetchOrders();
   }, [user]);
 
-  const getWhatsAppCancelUrl = (order) => {
+  const getWhatsAppActionUrl = (order) => {
+    const isShipped = order.status === 'Shipped' || order.status === 'Delivered';
+    const actionType = isShipped ? 'Return' : 'Cancellation';
     const itemsList = order.items.map((i) => `${i.name} (x${i.quantity})`).join(', ');
-    const text = `Hello Janki Jiyana House,%0A%0AI want to request *Cancellation / Return* for my order.%0A%0A*Order ID:* ${order._id}%0A*Items:* ${itemsList}%0A*Total Amount:* ₹${order.totalAmount}%0A*Payment:* ${order.paymentMethod}%0A%0APlease assist me with the cancellation/refund.`;
+    const text = `Hello Janki Jiyana House,%0A%0AI want to request a *${actionType}* for my order.%0A%0A*Order ID:* ${order._id}%0A*Items:* ${itemsList}%0A*Total Amount:* ₹${order.totalAmount}%0A*Payment:* ${order.paymentMethod}%0A%0APlease assist me with the ${actionType.toLowerCase()}.`;
     return `https://wa.me/919824934361?text=${text}`;
+  };
+
+  const handleCancelOrReturn = async (order) => {
+    try {
+      // Open WhatsApp first so the browser doesn't block the popup during async await
+      const url = getWhatsAppActionUrl(order);
+      window.open(url, '_blank');
+      
+      // Update DB
+      const updatedOrder = await api.requestCancelOrReturn(order._id);
+      
+      // Update local state
+      setOrders(orders.map((o) => (o._id === order._id ? updatedOrder : o)));
+    } catch (err) {
+      console.error('Failed to update order status', err);
+    }
   };
 
   if (!user) {
@@ -90,11 +108,10 @@ export const OrdersPage = () => {
                     })}
                   </span>
                   <span
-                    className={`font-bold px-2.5 py-0.5 rounded-full ${
-                      order.status === 'Cancelled'
+                    className={`font-bold px-2.5 py-0.5 rounded-full ${order.status === 'Cancelled'
                         ? 'bg-rose-50 text-rose-700 border border-rose-200'
                         : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                    }`}
+                      }`}
                   >
                     {order.status}
                   </span>
@@ -120,19 +137,17 @@ export const OrdersPage = () => {
                 <span className="text-xs text-slate-500 font-medium">Payment Method: {order.paymentMethod}</span>
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="font-extrabold text-slate-900 text-sm mr-2">Total: ₹{order.totalAmount}</span>
-                  
+
                   {/* WhatsApp Order Cancel / Return Request Button */}
-                  {order.status !== 'Cancelled' && (
-                    <a
-                      href={getWhatsAppCancelUrl(order)}
-                      target="_blank"
-                      rel="noreferrer"
+                  {order.status !== 'Cancelled' && order.status !== 'Return Requested' && (
+                    <button
+                      onClick={() => handleCancelOrReturn(order)}
                       className="inline-flex items-center gap-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors"
-                      title="Cancel or Request Return on WhatsApp"
+                      title={order.status === 'Shipped' || order.status === 'Delivered' ? 'Request Return on WhatsApp' : 'Cancel Order on WhatsApp'}
                     >
                       <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>Cancel / Return</span>
-                    </a>
+                      <span>{order.status === 'Shipped' || order.status === 'Delivered' ? 'Return Order' : 'Cancel Order'}</span>
+                    </button>
                   )}
 
                   <Link

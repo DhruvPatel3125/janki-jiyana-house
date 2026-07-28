@@ -74,43 +74,43 @@ export const TrendingVideosSection = () => {
         {loading
           ? [1, 2, 3, 4].map((idx) => <VideoSkeleton key={idx} />)
           : videos.map((video) => (
-          <div
-            key={video._id}
-            className="snap-start flex-shrink-0 w-[240px] sm:w-[270px] aspect-[9/16] bg-slate-900 rounded-3xl overflow-hidden shadow-xl border-4 border-white relative group transition-transform duration-300 hover:scale-[1.02]"
-          >
-            {/* Embedded YouTube Shorts Player */}
-            <iframe
-              src={`https://www.youtube.com/embed/${video.youtubeId}?rel=0&modestbranding=1&enablejsapi=1`}
-              title={video.title}
-              className="w-full h-full object-cover rounded-2xl"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-              loading="lazy"
-            />
+            <div
+              key={video._id}
+              className="snap-start flex-shrink-0 w-[240px] sm:w-[270px] aspect-[9/16] bg-slate-900 rounded-3xl overflow-hidden shadow-xl border-4 border-white relative group transition-transform duration-300 hover:scale-[1.02]"
+            >
+              {/* Embedded YouTube Shorts Player */}
+              <iframe
+                src={`https://www.youtube.com/embed/${video.youtubeId}?rel=0&modestbranding=1&enablejsapi=1`}
+                title={video.title}
+                className="w-full h-full object-cover rounded-2xl"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                loading="lazy"
+              />
 
-            {/* Top Channel Header Pill Overlay */}
-            <div className="absolute top-3 left-3 right-3 pointer-events-none z-10 flex items-center gap-2 bg-black/60 backdrop-blur-md p-2 rounded-2xl border border-white/20">
-              <div className="w-7 h-7 rounded-xl bg-brand-600 text-white flex items-center justify-center font-black text-xs shrink-0 shadow-sm">
-                JJ
+              {/* Top Channel Header Pill Overlay */}
+              <div className="absolute top-3 left-3 right-3 pointer-events-none z-10 flex items-center gap-2 bg-black/60 backdrop-blur-md p-2 rounded-2xl border border-white/20">
+                <div className="w-7 h-7 rounded-xl bg-brand-600 text-white flex items-center justify-center font-black text-xs shrink-0 shadow-sm">
+                  JJ
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-[11px] font-extrabold text-white truncate leading-tight">
+                    {video.channelName || 'Janki Jiyana House'}
+                  </p>
+                  <p className="text-[9px] text-teal-300 font-bold uppercase tracking-wider">
+                    Official Channel
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[11px] font-extrabold text-white truncate leading-tight">
-                  {video.channelName || 'Janki Jiyana House'}
-                </p>
-                <p className="text-[9px] text-teal-300 font-bold uppercase tracking-wider">
-                  Official Channel
+
+              {/* Bottom Title Overlay */}
+              <div className="absolute bottom-0 left-0 right-0 pointer-events-none z-10 p-3 bg-gradient-to-t from-black/90 via-black/50 to-transparent pt-8">
+                <p className="text-xs font-bold text-white line-clamp-2 leading-snug drop-shadow-sm">
+                  {video.title}
                 </p>
               </div>
             </div>
-
-            {/* Bottom Title Overlay */}
-            <div className="absolute bottom-0 left-0 right-0 pointer-events-none z-10 p-3 bg-gradient-to-t from-black/90 via-black/50 to-transparent pt-8">
-              <p className="text-xs font-bold text-white line-clamp-2 leading-snug drop-shadow-sm">
-                {video.title}
-              </p>
-            </div>
-          </div>
-        ))}
+          ))}
       </div>
     </section>
   );

@@ -182,7 +182,7 @@ export const AdminOverview = () => {
       {/* GRAPHS SECTION */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 1. Revenue Growth Area Chart (Spans 2 Columns) */}
-        <div className="lg:col-span-2 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
+        <div className="lg:col-span-2 bg-white p-4 sm:p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4 min-w-0">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2">
@@ -223,7 +223,7 @@ export const AdminOverview = () => {
         </div>
 
         {/* 2. Category Distribution Donut Chart */}
-        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4 flex flex-col justify-between">
+        <div className="bg-white p-4 sm:p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4 flex flex-col justify-between min-w-0">
           <div>
             <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2">
               <PieIcon className="w-5 h-5 text-brand-600" /> Category Breakdown
@@ -258,7 +258,7 @@ export const AdminOverview = () => {
       {/* Bar Chart & Order Fulfillment Breakdown */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Order Status Bar Chart */}
-        <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4 lg:col-span-1">
+        <div className="bg-white p-4 sm:p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4 lg:col-span-1 min-w-0">
           <div>
             <h3 className="font-extrabold text-slate-900 text-base flex items-center gap-2">
               <BarChart3 className="w-5 h-5 text-sky-600" /> Order Status Distribution
@@ -284,7 +284,7 @@ export const AdminOverview = () => {
         </div>
 
         {/* Recent Customer Orders Section */}
-        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-6 lg:col-span-2">
+        <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-4 sm:p-6 space-y-6 lg:col-span-2 min-w-0">
           <div className="flex items-center justify-between">
             <div>
               <h3 className="font-extrabold text-slate-900 text-base">Recent Customer Orders</h3>
@@ -298,7 +298,8 @@ export const AdminOverview = () => {
             </Link>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-xs border-collapse">
               <thead>
                 <tr className="border-b border-slate-100 text-slate-400 font-bold uppercase tracking-wider text-[10px]">
@@ -318,7 +319,7 @@ export const AdminOverview = () => {
                       <td className="py-3.5 px-3 font-mono font-bold text-slate-900">
                         {order._id.substring(order._id.length - 8)}
                       </td>
-                      <td className="py-3.5 px-3 font-extrabold text-slate-900">
+                      <td className="py-3.5 px-3 font-extrabold text-slate-900 truncate max-w-[120px]">
                         {getCustomerDisplayName(order)}
                       </td>
                       <td className="py-3.5 px-3 font-medium">{order.items?.length || 0} items</td>
@@ -354,6 +355,55 @@ export const AdminOverview = () => {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Mobile Cards View */}
+          <div className="grid grid-cols-1 gap-4 md:hidden">
+            {stats?.recentOrders && stats.recentOrders.length > 0 ? (
+              stats.recentOrders.map((order) => (
+                <div key={order._id} className="bg-slate-50 border border-slate-100 p-4 rounded-2xl flex flex-col gap-3">
+                  <div className="flex items-center justify-between border-b border-slate-200/60 pb-2">
+                    <span className="font-mono font-bold text-slate-900 text-xs">#{order._id.substring(order._id.length - 8)}</span>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        order.status === 'Delivered'
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : order.status === 'Shipped'
+                          ? 'bg-sky-100 text-sky-800'
+                          : 'bg-amber-100 text-amber-800'
+                      }`}
+                    >
+                      {order.status}
+                    </span>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div>
+                      <p className="text-slate-400 font-semibold text-[10px] uppercase">Customer</p>
+                      <p className="font-extrabold text-slate-900 truncate">{getCustomerDisplayName(order)}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-slate-400 font-semibold text-[10px] uppercase">Date</p>
+                      <p className="font-medium text-slate-700">
+                        {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-slate-400 font-semibold text-[10px] uppercase">Items</p>
+                      <p className="font-medium text-slate-700">{order.items?.length || 0} items</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-slate-400 font-semibold text-[10px] uppercase">Amount</p>
+                      <p className="font-bold text-slate-900">₹{order.totalAmount} ({order.paymentMethod})</p>
+                    </div>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="py-6 text-center text-slate-400 text-xs font-semibold">
+                No orders recorded yet.
+              </div>
+            )}
           </div>
         </div>
       </div>

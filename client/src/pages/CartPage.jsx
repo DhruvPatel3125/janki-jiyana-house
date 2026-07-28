@@ -15,7 +15,7 @@ export const CartPage = () => {
       showErrorToast('Please log in or verify your email to proceed to checkout');
       navigate('/login', { state: { from: '/checkout' } });
     } else {
-    navigate('/checkout');
+      navigate('/checkout');
     }
   };
 

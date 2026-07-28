@@ -28,13 +28,13 @@ app.use(express.json());
 // Rate Limiting
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 150, // Limit each IP to 150 requests per windowMs
+  max: 300, // Limit each IP to 150 requests per windowMs
   message: { message: 'Too many requests from this IP, please try again after 15 minutes' },
 });
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 10, // Limit each IP to 10 requests per windowMs
+  max: 15, // Limit each IP to 10 requests per windowMs
   message: { message: 'Too many authentication attempts, please try again later' },
 });
 

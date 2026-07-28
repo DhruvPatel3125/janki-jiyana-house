@@ -117,11 +117,10 @@ export const RegisterPage = () => {
                 value={formData.name}
                 onChange={handleChange}
                 placeholder="Enter full name"
-                className={`w-full border rounded-xl p-3 pl-10 text-xs sm:text-sm focus:outline-none transition-all ${
-                  fieldErrors.name
+                className={`w-full border rounded-xl p-3 pl-10 text-xs sm:text-sm focus:outline-none transition-all ${fieldErrors.name
                     ? 'border-rose-400 bg-rose-50/20 focus:border-rose-500'
                     : 'border-slate-200 bg-slate-50 focus:border-brand-500'
-                }`}
+                  }`}
               />
               <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
             </div>
@@ -142,11 +141,10 @@ export const RegisterPage = () => {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="name@example.com"
-                className={`w-full border rounded-xl p-3 pl-10 text-xs sm:text-sm font-semibold focus:outline-none transition-all ${
-                  fieldErrors.email
+                className={`w-full border rounded-xl p-3 pl-10 text-xs sm:text-sm font-semibold focus:outline-none transition-all ${fieldErrors.email
                     ? 'border-rose-400 bg-rose-50/20 focus:border-rose-500'
                     : 'border-slate-200 bg-slate-50 focus:border-brand-500'
-                }`}
+                  }`}
               />
               <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
             </div>
@@ -159,7 +157,7 @@ export const RegisterPage = () => {
 
           {/* Mobile Number */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Mobile Number (Verified via libphonenumber) *</label>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Mobile Number *</label>
             <div className="relative">
               <input
                 type="tel"
@@ -168,11 +166,10 @@ export const RegisterPage = () => {
                 value={formData.phone}
                 onChange={handleChange}
                 placeholder="10-digit mobile number"
-                className={`w-full border rounded-xl p-3 pl-10 text-xs sm:text-sm font-bold focus:outline-none transition-all ${
-                  fieldErrors.phone
+                className={`w-full border rounded-xl p-3 pl-10 text-xs sm:text-sm font-bold focus:outline-none transition-all ${fieldErrors.phone
                     ? 'border-rose-400 bg-rose-50/20 focus:border-rose-500'
                     : 'border-slate-200 bg-slate-50 focus:border-brand-500'
-                }`}
+                  }`}
               />
               <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
             </div>
@@ -193,11 +190,10 @@ export const RegisterPage = () => {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="At least 6 characters"
-                className={`w-full border rounded-xl p-3 pl-10 text-xs sm:text-sm focus:outline-none transition-all ${
-                  fieldErrors.password
+                className={`w-full border rounded-xl p-3 pl-10 text-xs sm:text-sm focus:outline-none transition-all ${fieldErrors.password
                     ? 'border-rose-400 bg-rose-50/20 focus:border-rose-500'
                     : 'border-slate-200 bg-slate-50 focus:border-brand-500'
-                }`}
+                  }`}
               />
               <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-3.5" />
             </div>

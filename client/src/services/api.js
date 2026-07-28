@@ -208,6 +208,14 @@ export const api = {
     return handleResponse(res, 'Failed to update order status');
   },
 
+  async requestCancelOrReturn(id) {
+    const res = await fetch(`${API_BASE}/orders/${id}/cancel`, {
+      method: 'PUT',
+      headers: getHeaders(),
+    });
+    return handleResponse(res, 'Failed to update order status');
+  },
+
   async getAdminStats() {
     const res = await fetch(`${API_BASE}/orders/stats`, {
       headers: getHeaders(),

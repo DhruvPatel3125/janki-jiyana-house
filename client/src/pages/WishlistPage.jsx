@@ -144,13 +144,12 @@ export const WishlistPage = () => {
                   <button
                     onClick={() => handleAddToCart(product)}
                     disabled={product.stock <= 0}
-                    className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 ${
-                      product.stock <= 0
+                    className={`w-full py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95 ${product.stock <= 0
                         ? 'bg-slate-200 text-slate-400 cursor-not-allowed'
                         : isItemInCart
-                        ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
-                        : 'bg-accent-orange hover:bg-orange-600 text-white'
-                    }`}
+                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                          : 'bg-accent-orange hover:bg-orange-600 text-white'
+                      }`}
                   >
                     <ShoppingBag className="w-4 h-4" />
                     <span>{product.stock <= 0 ? 'Out of Stock' : isItemInCart ? 'In Cart (Add More)' : 'Add to Cart'}</span>

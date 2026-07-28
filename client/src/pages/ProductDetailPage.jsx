@@ -12,7 +12,7 @@ const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1584308666744-24d5c
 export const ProductDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { addToCart, removeFromCart, cartItems } = useCart();
+  const { addToCart, removeFromCart, updateQuantity, cartItems } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
 
   const [product, setProduct] = useState(null);
@@ -21,6 +21,13 @@ export const ProductDetailPage = () => {
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    const item = cartItems.find((i) => i.product === id);
+    if (item && item.quantity !== quantity) {
+      setQuantity(item.quantity);
+    }
+  }, [cartItems, id]);
 
   useEffect(() => {
     const fetchProductDetails = async () => {
@@ -38,14 +45,14 @@ export const ProductDetailPage = () => {
         // Fetch similar products in same category (with fallback to ensure 4 cards displayed)
         const allProds = await api.getProducts();
         let sameCatProds = allProds.filter((p) => p.category === data.category && p._id !== data._id);
-        
+
         if (sameCatProds.length < 4) {
           const otherProds = allProds.filter(
             (p) => p._id !== data._id && !sameCatProds.some((cp) => cp._id === p._id)
           );
           sameCatProds = [...sameCatProds, ...otherProds];
         }
-        
+
         setSimilarProducts(sameCatProds.slice(0, 4));
       } catch (err) {
         setError('Product not found or unavailable');
@@ -97,8 +104,17 @@ export const ProductDetailPage = () => {
   const handleBuyNow = () => {
     if (!isItemInCart) {
       addToCart(product, quantity);
+    } else {
+      updateQuantity(product._id, quantity);
     }
     navigate('/cart');
+  };
+
+  const handleQuantityChange = (newQty) => {
+    setQuantity(newQty);
+    if (isItemInCart) {
+      updateQuantity(product._id, newQty);
+    }
   };
 
   return (
@@ -141,9 +157,8 @@ export const ProductDetailPage = () => {
                 <button
                   key={idx}
                   onClick={() => setSelectedImage(img)}
-                  className={`w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${
-                    selectedImage === img ? 'border-brand-600 scale-95 shadow-md' : 'border-slate-200 opacity-70 hover:opacity-100'
-                  }`}
+                  className={`w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 ${selectedImage === img ? 'border-brand-600 scale-95 shadow-md' : 'border-slate-200 opacity-70 hover:opacity-100'
+                    }`}
                 >
                   <img
                     src={img}
@@ -170,11 +185,10 @@ export const ProductDetailPage = () => {
                   {product.category}
                 </span>
                 <span
-                  className={`text-[10px] sm:text-[11px] font-extrabold px-2.5 py-1 rounded-full ${
-                    product.stock > 0
+                  className={`text-[10px] sm:text-[11px] font-extrabold px-2.5 py-1 rounded-full ${product.stock > 0
                       ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
                       : 'bg-rose-50 text-rose-700 border border-rose-100'
-                  }`}
+                    }`}
                 >
                   {product.stock > 0 ? `In Stock (${product.stock} left)` : 'Out of Stock'}
                 </span>
@@ -243,14 +257,14 @@ export const ProductDetailPage = () => {
               <span className="text-xs font-bold text-slate-800">Select Quantity:</span>
               <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm">
                 <button
-                  onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                  onClick={() => handleQuantityChange(Math.max(1, quantity - 1))}
                   className="px-3 py-1.5 sm:py-2 text-slate-600 hover:bg-slate-100 transition-colors"
                 >
                   <Minus className="w-3.5 h-3.5" />
                 </button>
                 <span className="px-3.5 py-1.5 sm:py-2 text-xs font-extrabold text-slate-900">{quantity}</span>
                 <button
-                  onClick={() => setQuantity(Math.min(product.stock, quantity + 1))}
+                  onClick={() => handleQuantityChange(Math.min(product.stock, quantity + 1))}
                   className="px-3 py-1.5 sm:py-2 text-slate-600 hover:bg-slate-100 transition-colors"
                 >
                   <Plus className="w-3.5 h-3.5" />
@@ -263,13 +277,12 @@ export const ProductDetailPage = () => {
               <button
                 onClick={handleCartToggle}
                 disabled={product.stock <= 0}
-                className={`flex-1 py-3.5 px-6 rounded-2xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-95 ${
-                  product.stock <= 0
+                className={`flex-1 py-3.5 px-6 rounded-2xl font-bold text-sm shadow-md transition-all flex items-center justify-center gap-2 active:scale-95 ${product.stock <= 0
                     ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
                     : isItemInCart
-                    ? 'bg-rose-500 hover:bg-rose-600 text-white'
-                    : 'bg-accent-orange hover:bg-orange-600 text-white'
-                }`}
+                      ? 'bg-rose-500 hover:bg-rose-600 text-white'
+                      : 'bg-accent-orange hover:bg-orange-600 text-white'
+                  }`}
               >
                 {isItemInCart ? (
                   <>
@@ -346,9 +359,8 @@ export const ProductDetailPage = () => {
           <button
             onClick={handleCartToggle}
             disabled={product.stock <= 0}
-            className={`py-2.5 px-3.5 rounded-xl font-bold text-xs flex items-center gap-1 shadow-md ${
-              isItemInCart ? 'bg-rose-500 text-white' : 'bg-accent-orange text-white'
-            }`}
+            className={`py-2.5 px-3.5 rounded-xl font-bold text-xs flex items-center gap-1 shadow-md ${isItemInCart ? 'bg-rose-500 text-white' : 'bg-accent-orange text-white'
+              }`}
           >
             {isItemInCart ? <Trash2 className="w-3.5 h-3.5" /> : <ShoppingBag className="w-3.5 h-3.5" />}
             {isItemInCart ? 'Remove' : 'Add'}

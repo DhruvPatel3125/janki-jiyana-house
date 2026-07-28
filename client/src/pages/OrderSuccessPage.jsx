@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { CheckCircle2, Package, MapPin, Truck, ShoppingBag, PhoneCall, MessageCircle,ShieldCheck } from 'lucide-react';
+import { CheckCircle2, Package, MapPin, Truck, ShoppingBag, PhoneCall, MessageCircle, ShieldCheck } from 'lucide-react';
 import { api } from '../services/api';
 
 export const OrderSuccessPage = () => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -35,10 +35,30 @@ export const AdminLayout = () => {
     navigate('/login');
   };
 
+  // Prevent body scroll when sidebar is open on mobile
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [sidebarOpen]);
+
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col md:flex-row">
+    <div className="min-h-screen bg-slate-100 flex flex-col md:flex-row relative">
+      {/* Mobile Backdrop Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-40 md:hidden transition-opacity"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Mobile Header Bar */}
-      <div className="md:hidden bg-slate-900 text-white p-4 flex items-center justify-between shadow-md">
+      <div className="md:hidden sticky top-0 z-40 bg-slate-900 text-white p-4 flex items-center justify-between shadow-md">
         <div className="flex items-center gap-2">
           <img src="/logo.png" alt="Janki Jiyana House" className="w-8 h-8 rounded-xl object-contain bg-white shadow-sm" />
           <span className="font-extrabold text-base tracking-tight">Admin Portal</span>
@@ -50,7 +70,7 @@ export const AdminLayout = () => {
 
       {/* Sidebar Navigation */}
       <aside
-        className={`fixed md:static inset-y-0 left-0 z-50 w-64 bg-slate-900 text-slate-300 flex flex-col justify-between transition-transform duration-300 transform ${
+        className={`fixed md:sticky md:top-0 h-[100dvh] inset-y-0 left-0 z-50 w-64 shrink-0 bg-slate-900 text-slate-300 flex flex-col justify-between transition-transform duration-300 transform ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >
@@ -133,7 +153,7 @@ export const AdminLayout = () => {
       {/* Main Admin Content Body */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Navbar */}
-        <header className="bg-white border-b border-slate-200/80 px-6 py-4 flex items-center justify-between">
+        <header className="hidden md:flex bg-white border-b border-slate-200/80 px-6 py-4 items-center justify-between sticky top-0 z-30">
           <div className="flex items-center gap-2 text-xs text-slate-500">
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
             <span className="font-semibold text-slate-700">Verified Admin Session Active</span>

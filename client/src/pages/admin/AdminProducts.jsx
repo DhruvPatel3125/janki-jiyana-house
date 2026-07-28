@@ -206,7 +206,8 @@ export const AdminProducts = () => {
         <div className="py-20 text-center text-xs font-bold text-slate-400">Loading products...</div>
       ) : (
         <div className="bg-white rounded-3xl border border-slate-200/80 shadow-sm overflow-hidden">
-          <div className="overflow-x-auto">
+          {/* Desktop Table View */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-slate-50 text-slate-500 font-bold uppercase text-[10px] tracking-wider border-b border-slate-100">
                 <tr>
@@ -239,7 +240,7 @@ export const AdminProducts = () => {
                       ₹{product.price}{' '}
                       {product.mrp > product.price && <span className="line-through text-slate-400 text-[10px] ml-1">₹{product.mrp}</span>}
                     </td>
-                    <td className="p-4">
+                    <td>
                       <span
                         className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold ${
                           product.stock > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700'
@@ -280,13 +281,83 @@ export const AdminProducts = () => {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile Cards View */}
+          <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+            {filteredProducts.map((product) => (
+              <div key={product._id} className="bg-slate-50 border border-slate-100 p-4 rounded-2xl flex flex-col gap-3">
+                <div className="flex items-start gap-3 border-b border-slate-200/60 pb-3">
+                  <img
+                    src={product.images[0] || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=200'}
+                    alt={product.name}
+                    className="w-12 h-12 object-cover rounded-xl bg-white border border-slate-200 shrink-0"
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-slate-900 line-clamp-2 text-xs leading-snug">{product.name}</p>
+                    <p className="font-bold text-brand-600 text-[10px] mt-0.5">{product.category}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <p className="text-slate-400 font-semibold text-[10px] uppercase">Price</p>
+                    <p className="font-bold text-slate-900">
+                      ₹{product.price}
+                      {product.mrp > product.price && <span className="line-through text-slate-400 text-[10px] ml-1">₹{product.mrp}</span>}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-slate-400 font-semibold text-[10px] uppercase">Stock</p>
+                    <span
+                      className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                        product.stock > 0 ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                      }`}
+                    >
+                      {product.stock} units
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-between pt-2">
+                  <div>
+                    {product.isFeatured ? (
+                      <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[10px] font-bold">
+                        <Sparkles className="w-3 h-3 text-amber-600" /> Featured
+                      </span>
+                    ) : (
+                      <span className="text-slate-400 text-[10px] font-semibold">Standard</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => handleOpenEditModal(product)}
+                      className="p-2.5 text-slate-500 hover:text-brand-600 hover:bg-brand-50 rounded-xl transition-colors bg-white border border-slate-200"
+                    >
+                      <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteProduct(product._id)}
+                      className="p-2.5 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors bg-white border border-slate-200"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {filteredProducts.length === 0 && (
+              <div className="text-center py-6 text-slate-400 text-xs font-semibold">
+                No products found.
+              </div>
+            )}
+          </div>
         </div>
       )}
 
       {/* Product Modal */}
       {modalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl border border-slate-200 max-w-2xl w-full p-6 sm:p-8 space-y-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+          <div className="bg-white rounded-3xl border border-slate-200 max-w-2xl w-full p-5 sm:p-8 space-y-6 shadow-2xl relative max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
             <button onClick={() => setModalOpen(false)} className="absolute top-5 right-5 p-2 text-slate-400 hover:text-slate-600 rounded-full">
               <X className="w-5 h-5" />
             </button>

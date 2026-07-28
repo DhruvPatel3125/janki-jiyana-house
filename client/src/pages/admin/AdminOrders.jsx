@@ -9,7 +9,7 @@ export const AdminOrders = () => {
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
-  const statuses = ['All', 'Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled'];
+  const statuses = ['All', 'Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled', 'Return Requested'];
 
   useEffect(() => {
     fetchOrders();
@@ -92,101 +92,178 @@ export const AdminOrders = () => {
         {loading ? (
           <div className="py-16 text-center text-slate-400 text-xs">Loading orders...</div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs border-collapse">
-              <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider">
-                  <th className="py-3.5 px-4">Order ID & Date</th>
-                  <th className="py-3.5 px-4">Customer Details</th>
-                  <th className="py-3.5 px-4">Total & Payment</th>
-                  <th className="py-3.5 px-4">Current Status</th>
-                  <th className="py-3.5 px-4">Update Status</th>
-                  <th className="py-3.5 px-4 text-right">View</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100 text-slate-700">
-                {filteredOrders.length > 0 ? (
-                  filteredOrders.map((order) => (
-                    <tr key={order._id} className="hover:bg-slate-50 transition-colors">
-                      <td className="py-3.5 px-4">
-                        <span className="font-mono font-bold text-slate-900 block">
-                          #{order._id.substring(order._id.length - 8)}
-                        </span>
-                        <span className="text-[10px] text-slate-400">
-                          {new Date(order.createdAt).toLocaleString('en-IN', {
-                            dateStyle: 'medium',
-                            timeStyle: 'short',
-                          })}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className="font-bold text-slate-800 block">
-                          {order.user?.name || order.guestInfo?.name || 'Guest Customer'}
-                        </span>
-                        <span className="text-[10px] text-slate-500 block">
-                          📞 {order.shippingAddress?.phone || order.guestInfo?.phone}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span className="font-black text-slate-900 text-sm block">₹{order.totalAmount}</span>
-                        <span className="text-[10px] text-slate-400 font-medium">{order.paymentMethod}</span>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <span
-                          className={`px-3 py-1 rounded-full text-[10px] font-extrabold ${
-                            order.status === 'Delivered'
-                              ? 'bg-emerald-50 text-emerald-700'
-                              : order.status === 'Shipped'
-                              ? 'bg-sky-50 text-sky-700'
-                              : order.status === 'Cancelled'
-                              ? 'bg-rose-50 text-rose-700'
-                              : 'bg-amber-50 text-amber-700'
-                          }`}
-                        >
-                          {order.status}
-                        </span>
-                      </td>
-                      <td className="py-3.5 px-4">
-                        <select
-                          value={order.status}
-                          onChange={(e) => handleStatusChange(order._id, e.target.value)}
-                          className="bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-brand-500"
-                        >
-                          <option value="Pending">Pending</option>
-                          <option value="Confirmed">Confirmed</option>
-                          <option value="Shipped">Shipped</option>
-                          <option value="Delivered">Delivered</option>
-                          <option value="Cancelled">Cancelled</option>
-                        </select>
-                      </td>
-                      <td className="py-3.5 px-4 text-right">
-                        <button
-                          onClick={() => setSelectedOrder(order)}
-                          className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
-                          title="View Full Order Details"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </button>
+          <>
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-left text-xs border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-wider">
+                    <th className="py-3.5 px-4">Order ID & Date</th>
+                    <th className="py-3.5 px-4">Customer Details</th>
+                    <th className="py-3.5 px-4">Total & Payment</th>
+                    <th className="py-3.5 px-4">Current Status</th>
+                    <th className="py-3.5 px-4">Update Status</th>
+                    <th className="py-3.5 px-4 text-right">View</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-slate-700">
+                  {filteredOrders.length > 0 ? (
+                    filteredOrders.map((order) => (
+                      <tr key={order._id} className="hover:bg-slate-50 transition-colors">
+                        <td className="py-3.5 px-4">
+                          <span className="font-mono font-bold text-slate-900 block">
+                            #{order._id.substring(order._id.length - 8)}
+                          </span>
+                          <span className="text-[10px] text-slate-400">
+                            {new Date(order.createdAt).toLocaleString('en-IN', {
+                              dateStyle: 'medium',
+                              timeStyle: 'short',
+                            })}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span className="font-bold text-slate-800 block">
+                            {order.user?.name || order.guestInfo?.name || 'Guest Customer'}
+                          </span>
+                          <span className="text-[10px] text-slate-500 block">
+                            📞 {order.shippingAddress?.phone || order.guestInfo?.phone}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span className="font-black text-slate-900 text-sm block">₹{order.totalAmount}</span>
+                          <span className="text-[10px] text-slate-400 font-medium">{order.paymentMethod}</span>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <span
+                            className={`px-3 py-1 rounded-full text-[10px] font-extrabold ${
+                              order.status === 'Delivered'
+                                ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                                : order.status === 'Shipped'
+                                  ? 'bg-blue-50 text-blue-700 border-blue-200'
+                                  : order.status === 'Cancelled'
+                                    ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                    : order.status === 'Return Requested'
+                                      ? 'bg-orange-50 text-orange-700 border-orange-200'
+                                      : 'bg-amber-50 text-amber-700 border-amber-200'
+                            }`}
+                          >
+                            {order.status}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4">
+                          <select
+                            value={order.status}
+                            onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                            className="bg-slate-50 border border-slate-300 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-800 focus:outline-none focus:border-brand-500"
+                          >
+                            <option value="Pending">Pending</option>
+                            <option value="Confirmed">Confirmed</option>
+                            <option value="Shipped">Shipped</option>
+                            <option value="Delivered">Delivered</option>
+                            <option value="Cancelled">Cancelled</option>
+                            <option value="Return Requested">Return Requested</option>
+                          </select>
+                        </td>
+                        <td className="py-3.5 px-4 text-right">
+                          <button
+                            onClick={() => setSelectedOrder(order)}
+                            className="p-1.5 text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
+                            title="View Full Order Details"
+                          >
+                            <Eye className="w-4 h-4" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={6} className="py-12 text-center text-slate-400">
+                        No matching orders found.
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={6} className="py-12 text-center text-slate-400">
-                      No matching orders found.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards View */}
+            <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+              {filteredOrders.length > 0 ? (
+                filteredOrders.map((order) => (
+                  <div key={order._id} className="bg-slate-50 border border-slate-200 p-4 rounded-2xl flex flex-col gap-3 relative">
+                    <div className="flex items-center justify-between border-b border-slate-200/60 pb-2">
+                      <div>
+                        <span className="font-mono font-bold text-slate-900 text-sm block">#{order._id.substring(order._id.length - 8)}</span>
+                        <span className="text-[10px] text-slate-400">
+                          {new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                        </span>
+                      </div>
+                      <span
+                        className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold ${
+                          order.status === 'Delivered'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                            : order.status === 'Shipped'
+                              ? 'bg-blue-50 text-blue-700 border-blue-200'
+                              : order.status === 'Cancelled'
+                                ? 'bg-rose-50 text-rose-700 border-rose-200'
+                                : order.status === 'Return Requested'
+                                  ? 'bg-orange-50 text-orange-700 border-orange-200'
+                                  : 'bg-amber-50 text-amber-700 border-amber-200'
+                        }`}
+                      >
+                        {order.status}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <p className="text-slate-400 font-semibold text-[10px] uppercase">Customer</p>
+                        <p className="font-bold text-slate-900 truncate">{order.user?.name || order.guestInfo?.name || 'Guest'}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-slate-400 font-semibold text-[10px] uppercase">Phone</p>
+                        <p className="font-medium text-slate-700">{order.shippingAddress?.phone || order.guestInfo?.phone}</p>
+                      </div>
+                      <div>
+                        <p className="text-slate-400 font-semibold text-[10px] uppercase">Total</p>
+                        <p className="font-black text-slate-900">₹{order.totalAmount} ({order.paymentMethod})</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 pt-3 border-t border-slate-200/60 mt-1">
+                      <select
+                        value={order.status}
+                        onChange={(e) => handleStatusChange(order._id, e.target.value)}
+                        className="flex-1 bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:border-brand-500 min-h-[44px]"
+                      >
+                        <option value="Pending">Pending</option>
+                        <option value="Confirmed">Confirmed</option>
+                        <option value="Shipped">Shipped</option>
+                        <option value="Delivered">Delivered</option>
+                        <option value="Cancelled">Cancelled</option>
+                        <option value="Return Requested">Return Requested</option>
+                      </select>
+                      <button
+                        onClick={() => setSelectedOrder(order)}
+                        className="p-3 bg-brand-50 text-brand-700 border border-brand-100 rounded-xl min-h-[44px] min-w-[44px] flex items-center justify-center transition-colors hover:bg-brand-100"
+                      >
+                        <Eye className="w-5 h-5" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="py-8 text-center text-slate-400 text-xs">No matching orders found.</div>
+              )}
+            </div>
+          </>
         )}
       </div>
 
       {/* Order Detail Modal */}
       {selectedOrder && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white w-full max-w-lg rounded-3xl p-6 space-y-5 shadow-2xl border border-slate-100 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-2 sm:p-4">
+          <div className="bg-white w-full max-w-lg rounded-3xl p-4 sm:p-6 space-y-5 shadow-2xl border border-slate-100 max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
                 <h3 className="font-black text-slate-900 text-base">Order Details</h3>

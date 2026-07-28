@@ -170,16 +170,70 @@ export const updateOrderStatus = async (req, res, next) => {
     const order = await Order.findById(req.params.id);
 
     if (order) {
+      const prevStatus = order.status;
       order.status = status || order.status;
       if (status === 'Delivered') {
         order.isPaid = true;
         order.paidAt = Date.now();
       }
+
+      // Restore stock if order is cancelled or return requested (and wasn't already)
+      if (
+        (status === 'Cancelled' || status === 'Return Requested') &&
+        prevStatus !== 'Cancelled' && prevStatus !== 'Return Requested'
+      ) {
+        for (const item of order.items) {
+          const product = await Product.findById(item.product);
+          if (product) {
+            product.stock += item.quantity;
+            await product.save();
+          }
+        }
+      }
+
       const updatedOrder = await order.save();
       res.json(updatedOrder);
     } else {
       res.status(404).json({ message: 'Order not found' });
     }
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    User requests order cancellation or return
+// @route   PUT /api/orders/:id/cancel
+export const requestCancelOrReturn = async (req, res, next) => {
+  try {
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    // Ensure user owns the order
+    if (order.user && order.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ message: 'Not authorized to update this order' });
+    }
+
+    if (order.status === 'Cancelled' || order.status === 'Return Requested') {
+      return res.status(400).json({ message: 'Order is already cancelled or return requested' });
+    }
+
+    const isShipped = order.status === 'Shipped' || order.status === 'Delivered';
+    order.status = isShipped ? 'Return Requested' : 'Cancelled';
+
+    // Restore stock
+    for (const item of order.items) {
+      const product = await Product.findById(item.product);
+      if (product) {
+        product.stock += item.quantity;
+        await product.save();
+      }
+    }
+
+    const updatedOrder = await order.save();
+    res.json(updatedOrder);
   } catch (error) {
     next(error);
   }

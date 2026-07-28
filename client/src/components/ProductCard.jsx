@@ -68,9 +68,8 @@ export const ProductCard = ({ product }) => {
         className="absolute top-2.5 right-2.5 z-10 p-2 rounded-full bg-white/90 backdrop-blur-md shadow-md hover:scale-110 active:scale-95 transition-all border border-slate-100"
       >
         <Heart
-          className={`w-4 h-4 transition-colors ${
-            isWishlisted ? 'fill-rose-500 text-rose-500' : 'text-slate-400 hover:text-rose-500'
-          }`}
+          className={`w-4 h-4 transition-colors ${isWishlisted ? 'fill-rose-500 text-rose-500' : 'text-slate-400 hover:text-rose-500'
+            }`}
         />
       </button>
 
@@ -152,11 +151,10 @@ export const ProductCard = ({ product }) => {
               <button
                 onClick={handleIncrease}
                 disabled={cartItem.quantity >= product.stock}
-                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all text-white ${
-                  cartItem.quantity >= product.stock
+                className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all text-white ${cartItem.quantity >= product.stock
                     ? 'opacity-40 cursor-not-allowed'
                     : 'hover:bg-brand-700 active:scale-90'
-                }`}
+                  }`}
                 title="Increase quantity"
               >
                 <Plus className="w-4 h-4 text-white shrink-0" />

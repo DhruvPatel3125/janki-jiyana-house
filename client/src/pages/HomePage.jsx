@@ -267,11 +267,10 @@ export const HomePage = () => {
                 key={idx}
                 onClick={() => setCurrentSlide(idx)}
                 aria-label={`Go to slide ${idx + 1}`}
-                className={`transition-all duration-300 rounded-full ${
-                  currentSlide === idx
+                className={`transition-all duration-300 rounded-full ${currentSlide === idx
                     ? 'w-7 sm:w-8 h-2.5 bg-brand-600 shadow-sm'
                     : 'w-2.5 h-2.5 bg-slate-300 hover:bg-slate-400'
-                }`}
+                  }`}
               />
             ))}
           </div>

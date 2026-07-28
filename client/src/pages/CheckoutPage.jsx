@@ -89,10 +89,10 @@ export const CheckoutPage = () => {
       guestInfo: user
         ? null
         : {
-            name: formData.name,
-            email: formData.email,
-            phone: formData.phone,
-          },
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone,
+        },
       shippingAddress: {
         street: formData.street,
         city: formData.city,
@@ -178,7 +178,7 @@ export const CheckoutPage = () => {
     try {
       // Verify Email OTP via Nodemailer API
       await verifyOtp(formData.email.trim().toLowerCase(), otpCode.trim(), formData.name);
-      
+
       // Verification Successful! Proceed to place order
       await finalizeOrderCreation();
       setShowOtpModal(false);
@@ -195,9 +195,6 @@ export const CheckoutPage = () => {
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8 relative">
       <div className="bg-white p-4 sm:p-6 rounded-3xl border border-slate-200/80 shadow-sm flex items-center justify-between">
         <h1 className="text-xl sm:text-2xl font-black text-slate-900">Checkout & Delivery Details</h1>
-        <span className="text-[10px] sm:text-xs font-bold text-emerald-600 bg-emerald-50 px-2.5 sm:px-3 py-1 rounded-full flex items-center gap-1 shrink-0">
-          <Lock className="w-3.5 h-3.5" /> 256-Bit SSL Encrypted
-        </span>
       </div>
 
       <form onSubmit={handlePlaceOrder} noValidate className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
@@ -222,11 +219,10 @@ export const CheckoutPage = () => {
                   value={formData.name}
                   onChange={handleChange}
                   placeholder="Recipient full name"
-                  className={`w-full border rounded-xl p-3 text-xs sm:text-sm focus:outline-none transition-all ${
-                    fieldErrors.name
+                  className={`w-full border rounded-xl p-3 text-xs sm:text-sm focus:outline-none transition-all ${fieldErrors.name
                       ? 'border-rose-400 bg-rose-50/20 focus:border-rose-500'
                       : 'border-slate-200 bg-slate-50 focus:border-brand-500'
-                  }`}
+                    }`}
                 />
                 {fieldErrors.name && (
                   <p className="text-[11px] font-bold text-rose-600 flex items-center gap-1 mt-1">
@@ -244,11 +240,10 @@ export const CheckoutPage = () => {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="name@example.com"
-                  className={`w-full border rounded-xl p-3 text-xs sm:text-sm font-semibold focus:outline-none transition-all ${
-                    fieldErrors.email
+                  className={`w-full border rounded-xl p-3 text-xs sm:text-sm font-semibold focus:outline-none transition-all ${fieldErrors.email
                       ? 'border-rose-400 bg-rose-50/20 focus:border-rose-500'
                       : 'border-slate-200 bg-slate-50 focus:border-brand-500'
-                  }`}
+                    }`}
                 />
                 {fieldErrors.email && (
                   <p className="text-[11px] font-bold text-rose-600 flex items-center gap-1 mt-1">
@@ -259,7 +254,7 @@ export const CheckoutPage = () => {
 
               {/* Mobile Number */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Mobile Number (Verified via libphonenumber) *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Mobile Number *</label>
                 <div className="relative flex items-center">
                   <span className="absolute left-3 text-xs font-bold text-slate-500">+91</span>
                   <input
@@ -269,11 +264,10 @@ export const CheckoutPage = () => {
                     value={formData.phone}
                     onChange={handleChange}
                     placeholder="10-digit mobile number"
-                    className={`w-full border rounded-xl p-3 pl-11 text-xs sm:text-sm font-bold text-slate-900 focus:outline-none transition-all ${
-                      fieldErrors.phone
+                    className={`w-full border rounded-xl p-3 pl-11 text-xs sm:text-sm font-bold text-slate-900 focus:outline-none transition-all ${fieldErrors.phone
                         ? 'border-rose-400 bg-rose-50/20 focus:border-rose-500'
                         : 'border-slate-200 bg-slate-50 focus:border-brand-500'
-                    }`}
+                      }`}
                   />
                 </div>
                 {fieldErrors.phone && (
@@ -292,11 +286,10 @@ export const CheckoutPage = () => {
                   value={formData.city}
                   onChange={handleChange}
                   placeholder="City"
-                  className={`w-full border rounded-xl p-3 text-xs sm:text-sm focus:outline-none transition-all ${
-                    fieldErrors.city
+                  className={`w-full border rounded-xl p-3 text-xs sm:text-sm focus:outline-none transition-all ${fieldErrors.city
                       ? 'border-rose-400 bg-rose-50/20 focus:border-rose-500'
                       : 'border-slate-200 bg-slate-50 focus:border-brand-500'
-                  }`}
+                    }`}
                 />
                 {fieldErrors.city && (
                   <p className="text-[11px] font-bold text-rose-600 flex items-center gap-1 mt-1">
@@ -314,11 +307,10 @@ export const CheckoutPage = () => {
                   value={formData.street}
                   onChange={handleChange}
                   placeholder="Flat No, Building, Street Name, Landmark"
-                  className={`w-full border rounded-xl p-3 text-xs sm:text-sm focus:outline-none transition-all ${
-                    fieldErrors.street
+                  className={`w-full border rounded-xl p-3 text-xs sm:text-sm focus:outline-none transition-all ${fieldErrors.street
                       ? 'border-rose-400 bg-rose-50/20 focus:border-rose-500'
                       : 'border-slate-200 bg-slate-50 focus:border-brand-500'
-                  }`}
+                    }`}
                 />
                 {fieldErrors.street && (
                   <p className="text-[11px] font-bold text-rose-600 flex items-center gap-1 mt-1">
@@ -337,11 +329,10 @@ export const CheckoutPage = () => {
                   value={formData.zipCode}
                   onChange={handleChange}
                   placeholder="395003"
-                  className={`w-full border rounded-xl p-3 text-xs sm:text-sm focus:outline-none transition-all ${
-                    fieldErrors.zipCode
+                  className={`w-full border rounded-xl p-3 text-xs sm:text-sm focus:outline-none transition-all ${fieldErrors.zipCode
                       ? 'border-rose-400 bg-rose-50/20 focus:border-rose-500'
                       : 'border-slate-200 bg-slate-50 focus:border-brand-500'
-                  }`}
+                    }`}
                 />
                 {fieldErrors.zipCode && (
                   <p className="text-[11px] font-bold text-rose-600 flex items-center gap-1 mt-1">
@@ -363,11 +354,10 @@ export const CheckoutPage = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 pt-1">
               <label
-                className={`p-4 rounded-2xl border-2 cursor-pointer flex items-start gap-3 transition-all ${
-                  formData.paymentMethod === 'COD'
+                className={`p-4 rounded-2xl border-2 cursor-pointer flex items-start gap-3 transition-all ${formData.paymentMethod === 'COD'
                     ? 'border-brand-600 bg-brand-50/40 shadow-sm'
                     : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
-                }`}
+                  }`}
               >
                 <input
                   type="radio"
@@ -386,11 +376,10 @@ export const CheckoutPage = () => {
               </label>
 
               <label
-                className={`p-4 rounded-2xl border-2 cursor-pointer flex items-start gap-3 transition-all ${
-                  formData.paymentMethod === 'Razorpay'
+                className={`p-4 rounded-2xl border-2 cursor-pointer flex items-start gap-3 transition-all ${formData.paymentMethod === 'Razorpay'
                     ? 'border-brand-600 bg-brand-50/40 shadow-sm'
                     : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
-                }`}
+                  }`}
               >
                 <input
                   type="radio"
@@ -449,11 +438,10 @@ export const CheckoutPage = () => {
           <button
             type="submit"
             disabled={loading || otpLoading}
-            className={`w-full py-4 rounded-2xl font-bold text-xs sm:text-sm text-white shadow-md transition-all flex items-center justify-center gap-2 active:scale-95 ${
-              loading || otpLoading
+            className={`w-full py-4 rounded-2xl font-bold text-xs sm:text-sm text-white shadow-md transition-all flex items-center justify-center gap-2 active:scale-95 ${loading || otpLoading
                 ? 'bg-slate-400 cursor-not-allowed'
                 : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20'
-            }`}
+              }`}
           >
             {loading || otpLoading ? (
               <>
