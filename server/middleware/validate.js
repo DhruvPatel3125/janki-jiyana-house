@@ -147,6 +147,17 @@ export const productSchema = Joi.object({
   }),
   features: Joi.array().items(Joi.string().trim().allow('')).optional(),
   isFeatured: Joi.boolean().optional(),
+  variants: Joi.array().items(
+    Joi.object({
+      name: Joi.string().required(),
+      value: Joi.string().required(),
+      price: Joi.number().min(0).optional().allow(null, ''),
+      mrp: Joi.number().min(0).optional().allow(null, ''),
+      stock: Joi.number().integer().min(0).optional().allow(null, ''),
+      sku: Joi.string().trim().optional().allow(''),
+      image: Joi.string().trim().optional().allow('')
+    })
+  ).optional(),
 });
 
 // Express Validation Middleware

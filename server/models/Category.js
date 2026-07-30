@@ -16,6 +16,11 @@ const categorySchema = new mongoose.Schema(
       type: String,
       default: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500',
     },
+    parentCategory: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Category',
+      default: null,
+    },
   },
   {
     timestamps: true,

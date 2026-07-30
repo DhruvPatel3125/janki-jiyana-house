@@ -17,8 +17,8 @@ export const TrustBadges = () => {
     },
     {
       icon: Banknote,
-      title: 'Cash on Delivery',
-      description: 'Pay safely in cash when your order reaches your home.',
+      title: 'WhatsApp Ordering',
+      description: 'Order directly and easily via WhatsApp.',
       bg: 'bg-amber-50 text-amber-600 border-amber-100',
     },
     {

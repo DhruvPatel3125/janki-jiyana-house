@@ -46,7 +46,7 @@ export const getProductById = async (req, res, next) => {
 // @route   POST /api/products
 export const createProduct = async (req, res, next) => {
   try {
-    const { name, category, price, mrp, stock, images, description, features, isFeatured } = req.body;
+    const { name, category, price, mrp, stock, images, description, features, isFeatured, variants } = req.body;
     const product = new Product({
       name,
       category,
@@ -57,6 +57,7 @@ export const createProduct = async (req, res, next) => {
       description,
       features: features || [],
       isFeatured: isFeatured || false,
+      variants: variants || [],
     });
     const createdProduct = await product.save();
     res.status(201).json(createdProduct);
@@ -80,6 +81,7 @@ export const updateProduct = async (req, res, next) => {
       product.description = req.body.description || product.description;
       product.features = req.body.features || product.features;
       product.isFeatured = req.body.isFeatured !== undefined ? req.body.isFeatured : product.isFeatured;
+      product.variants = req.body.variants !== undefined ? req.body.variants : product.variants;
 
       const updatedProduct = await product.save();
       res.json(updatedProduct);

@@ -9,6 +9,7 @@ import {
   getUsers,
   toggleBlockUser,
   deleteUser,
+  googleLogin,
 } from '../controllers/userController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
 import {
@@ -24,6 +25,7 @@ const router = express.Router();
 router.route('/').get(protect, admin, getUsers);
 router.post('/register', validateBody(registerSchema), registerUser);
 router.post('/login', validateBody(loginSchema), loginUser);
+router.post('/google-login', googleLogin);
 router.post('/send-otp', validateBody(sendOtpSchema), sendOtp);
 router.post('/verify-otp', validateBody(verifyOtpSchema), verifyOtp);
 router.route('/profile').get(protect, getUserProfile).put(protect, updateUserProfile);

@@ -107,6 +107,15 @@ export const api = {
     return handleResponse(res, 'Login failed');
   },
 
+  async googleLogin(token) {
+    const res = await fetch(`${API_BASE}/users/google-login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ token }),
+    });
+    return handleResponse(res, 'Google login failed');
+  },
+
   async register(name, email, password, phone = '', address = {}) {
     const res = await fetch(`${API_BASE}/users/register`, {
       method: 'POST',

@@ -39,8 +39,8 @@ const orderSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ['COD', 'Razorpay'],
-      default: 'COD',
+      enum: ['COD', 'Razorpay', 'WhatsApp'],
+      default: 'WhatsApp',
     },
     status: {
       type: String,

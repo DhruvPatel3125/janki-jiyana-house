@@ -41,43 +41,56 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem(key, JSON.stringify(cartItems));
   }, [cartItems, user]);
 
-  const addToCart = (product, quantity = 1) => {
+  const getUniqueId = (productId, variant) => {
+    if (!variant) return productId;
+    return `${productId}_${variant.name}_${variant.value}`;
+  };
+
+  const addToCart = (product, quantity = 1, variant = null) => {
+    const uniqueId = getUniqueId(product._id, variant);
+    
     setCartItems((prev) => {
-      const existing = prev.find((item) => item.product === product._id);
+      const existing = prev.find((item) => item.uniqueId === uniqueId || (!item.uniqueId && item.product === product._id && !variant));
       if (existing) {
         return prev.map((item) =>
-          item.product === product._id
-            ? { ...item, quantity: Math.min(item.quantity + quantity, product.stock) }
+          (item.uniqueId === uniqueId || (!item.uniqueId && item.product === product._id && !variant))
+            ? { ...item, quantity: Math.min(item.quantity + quantity, variant?.stock || product.stock) }
             : item
         );
       } else {
         return [
           ...prev,
           {
+            uniqueId,
             product: product._id,
             name: product.name,
-            image: product.images && product.images.length > 0 ? product.images[0] : '',
-            price: product.price,
-            stock: product.stock,
+            image: variant?.image || (product.images && product.images.length > 0 ? product.images[0] : ''),
+            price: variant?.price || product.price,
+            stock: variant?.stock || product.stock,
             quantity,
+            variant: variant ? { name: variant.name, value: variant.value } : null,
           },
         ];
       }
     });
   };
 
-  const removeFromCart = (productId) => {
-    setCartItems((prev) => prev.filter((item) => item.product !== productId));
+  const isMatch = (item, targetId) => {
+    return (item.uniqueId || item.product) === targetId;
   };
 
-  const updateQuantity = (productId, quantity) => {
+  const removeFromCart = (uniqueId) => {
+    setCartItems((prev) => prev.filter((item) => !isMatch(item, uniqueId)));
+  };
+
+  const updateQuantity = (uniqueId, quantity) => {
     if (quantity <= 0) {
-      removeFromCart(productId);
+      removeFromCart(uniqueId);
       return;
     }
     setCartItems((prev) =>
       prev.map((item) =>
-        item.product === productId
+        isMatch(item, uniqueId)
           ? { ...item, quantity: Math.min(quantity, item.stock) }
           : item
       )

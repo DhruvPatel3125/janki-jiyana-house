@@ -3,9 +3,11 @@ import { Link } from 'react-router-dom';
 import { Package, Clock, CheckCircle2, ChevronRight, ShoppingBag, MessageCircle, XCircle } from 'lucide-react';
 import { api } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useConfirm } from '../context/ConfirmContext';
 
 export const OrdersPage = () => {
   const { user } = useAuth();
+  const { confirm } = useConfirm();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -25,13 +27,33 @@ export const OrdersPage = () => {
 
   const getWhatsAppActionUrl = (order) => {
     const isShipped = order.status === 'Shipped' || order.status === 'Delivered';
-    const actionType = isShipped ? 'Return' : 'Cancellation';
+    const actionType = isShipped ? 'Report Defective Product' : 'Cancellation';
     const itemsList = order.items.map((i) => `${i.name} (x${i.quantity})`).join(', ');
-    const text = `Hello Janki Jiyana House,%0A%0AI want to request a *${actionType}* for my order.%0A%0A*Order ID:* ${order._id}%0A*Items:* ${itemsList}%0A*Total Amount:* ₹${order.totalAmount}%0A*Payment:* ${order.paymentMethod}%0A%0APlease assist me with the ${actionType.toLowerCase()}.`;
+    
+    let text = '';
+    if (isShipped) {
+      text = `Hello Janki Jiyana House,%0A%0AI want to report a *defective/damaged product* from my order.%0A%0A*Order ID:* ${order._id}%0A*Items:* ${itemsList}%0A*Total Amount:* ₹${order.totalAmount}%0A%0A[Please attach unboxing video/photos here]`;
+    } else {
+      text = `Hello Janki Jiyana House,%0A%0AI want to request a *${actionType}* for my order.%0A%0A*Order ID:* ${order._id}%0A*Items:* ${itemsList}%0A*Total Amount:* ₹${order.totalAmount}%0A*Payment:* ${order.paymentMethod}%0A%0APlease assist me with the ${actionType.toLowerCase()}.`;
+    }
     return `https://wa.me/919824934361?text=${text}`;
   };
 
   const handleCancelOrReturn = async (order) => {
+    const isShipped = order.status === 'Shipped' || order.status === 'Delivered';
+    const actionText = isShipped ? 'Report Defect' : 'Cancel';
+    
+    const isConfirmed = await confirm({
+      title: isShipped ? 'Report Defective Product' : 'Cancel Order',
+      message: isShipped 
+        ? 'Are you sure you want to report a defective product? You will be redirected to WhatsApp to share unboxing photos/videos.'
+        : 'Are you sure you want to cancel this order?',
+      confirmText: isShipped ? 'Yes, Report Defect' : 'Yes, Cancel Order',
+      isDanger: true
+    });
+    
+    if (!isConfirmed) return;
+
     try {
       // Open WhatsApp first so the browser doesn't block the popup during async await
       const url = getWhatsAppActionUrl(order);
@@ -138,15 +160,15 @@ export const OrdersPage = () => {
                 <div className="flex flex-wrap items-center gap-3">
                   <span className="font-extrabold text-slate-900 text-sm mr-2">Total: ₹{order.totalAmount}</span>
 
-                  {/* WhatsApp Order Cancel / Return Request Button */}
+                  {/* WhatsApp Order Cancel / Report Defect Button */}
                   {order.status !== 'Cancelled' && order.status !== 'Return Requested' && (
                     <button
                       onClick={() => handleCancelOrReturn(order)}
                       className="inline-flex items-center gap-1.5 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 text-xs font-bold px-3 py-1.5 rounded-xl transition-colors"
-                      title={order.status === 'Shipped' || order.status === 'Delivered' ? 'Request Return on WhatsApp' : 'Cancel Order on WhatsApp'}
+                      title={order.status === 'Shipped' || order.status === 'Delivered' ? 'Report Defective Product on WhatsApp' : 'Cancel Order on WhatsApp'}
                     >
                       <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-                      <span>{order.status === 'Shipped' || order.status === 'Delivered' ? 'Return Order' : 'Cancel Order'}</span>
+                      <span>{order.status === 'Shipped' || order.status === 'Delivered' ? 'Report Defect' : 'Cancel Order'}</span>
                     </button>
                   )}
 

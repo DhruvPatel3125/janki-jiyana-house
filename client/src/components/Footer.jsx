@@ -55,27 +55,27 @@ export const Footer = () => {
             <h4 className="text-white font-semibold text-base mb-4">Product Categories</h4>
             <ul className="space-y-2.5 text-xs">
               <li>
-                <Link to="/shop?category=Kids Wear" className="hover:text-brand-400 transition-colors">
+                <Link to="/shop?category=Kids Wear" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-brand-400 transition-colors">
                   New Born & Kids Wear
                 </Link>
               </li>
               <li>
-                <Link to="/shop?category=Toys" className="hover:text-brand-400 transition-colors">
+                <Link to="/shop?category=Toys" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-brand-400 transition-colors">
                   Kids Toys & Games
                 </Link>
               </li>
               <li>
-                <Link to="/shop?category=Children Diapers" className="hover:text-brand-400 transition-colors">
+                <Link to="/shop?category=Children Diapers" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-brand-400 transition-colors">
                   Children Diapers & Pull-ups
                 </Link>
               </li>
               <li>
-                <Link to="/shop?category=Sanitary Pads" className="hover:text-brand-400 transition-colors">
+                <Link to="/shop?category=Sanitary Pads" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-brand-400 transition-colors">
                   Sanitary Pads & Hygiene
                 </Link>
               </li>
               <li>
-                <Link to="/shop?category=Adult Diapers" className="hover:text-brand-400 transition-colors">
+                <Link to="/shop?category=Adult Diapers" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-brand-400 transition-colors">
                   Adult Care Diapers & Pants
                 </Link>
               </li>
@@ -87,23 +87,28 @@ export const Footer = () => {
             <h4 className="text-white font-semibold text-base mb-4">Quick Links</h4>
             <ul className="space-y-2.5 text-xs">
               <li>
-                <Link to="/shop" className="hover:text-brand-400 transition-colors">
+                <Link to="/shop" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-brand-400 transition-colors">
                   Shop All Products
                 </Link>
               </li>
               <li>
-                <Link to="/cart" className="hover:text-brand-400 transition-colors">
+                <Link to="/cart" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-brand-400 transition-colors">
                   View Cart
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="hover:text-brand-400 transition-colors">
+                <Link to="/contact" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-brand-400 transition-colors">
                   Contact Us & Store Location
                 </Link>
               </li>
               <li>
-                <Link to="/login" className="hover:text-brand-400 transition-colors">
+                <Link to="/login" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-brand-400 transition-colors">
                   Customer Login
+                </Link>
+              </li>
+              <li>
+                <Link to="/terms" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="hover:text-brand-400 transition-colors">
+                  Terms & Return Policy
                 </Link>
               </li>
             </ul>
@@ -142,7 +147,7 @@ export const Footer = () => {
             <span className="flex items-center gap-1">
               <ShieldCheck className="w-4 h-4 text-emerald-500" /> 100% Secure Checkout
             </span>
-            <span>Cash on Delivery Available</span>
+            <span>WhatsApp Orders Available</span>
           </div>
         </div>
       </div>

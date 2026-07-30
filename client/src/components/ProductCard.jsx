@@ -31,11 +31,12 @@ export const ProductCard = ({ product }) => {
     e.preventDefault();
     e.stopPropagation();
     if (!cartItem) return;
+    const itemId = cartItem.uniqueId || product._id;
     if (cartItem.quantity <= 1) {
-      removeFromCart(product._id);
+      removeFromCart(itemId);
       showSuccessToast(`${product.name} removed from cart`);
     } else {
-      updateQuantity(product._id, cartItem.quantity - 1);
+      updateQuantity(itemId, cartItem.quantity - 1);
     }
   };
 
@@ -43,7 +44,8 @@ export const ProductCard = ({ product }) => {
     e.preventDefault();
     e.stopPropagation();
     if (!cartItem || cartItem.quantity >= product.stock) return;
-    updateQuantity(product._id, cartItem.quantity + 1);
+    const itemId = cartItem.uniqueId || product._id;
+    updateQuantity(itemId, cartItem.quantity + 1);
   };
 
   const handleWishlistToggle = (e) => {

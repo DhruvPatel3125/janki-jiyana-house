@@ -28,7 +28,9 @@ const initialCategoriesData = [
 // @route   GET /api/categories
 export const getCategories = async (req, res, next) => {
   try {
-    let categories = await Category.find({}).sort({ createdAt: 1 });
+    let categories = await Category.find({})
+      .populate('parentCategory', 'name')
+      .sort({ createdAt: 1 });
 
     if (categories.length === 0) {
       categories = await Category.insertMany(initialCategoriesData);
@@ -44,7 +46,7 @@ export const getCategories = async (req, res, next) => {
 // @route   POST /api/categories
 export const createCategory = async (req, res, next) => {
   try {
-    const { name, description, image } = req.body;
+    const { name, description, image, parentCategory } = req.body;
     if (!name || !name.trim()) {
       return res.status(400).json({ message: 'Category name is required' });
     }
@@ -59,6 +61,7 @@ export const createCategory = async (req, res, next) => {
       name: trimmedName,
       description: description || `${trimmedName} care products`,
       image: image || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500',
+      parentCategory: parentCategory || null,
     });
 
     const createdCategory = await category.save();
@@ -88,6 +91,7 @@ export const updateCategory = async (req, res, next) => {
       
       category.description = req.body.description !== undefined ? req.body.description : category.description;
       category.image = req.body.image !== undefined ? req.body.image : category.image;
+      category.parentCategory = req.body.parentCategory !== undefined ? (req.body.parentCategory || null) : category.parentCategory;
 
       const updatedCategory = await category.save();
       res.json(updatedCategory);

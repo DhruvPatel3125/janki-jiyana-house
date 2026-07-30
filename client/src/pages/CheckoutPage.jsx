@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef,useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, Truck, Banknote, CreditCard, Lock, CheckCircle2, MailCheck, X, AlertCircle, ShieldAlert } from 'lucide-react';
+import { ShieldCheck, Truck, Banknote, CreditCard, Lock, CheckCircle2, MailCheck, X, AlertCircle, ShieldAlert, MessageCircle } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -21,8 +21,24 @@ export const CheckoutPage = () => {
     city: user?.address?.city || '',
     state: user?.address?.state || 'Gujarat',
     zipCode: user?.address?.zipCode || '',
-    paymentMethod: 'COD',
+    paymentMethod: 'WhatsApp',
   });
+
+  // Sync formData with user data if user loads after mount
+  useEffect(() => {
+    if (user) {
+      setFormData(prev => ({
+        ...prev,
+        name: user.name || prev.name,
+        email: user.email || prev.email,
+        phone: user.phone || user.address?.phone || prev.phone,
+        street: user.address?.street || prev.street,
+        city: user.address?.city || prev.city,
+        state: user.address?.state || prev.state || 'Gujarat',
+        zipCode: user.address?.zipCode || prev.zipCode,
+      }));
+    }
+  }, [user]);
 
   const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -109,7 +125,25 @@ export const CheckoutPage = () => {
 
     const createdOrder = await api.createOrder(orderPayload, idempotencyKeyRef.current);
     clearCart();
-    showSuccessToast('Order placed successfully! Thank you for shopping with us.');
+    
+    // If WhatsApp Order, open WhatsApp in a new tab with the Order ID
+    if (formData.paymentMethod === 'WhatsApp') {
+      const text = encodeURIComponent(
+        `Hello Janki Jiyana House,\n\nI want to place a new order.\n*Order ID:* ${createdOrder._id}\n\n` +
+        `*Name:* ${formData.name.trim()}\n` +
+        `*Phone:* ${formData.phone.trim()}\n` +
+        `*City:* ${formData.city.trim()}\n` +
+        `*Address:* ${formData.street.trim()}, ${formData.zipCode.trim()}\n\n` +
+        `*Order Items:*\n` +
+        cartItems.map(item => `- ${item.name} ${item.variant ? `(${item.variant.name}: ${item.variant.value})` : ''} (Qty: ${item.quantity}) = ₹${item.price * item.quantity}`).join('\n') +
+        `\n\n*Total Payable:* ₹${cartSubtotal}`
+      );
+      window.open(`https://wa.me/919824934361?text=${text}`, '_blank');
+      showSuccessToast('Order placed! Redirecting to WhatsApp...');
+    } else {
+      showSuccessToast('Order placed successfully! Thank you for shopping with us.');
+    }
+    
     navigate(`/order-success/${createdOrder._id}`);
   };
 
@@ -354,7 +388,7 @@ export const CheckoutPage = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 pt-1">
               <label
-                className={`p-4 rounded-2xl border-2 cursor-pointer flex items-start gap-3 transition-all ${formData.paymentMethod === 'COD'
+                className={`p-4 rounded-2xl border-2 cursor-pointer flex items-start gap-3 transition-all ${formData.paymentMethod === 'WhatsApp'
                     ? 'border-brand-600 bg-brand-50/40 shadow-sm'
                     : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
                   }`}
@@ -362,16 +396,16 @@ export const CheckoutPage = () => {
                 <input
                   type="radio"
                   name="paymentMethod"
-                  value="COD"
-                  checked={formData.paymentMethod === 'COD'}
+                  value="WhatsApp"
+                  checked={formData.paymentMethod === 'WhatsApp'}
                   onChange={handleChange}
                   className="mt-1 accent-brand-600"
                 />
                 <div>
                   <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs sm:text-sm">
-                    <Banknote className="w-4 h-4 text-emerald-600 shrink-0" /> Cash on Delivery (COD)
+                    <MessageCircle className="w-4 h-4 text-emerald-600 shrink-0" /> Order via WhatsApp
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">Pay in cash when order reaches your home.</p>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Send order details directly to our WhatsApp to confirm.</p>
                 </div>
               </label>
 

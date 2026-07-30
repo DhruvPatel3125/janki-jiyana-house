@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ShoppingBag, Search, Eye, CheckCircle, Truck, Clock, XCircle, MapPin, Phone } from 'lucide-react';
 import { api } from '../../services/api';
+import { useConfirm } from '../../context/ConfirmContext';
 
 export const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -8,6 +9,7 @@ export const AdminOrders = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const { confirm } = useConfirm();
 
   const statuses = ['All', 'Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled', 'Return Requested'];
 
@@ -28,6 +30,19 @@ export const AdminOrders = () => {
   };
 
   const handleStatusChange = async (orderId, newStatus) => {
+    if (newStatus === 'Cancelled') {
+      const isConfirmed = await confirm({
+        title: 'Cancel Order',
+        message: 'Are you sure you want to mark this order as Cancelled?',
+        confirmText: 'Yes, Cancel Order',
+        isDanger: true
+      });
+      if (!isConfirmed) {
+        fetchOrders(); // Refresh to reset dropdown
+        return;
+      }
+    }
+
     try {
       const updated = await api.updateOrderStatus(orderId, newStatus);
       setOrders(orders.map((o) => (o._id === orderId ? updated : o)));

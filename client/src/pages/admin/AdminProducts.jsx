@@ -29,10 +29,11 @@ export const AdminProducts = () => {
     price: '',
     mrp: '',
     stock: '',
-    images: '',
+    images: [''],
     description: '',
     features: '',
     isFeatured: false,
+    variants: [],
   });
 
   useEffect(() => {
@@ -63,10 +64,11 @@ export const AdminProducts = () => {
       price: '',
       mrp: '',
       stock: '',
-      images: '',
+      images: [''],
       description: '',
       features: '',
       isFeatured: false,
+      variants: [],
     });
     setModalOpen(true);
   };
@@ -79,10 +81,11 @@ export const AdminProducts = () => {
       price: product.price,
       mrp: product.mrp || '',
       stock: product.stock,
-      images: Array.isArray(product.images) ? product.images.join('\n') : product.images || '',
+      images: Array.isArray(product.images) && product.images.length > 0 ? product.images : [''],
       description: product.description,
       features: Array.isArray(product.features) ? product.features.join('\n') : product.features || '',
       isFeatured: product.isFeatured || false,
+      variants: Array.isArray(product.variants) ? product.variants : [],
     });
     setModalOpen(true);
   };
@@ -109,7 +112,6 @@ export const AdminProducts = () => {
     setSubmitting(true);
     try {
       const imagesArr = formData.images
-        .split('\n')
         .map((s) => s.trim())
         .filter((s) => s.length > 0);
 
@@ -117,6 +119,16 @@ export const AdminProducts = () => {
         .split('\n')
         .map((s) => s.trim())
         .filter((s) => s.length > 0);
+
+      const variantsArr = formData.variants.filter(v => v.name.trim() && v.value.trim()).map(v => ({
+        name: v.name,
+        value: v.value,
+        price: v.price ? Number(v.price) : undefined,
+        mrp: v.mrp ? Number(v.mrp) : undefined,
+        stock: v.stock !== '' ? Number(v.stock) : undefined,
+        sku: v.sku || '',
+        image: v.image || '',
+      }));
 
       const payload = {
         name: formData.name,
@@ -128,6 +140,7 @@ export const AdminProducts = () => {
         description: formData.description,
         features: featuresArr,
         isFeatured: formData.isFeatured,
+        variants: variantsArr,
       };
 
       if (editingProduct) {
@@ -148,23 +161,49 @@ export const AdminProducts = () => {
     }
   };
 
-  const uploadFileHandler = async (e) => {
+  const uploadImageHandler = async (e, index) => {
     const file = e.target.files[0];
     if (!file) return;
 
     setUploadingImage(true);
     try {
       const data = await api.uploadFile(file);
-      // Append the new image URL to the textarea (each on a new line)
-      const currentImages = formData.images.trim();
-      const newImages = currentImages ? `${currentImages}\n${data.imageUrl}` : data.imageUrl;
+      const newImages = [...formData.images];
+      newImages[index] = data.imageUrl;
       setFormData({ ...formData, images: newImages });
-      showSuccessToast('Image uploaded and URL added');
+      showSuccessToast('Image uploaded successfully');
     } catch (err) {
       showErrorToast(err.message || 'Image upload failed');
     } finally {
       setUploadingImage(false);
+      e.target.value = '';
     }
+  };
+
+  const handleImageChange = (index, value) => {
+    const newImages = [...formData.images];
+    newImages[index] = value;
+    setFormData({ ...formData, images: newImages });
+  };
+  const addImageInput = () => {
+    setFormData({ ...formData, images: [...formData.images, ''] });
+  };
+  const removeImageInput = (index) => {
+    const newImages = formData.images.filter((_, i) => i !== index);
+    if (newImages.length === 0) newImages.push(''); // keep at least one
+    setFormData({ ...formData, images: newImages });
+  };
+
+  const handleVariantChange = (index, field, value) => {
+    const newVariants = [...formData.variants];
+    newVariants[index] = { ...newVariants[index], [field]: value };
+    setFormData({ ...formData, variants: newVariants });
+  };
+  const addVariantInput = () => {
+    setFormData({ ...formData, variants: [...formData.variants, { name: '', value: '', price: '', mrp: '', stock: '', sku: '', image: '' }] });
+  };
+  const removeVariantInput = (index) => {
+    setFormData({ ...formData, variants: formData.variants.filter((_, i) => i !== index) });
   };
 
   const filteredProducts = products.filter(
@@ -434,26 +473,152 @@ export const AdminProducts = () => {
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center justify-between mb-2">
                   <label className="block font-bold text-slate-700">Product Images</label>
-                  <label className="cursor-pointer text-brand-600 hover:text-brand-700 font-bold text-[11px] flex items-center gap-1 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-lg transition-colors">
-                    {uploadingImage ? (
-                      <div className="w-3 h-3 border-2 border-brand-600 border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      <Upload className="w-3 h-3" />
-                    )}
-                    {uploadingImage ? 'Uploading...' : 'Upload Image'}
-                    <input type="file" onChange={uploadFileHandler} className="hidden" accept="image/jpeg, image/png, image/webp" />
-                  </label>
+                  <button
+                    type="button"
+                    onClick={addImageInput}
+                    className="text-brand-600 hover:text-brand-700 font-bold text-[11px] flex items-center gap-1 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <Plus className="w-3 h-3" /> Add Image Box
+                  </button>
                 </div>
-                <textarea
-                  rows={3}
-                  value={formData.images}
-                  onChange={(e) => setFormData({ ...formData, images: e.target.value })}
-                  placeholder="Paste external image URLs here (one per line) or use the upload button above..."
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 font-mono text-[11px] focus:outline-none focus:border-brand-500"
-                ></textarea>
-                <p className="text-[10px] text-slate-500 mt-1">You can upload from your computer OR paste direct links.</p>
+                
+                <div className="space-y-3">
+                  {formData.images.map((img, index) => (
+                    <div key={index} className="flex flex-col sm:flex-row gap-2 items-start sm:items-center bg-slate-50 border border-slate-200 p-2 rounded-xl">
+                      <div className="flex-1 w-full flex items-center gap-2">
+                        <input
+                          type="url"
+                          value={img}
+                          onChange={(e) => handleImageChange(index, e.target.value)}
+                          placeholder="Image URL"
+                          className="flex-1 bg-white border border-slate-200 rounded-lg p-2.5 text-slate-900 font-mono text-[11px] focus:outline-none focus:border-brand-500"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                        <label className="flex-1 sm:flex-none cursor-pointer text-slate-600 hover:text-brand-600 bg-white border border-slate-200 px-3 py-2.5 rounded-lg text-[11px] font-bold text-center flex items-center justify-center gap-1 transition-colors">
+                          <Upload className="w-3 h-3" />
+                          <input type="file" onChange={(e) => uploadImageHandler(e, index)} className="hidden" accept="image/jpeg, image/png, image/webp" />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => removeImageInput(index)}
+                          className="p-2.5 text-slate-400 hover:text-rose-600 bg-white border border-slate-200 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block font-bold text-slate-700">Product Variants (Optional)</label>
+                  <button
+                    type="button"
+                    onClick={addVariantInput}
+                    className="text-brand-600 hover:text-brand-700 font-bold text-[11px] flex items-center gap-1 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <Plus className="w-3 h-3" /> Add Variant
+                  </button>
+                </div>
+                
+                {formData.variants.length > 0 ? (
+                  <div className="space-y-4">
+                    {formData.variants.map((variant, index) => (
+                      <div key={index} className="bg-slate-50 border border-slate-200 p-4 rounded-xl space-y-3 relative">
+                        <button
+                          type="button"
+                          onClick={() => removeVariantInput(index)}
+                          className="absolute top-2 right-2 p-1.5 text-slate-400 hover:text-rose-600 bg-white border border-slate-200 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                        <div className="grid grid-cols-2 gap-3 pr-8">
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1">Variant Name *</label>
+                            <input
+                              type="text"
+                              value={variant.name}
+                              onChange={(e) => handleVariantChange(index, 'name', e.target.value)}
+                              placeholder="e.g. Size, Color"
+                              className="w-full bg-white border border-slate-200 rounded-lg p-2 text-slate-900 font-semibold focus:outline-none focus:border-brand-500 text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1">Variant Value *</label>
+                            <input
+                              type="text"
+                              value={variant.value}
+                              onChange={(e) => handleVariantChange(index, 'value', e.target.value)}
+                              placeholder="e.g. XL, Blue"
+                              className="w-full bg-white border border-slate-200 rounded-lg p-2 text-slate-900 font-semibold focus:outline-none focus:border-brand-500 text-xs"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-3 gap-3">
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1">Price</label>
+                            <input
+                              type="number"
+                              value={variant.price || ''}
+                              onChange={(e) => handleVariantChange(index, 'price', e.target.value)}
+                              placeholder="Override Price"
+                              className="w-full bg-white border border-slate-200 rounded-lg p-2 text-slate-900 font-semibold focus:outline-none focus:border-brand-500 text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1">MRP</label>
+                            <input
+                              type="number"
+                              value={variant.mrp || ''}
+                              onChange={(e) => handleVariantChange(index, 'mrp', e.target.value)}
+                              placeholder="Override MRP"
+                              className="w-full bg-white border border-slate-200 rounded-lg p-2 text-slate-900 font-semibold focus:outline-none focus:border-brand-500 text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1">Stock</label>
+                            <input
+                              type="number"
+                              value={variant.stock || ''}
+                              onChange={(e) => handleVariantChange(index, 'stock', e.target.value)}
+                              placeholder="Specific Stock"
+                              className="w-full bg-white border border-slate-200 rounded-lg p-2 text-slate-900 font-semibold focus:outline-none focus:border-brand-500 text-xs"
+                            />
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1">SKU</label>
+                            <input
+                              type="text"
+                              value={variant.sku || ''}
+                              onChange={(e) => handleVariantChange(index, 'sku', e.target.value)}
+                              placeholder="Variant SKU"
+                              className="w-full bg-white border border-slate-200 rounded-lg p-2 text-slate-900 font-semibold focus:outline-none focus:border-brand-500 text-xs"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1">Image URL</label>
+                            <input
+                              type="url"
+                              value={variant.image || ''}
+                              onChange={(e) => handleVariantChange(index, 'image', e.target.value)}
+                              placeholder="Variant Image URL"
+                              className="w-full bg-white border border-slate-200 rounded-lg p-2 text-slate-900 font-semibold focus:outline-none focus:border-brand-500 text-xs"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[10px] text-slate-500">No variants added. Click 'Add Variant' to add colors, sizes, etc.</p>
+                )}
               </div>
 
               <div>

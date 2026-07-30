@@ -86,6 +86,20 @@ export const createOrder = async (req, res, next) => {
 
     const createdOrder = await order.save({ session });
 
+    // Save the shipping address to the user's profile for future autofill
+    if (req.user) {
+      await User.findByIdAndUpdate(
+        req.user._id,
+        {
+          $set: {
+            address: shippingAddress,
+            ...(shippingAddress.phone && { phone: shippingAddress.phone }),
+          },
+        },
+        { session }
+      );
+    }
+
     await session.commitTransaction();
     session.endSession();
 

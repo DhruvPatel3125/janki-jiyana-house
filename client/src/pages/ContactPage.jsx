@@ -84,7 +84,7 @@ export const ContactPage = () => {
             <div className="space-y-3">
               <h2 className="text-2xl font-black text-slate-900">Visit Our Store in Surat</h2>
               <p className="text-slate-500 text-sm leading-relaxed max-w-2xl">
-                We offer premium kids wear, toys, baby care items (diaper pants, wet wipes), and personal hygiene products (sanitary napkins, adult pull-ups). Fast delivery and COD available!
+                We offer premium kids wear, toys, baby care items (diaper pants, wet wipes), and personal hygiene products (sanitary napkins, adult pull-ups). Fast delivery and WhatsApp Orders available!
               </p>
             </div>
 
@@ -163,7 +163,7 @@ export const ContactPage = () => {
               <ul className="text-slate-500 space-y-2">
                 <li className="flex gap-2">
                   <span className="text-slate-300">•</span>
-                  <span><strong>COD Orders:</strong> Instantly cancelled with zero fees.</span>
+                  <span><strong>WhatsApp Orders:</strong> Instantly cancelled with zero fees via message.</span>
                 </li>
                 <li className="flex gap-2">
                   <span className="text-slate-300">•</span>

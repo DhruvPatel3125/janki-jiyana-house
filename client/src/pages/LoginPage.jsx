@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Lock, Mail, ArrowRight, User, Eye, EyeOff, AlertCircle, ShieldCheck } from 'lucide-react';
 import { showSuccessToast, showErrorToast } from '../utils/toast';
+import { GoogleLogin } from '@react-oauth/google';
 
 export const LoginPage = () => {
   const [identifier, setIdentifier] = useState('');
@@ -13,7 +14,7 @@ export const LoginPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const { login } = useAuth();
+  const { login, googleLogin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -158,6 +159,44 @@ export const LoginPage = () => {
             {loading ? 'Signing in...' : 'Sign In'} <ArrowRight className="w-4 h-4" />
           </button>
         </form>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-slate-200"></div>
+          </div>
+          <div className="relative flex justify-center text-xs">
+            <span className="bg-white px-2 text-slate-500">Or continue with</span>
+          </div>
+        </div>
+
+        <div className="flex justify-center">
+          <GoogleLogin
+            onSuccess={async (credentialResponse) => {
+              try {
+                setLoading(true);
+                const userData = await googleLogin(credentialResponse.credential);
+                showSuccessToast('Logged in with Google successfully!');
+                if (userData.role === 'admin') {
+                  navigate('/admin');
+                } else {
+                  navigate(redirectTarget);
+                }
+              } catch (err) {
+                const msg = err.message || 'Google Login failed.';
+                setError(msg);
+                showErrorToast(msg);
+              } finally {
+                setLoading(false);
+              }
+            }}
+            onError={() => {
+              setError('Google Login failed.');
+              showErrorToast('Google Login failed.');
+            }}
+            useOneTap
+            shape="pill"
+          />
+        </div>
 
         {/* Footer Navigation */}
         <div className="text-center text-xs text-slate-500 pt-4 border-t border-slate-100 space-y-2">

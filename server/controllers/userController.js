@@ -324,3 +324,56 @@ export const deleteUser = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Authenticate with Google OAuth
+// @route   POST /api/users/google-login
+import { OAuth2Client } from 'google-auth-library';
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+export const googleLogin = async (req, res, next) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ message: 'Google token is missing' });
+    }
+
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email, name, sub: googleId } = payload;
+    
+    let user = await User.findOne({ email: email.toLowerCase() });
+
+    if (user && user.isBlocked) {
+      return res.status(403).json({ message: 'Your account has been blocked by store administrator.' });
+    }
+
+    if (!user) {
+      // Create user if not exists
+      user = await User.create({
+        name,
+        email: email.toLowerCase(),
+        isPhoneVerified: true, // we assume google email is verified
+      });
+    }
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      isPhoneVerified: user.isPhoneVerified,
+      isBlocked: user.isBlocked,
+      address: user.address,
+      role: user.role,
+      token: generateToken(user._id),
+    });
+  } catch (error) {
+    console.error('Google login error:', error);
+    res.status(401).json({ message: 'Invalid Google token' });
+  }
+};

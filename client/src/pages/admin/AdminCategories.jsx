@@ -19,6 +19,7 @@ export const AdminCategories = () => {
   const [error, setError] = useState('');
   const [editingCategory, setEditingCategory] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [parentCategory, setParentCategory] = useState('');
 
   useEffect(() => {
     fetchData();
@@ -61,22 +62,27 @@ export const AdminCategories = () => {
         name: name.trim(),
         description: description.trim(),
         image: finalImage,
+        parentCategory: parentCategory || null,
       };
 
       if (editingCategory) {
         const updated = await api.updateCategory(editingCategory._id, payload);
-        setCategories(categories.map(c => c._id === editingCategory._id ? updated : c));
+        // Refresh categories fully to get updated populated parent info
+        const freshCats = await api.getCategories();
+        setCategories(freshCats);
         showSuccessToast(`Category "${updated.name}" updated successfully!`);
         setEditingCategory(null);
       } else {
         const created = await api.createCategory(payload);
-        setCategories([...categories, created]);
+        const freshCats = await api.getCategories();
+        setCategories(freshCats);
         showSuccessToast(`Category "${created.name}" created successfully!`);
       }
       
       setName('');
       setDescription('');
       setImage('');
+      setParentCategory('');
     } catch (err) {
       const msg = err.message || 'Failed to save category';
       setError(msg);
@@ -91,6 +97,7 @@ export const AdminCategories = () => {
     setName(cat.name);
     setDescription(cat.description || '');
     setImage(cat.image || '');
+    setParentCategory(cat.parentCategory?._id || '');
     setError('');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -100,6 +107,7 @@ export const AdminCategories = () => {
     setName('');
     setDescription('');
     setImage('');
+    setParentCategory('');
     setError('');
   };
 
@@ -199,6 +207,24 @@ export const AdminCategories = () => {
                 placeholder="e.g. Maternity Hygiene, Underpants"
                 className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-semibold focus:outline-none focus:border-teal-500"
               />
+            </div>
+
+            <div>
+              <label className="block font-bold text-slate-700 mb-1">Parent Category (Optional)</label>
+              <select
+                value={parentCategory}
+                onChange={(e) => setParentCategory(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-semibold focus:outline-none focus:border-teal-500"
+              >
+                <option value="">None (Top Level Category)</option>
+                {categories
+                  .filter((c) => !editingCategory || c._id !== editingCategory._id) // prevent selecting self as parent
+                  .map((c) => (
+                    <option key={c._id || c.name} value={c._id}>
+                      {c.name}
+                    </option>
+                  ))}
+              </select>
             </div>
 
             <div>
@@ -308,7 +334,14 @@ export const AdminCategories = () => {
                           </div>
                         )}
                         <div>
-                          <h4 className="font-extrabold text-slate-900 text-sm leading-snug">{cat.name}</h4>
+                          <h4 className="font-extrabold text-slate-900 text-sm leading-snug">
+                            {cat.name}
+                            {cat.parentCategory && (
+                              <span className="ml-2 inline-flex items-center gap-1 bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full text-[9px] font-bold border border-slate-200 uppercase tracking-wider">
+                                Subcategory of {cat.parentCategory.name}
+                              </span>
+                            )}
+                          </h4>
                           <p className="text-[11px] text-slate-500 line-clamp-1">{cat.description || 'General category'}</p>
                         </div>
                       </div>

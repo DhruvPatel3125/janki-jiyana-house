@@ -54,9 +54,11 @@ export const CartPage = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
         {/* Cart Items List */}
         <div className="lg:col-span-2 space-y-3 sm:space-y-4">
-          {cartItems.map((item) => (
+          {cartItems.map((item) => {
+            const itemId = item.uniqueId || item.product;
+            return (
             <div
-              key={item.product}
+              key={itemId}
               className="bg-white p-4 sm:p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-center gap-3 sm:gap-4 justify-between"
             >
               <div className="flex items-center gap-3.5 w-full sm:w-auto">
@@ -70,7 +72,7 @@ export const CartPage = () => {
                     to={`/product/${item.product}`}
                     className="font-bold text-slate-900 text-xs sm:text-sm hover:text-brand-600 line-clamp-2 transition-colors"
                   >
-                    {item.name}
+                    {item.name} {item.variant ? `(${item.variant.name}: ${item.variant.value})` : ''}
                   </Link>
                   <p className="text-[11px] text-slate-400 font-medium">Unit Price: ₹{item.price}</p>
                 </div>
@@ -80,14 +82,14 @@ export const CartPage = () => {
               <div className="flex items-center justify-between w-full sm:w-auto gap-4 sm:gap-6 pt-2.5 sm:pt-0 border-t sm:border-t-0 border-slate-100">
                 <div className="flex items-center border border-slate-200 rounded-xl overflow-hidden bg-slate-50">
                   <button
-                    onClick={() => updateQuantity(item.product, item.quantity - 1)}
+                    onClick={() => updateQuantity(itemId, item.quantity - 1)}
                     className="p-1.5 sm:p-2 text-slate-600 hover:bg-slate-200 transition-colors"
                   >
                     <Minus className="w-3.5 h-3.5" />
                   </button>
                   <span className="px-2.5 text-xs font-bold text-slate-800">{item.quantity}</span>
                   <button
-                    onClick={() => updateQuantity(item.product, item.quantity + 1)}
+                    onClick={() => updateQuantity(itemId, item.quantity + 1)}
                     className="p-1.5 sm:p-2 text-slate-600 hover:bg-slate-200 transition-colors"
                   >
                     <Plus className="w-3.5 h-3.5" />
@@ -99,7 +101,7 @@ export const CartPage = () => {
                 </div>
 
                 <button
-                  onClick={() => removeFromCart(item.product)}
+                  onClick={() => removeFromCart(itemId)}
                   className="text-slate-400 hover:text-rose-600 p-1.5 transition-colors"
                   title="Remove Item"
                 >
@@ -107,7 +109,7 @@ export const CartPage = () => {
                 </button>
               </div>
             </div>
-          ))}
+          )})}
         </div>
 
         {/* Order Summary Box */}
@@ -146,7 +148,7 @@ export const CartPage = () => {
           </button>
 
           <div className="flex items-center gap-2 text-xs text-slate-500 justify-center font-medium">
-            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" /> Cash on Delivery available at checkout
+            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" /> Order easily via WhatsApp or Online Payment
           </div>
         </div>
       </div>

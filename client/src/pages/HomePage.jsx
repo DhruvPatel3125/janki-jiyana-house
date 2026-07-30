@@ -65,7 +65,7 @@ export const HomePage = () => {
         'Soft Baby Diaper Pants',
         'Sanitary & Period Panties',
         'Dignified Adult Diapers',
-        'Fast Cash On Delivery (COD)'
+        'WhatsApp Orders Available'
       ],
       btnText: 'Explore All Products',
       link: '/shop',
@@ -296,7 +296,7 @@ export const HomePage = () => {
 
         {/* Circular Round Category Cards Row (Touch Horizontal Scrollable) */}
         <div className="flex items-center gap-4 sm:gap-8 overflow-x-auto pb-4 pt-1 scrollbar-none justify-start md:justify-center">
-          {categories.map((cat, idx) => (
+          {categories.filter(cat => !cat.parentCategory).map((cat, idx) => (
             <Link
               key={cat._id || idx}
               to={`/shop?category=${encodeURIComponent(cat.name)}`}
