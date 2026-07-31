@@ -6,9 +6,11 @@ import { ProductCard } from '../components/ProductCard';
 import { TrustBadges } from '../components/TrustBadges';
 import { TrendingVideosSection } from '../components/TrendingVideosSection';
 import { ProductSkeleton } from '../components/skeletons/ProductSkeleton';
+import { SEO } from '../components/SEO';
 
 
 export const HomePage = () => {
+
   const [newProducts, setNewProducts] = useState([]);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [categories, setCategories] = useState([]);
@@ -139,8 +141,47 @@ export const HomePage = () => {
     );
   }
 
+  const homeSchema = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Organization',
+        '@id': 'https://janki-jiyana-house.vercel.app/#organization',
+        'name': 'Janki Jiyana House',
+        'url': 'https://janki-jiyana-house.vercel.app',
+        'logo': 'https://janki-jiyana-house.vercel.app/logo.png',
+        'description': 'Leading Baby Care, Adult Care Diapers and Personal Hygiene Store in Surat, Gujarat.',
+        'telephone': '+919824934361'
+      },
+      {
+        '@type': 'LocalBusiness',
+        '@id': 'https://janki-jiyana-house.vercel.app/#store',
+        'name': 'Janki Jiyana House',
+        'image': 'https://janki-jiyana-house.vercel.app/logo.png',
+
+        'telephone': '+919824934361',
+        'priceRange': '₹',
+        'address': {
+          '@type': 'PostalAddress',
+          'streetAddress': 'Surat',
+          'addressLocality': 'Surat',
+          'addressRegion': 'Gujarat',
+          'postalCode': '395003',
+          'addressCountry': 'IN'
+        }
+      }
+    ]
+  };
+
   return (
     <div className="space-y-10 sm:space-y-16 pb-16">
+      <SEO
+        title="Baby Care, Adult Diapers & Personal Hygiene Store Surat"
+        description="Shop premium baby diaper pants, adult pull-up diapers, 320mm cooling mint sanitary pads & kids wear at Janki Jiyana House Surat. Fast cash on delivery & discreet packaging."
+        keywords="Janki Jiyana House, baby diapers Surat, adult diapers Surat, sanitary pads, pull up diapers, baby care Surat, kids clothing"
+        schema={homeSchema}
+      />
+
       {/* ════════ HERO SECTION — D2C Reference Image Style ════════ */}
       <section className="relative">
         {/* Main Hero Container */}

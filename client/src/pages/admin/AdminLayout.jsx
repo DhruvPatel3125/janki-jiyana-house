@@ -17,11 +17,13 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { SEO } from '../../components/SEO';
 
 export const AdminLayout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
 
   const navItems = [
     { label: 'Overview', path: '/admin', icon: LayoutDashboard, end: true },
@@ -53,6 +55,8 @@ export const AdminLayout = () => {
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col md:flex-row relative">
+      <SEO title="Admin Portal" noindex={true} />
+
       {/* Mobile Backdrop Overlay */}
       {sidebarOpen && (
         <div

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Phone, Mail, MapPin, MessageCircle, Clock, ShieldCheck, Instagram, Facebook, Youtube, Share2 } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 export const ContactPage = () => {
   const storeAddress = "G-8-9 Apple Square, Near, Lajamni Chowk, Maruti Dham Society, Mota Varachha, Surat, Gujarat 394101, India.";
@@ -8,6 +9,12 @@ export const ContactPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+      <SEO
+        title="Contact Us & Store Location Surat"
+        description="Visit Janki Jiyana House store at Mota Varachha, Surat or call/WhatsApp +91 98249 34361 for baby diapers, adult care products & hygiene items."
+        keywords="Janki Jiyana House location Surat, Mota Varachha baby store, contact Janki Jiyana House"
+      />
+
       {/* High-Contrast Header */}
       <div
         className="text-white rounded-3xl p-8 sm:p-12 text-center space-y-3 shadow-xl border border-slate-700/50"

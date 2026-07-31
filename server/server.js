@@ -12,6 +12,7 @@ import wishlistRoutes from './routes/wishlistRoutes.js';
 import videoRoutes from './routes/videoRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
+import sitemapRoutes from './routes/sitemapRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import { startCronJobs } from './utils/cronJobs.js';
 
@@ -23,7 +24,9 @@ connectDB();
 const app = express();
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false, // Avoid blocking inline images/scripts in dev/prod
+}));
 app.use(cors({
   origin: [
     'http://localhost:3000', 
@@ -57,6 +60,10 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', message: 'Janki Jiyana House API server is running smooth!' });
 });
 
+// Sitemap XML route (accessible at both /sitemap.xml and /api/sitemap.xml)
+app.use('/sitemap.xml', sitemapRoutes);
+app.use('/api/sitemap.xml', sitemapRoutes);
+
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
@@ -65,6 +72,7 @@ app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/settings', settingsRoutes);
+
 
 
 // Error Middleware

@@ -7,6 +7,8 @@ import { useWishlist } from '../context/WishlistContext';
 import { ProductCard } from '../components/ProductCard';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { showCartToast, showSuccessToast } from '../utils/toast';
+import { SEO } from '../components/SEO';
+
 
 const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&auto=format&fit=crop&q=80';
 
@@ -179,10 +181,42 @@ export const ProductDetailPage = () => {
     { name: product.name }
   ];
 
+  const productSchema = {
+    '@context': 'https://schema.org/',
+    '@type': 'Product',
+    'name': product.name,
+    'image': product.images && product.images.length > 0 ? product.images : [selectedImage],
+    'description': product.description || `Buy ${product.name} at best price online from Janki Jiyana House.`,
+    'sku': product._id,
+    'category': product.category,
+    'offers': {
+      '@type': 'Offer',
+      'url': typeof window !== 'undefined' ? window.location.href : '',
+      'priceCurrency': 'INR',
+      'price': currentPrice,
+      'priceValidUntil': '2026-12-31',
+      'itemCondition': 'https://schema.org/NewCondition',
+      'availability': currentStock > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+      'seller': {
+        '@type': 'Organization',
+        'name': 'Janki Jiyana House'
+      }
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 lg:py-8 space-y-6 pb-28 md:pb-16">
+      <SEO
+        title={`${product.name} - Buy Online at Best Price`}
+        description={`Buy ${product.name} (${product.category}) at ₹${currentPrice} in Surat. 100% genuine product, fast delivery & cash on delivery at Janki Jiyana House.`}
+        keywords={`${product.name}, ${product.category}, buy ${product.name} online, Janki Jiyana House`}
+        ogImage={selectedImage}
+        ogType="product"
+        schema={productSchema}
+      />
       
       <Breadcrumbs paths={breadcrumbPaths} />
+
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
         {/* Gallery Section */}

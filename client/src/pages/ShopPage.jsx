@@ -6,6 +6,8 @@ import { ProductCard } from '../components/ProductCard';
 import { ProductSkeleton } from '../components/skeletons/ProductSkeleton';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { useDebounce } from '../hooks/useDebounce';
+import { SEO } from '../components/SEO';
+
 
 export const ShopPage = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -161,8 +163,14 @@ export const ShopPage = () => {
 
   return (
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6 sm:space-y-8">
+      <SEO
+        title={selectedCategory !== 'All' ? `${selectedCategory} Collection` : 'Shop All Baby Care & Hygiene Products'}
+        description={`Explore our range of ${selectedCategory !== 'All' ? selectedCategory : 'baby diapers, adult care pull-ups, sanitary pads and kids wear'} at Janki Jiyana House Surat.`}
+        keywords={`${selectedCategory}, buy ${selectedCategory} Surat, baby care store, Janki Jiyana House`}
+      />
       
       <Breadcrumbs paths={breadcrumbPaths} />
+
 
       {/* Header Banner */}
       <div
