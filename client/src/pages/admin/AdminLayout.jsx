@@ -13,6 +13,8 @@ import {
   ShieldCheck,
   Bell,
   Youtube,
+  Banknote,
+  CheckCircle,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -28,6 +30,8 @@ export const AdminLayout = () => {
     { label: 'Orders', path: '/admin/orders', icon: ShoppingBag },
     { label: 'Users', path: '/admin/users', icon: Users },
     { label: 'Trending Videos', path: '/admin/videos', icon: Youtube },
+    { label: 'Verify Payments', path: '/admin/payment-verification', icon: CheckCircle },
+    { label: 'Payment Settings', path: '/admin/payment-settings', icon: Banknote },
   ];
 
   const handleLogout = () => {

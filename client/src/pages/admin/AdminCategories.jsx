@@ -28,9 +28,9 @@ export const AdminCategories = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [cats, prods] = await Promise.all([api.getCategories(), api.getProducts()]);
+      const [cats, prodsData] = await Promise.all([api.getCategories(), api.getProducts()]);
       setCategories(cats);
-      setProducts(prods);
+      setProducts(prodsData.products || []);
     } catch (err) {
       setError(err.message || 'Failed to load categories');
     } finally {

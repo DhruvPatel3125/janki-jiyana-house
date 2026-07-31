@@ -18,7 +18,7 @@ export const createOrder = async (req, res, next) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
-    const { items, shippingAddress, paymentMethod, guestInfo } = req.body;
+    const { items, shippingAddress, paymentMethod, guestInfo, paymentProof } = req.body;
 
     if (!items || items.length === 0) {
       await session.abortTransaction();
@@ -30,6 +30,28 @@ export const createOrder = async (req, res, next) => {
       await session.abortTransaction();
       session.endSession();
       return res.status(400).json({ message: 'Shipping address details are incomplete' });
+    }
+
+    if (paymentMethod === 'UPI_QR' && (!paymentProof || !paymentProof.screenshotUrl || !paymentProof.utrNumber)) {
+      await session.abortTransaction();
+      session.endSession();
+      return res.status(400).json({ message: 'Payment proof (screenshot and UTR) is required for UPI QR orders' });
+    }
+
+    // Duplicate UTR Check
+    if (paymentMethod === 'UPI_QR' && paymentProof && paymentProof.utrNumber) {
+      const existingOrder = await Order.findOne({
+        'paymentProof.utrNumber': paymentProof.utrNumber,
+        paymentStatus: { $in: ['verification_pending', 'verified'] }
+      }).session(session);
+
+      if (existingOrder) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(400).json({ 
+          message: 'This UTR number has already been used for another order. Please contact support if this is a mistake.' 
+        });
+      }
     }
 
     // Verify products and calculate total amount on server to prevent client price tampering
@@ -82,6 +104,9 @@ export const createOrder = async (req, res, next) => {
       isPaid: paymentMethod === 'Online' || paymentMethod === 'Razorpay',
       paidAt: paymentMethod === 'Online' || paymentMethod === 'Razorpay' ? Date.now() : undefined,
       idempotencyKey,
+      paymentProof: paymentMethod === 'UPI_QR' ? paymentProof : undefined,
+      paymentStatus: paymentMethod === 'UPI_QR' ? 'verification_pending' : 'pending',
+      status: paymentMethod === 'UPI_QR' ? 'Verification Pending' : 'Pending',
     });
 
     const createdOrder = await order.save({ session });
@@ -135,13 +160,10 @@ export const getOrderById = async (req, res, next) => {
     }
 
     // Ensure users can only access their own orders unless admin
-    if (
-      req.user &&
-      req.user.role !== 'admin' &&
-      order.user &&
-      order.user._id.toString() !== req.user._id.toString()
-    ) {
-      return res.status(403).json({ message: 'Not authorized to view this order' });
+    if (order.user) {
+      if (!req.user || (req.user.role !== 'admin' && order.user._id.toString() !== req.user._id.toString())) {
+        return res.status(403).json({ message: 'Not authorized to view this order. Please log in.' });
+      }
     }
 
     res.json(order);
@@ -150,25 +172,67 @@ export const getOrderById = async (req, res, next) => {
   }
 };
 
-// @desc    Get logged-in user orders
+// @desc    Get logged-in user orders (paginated)
 // @route   GET /api/orders/myorders
 export const getMyOrders = async (req, res, next) => {
   try {
-    const orders = await Order.find({ user: req.user._id }).sort({ createdAt: -1 });
-    res.json(orders);
+    const { page = 1, limit = 10 } = req.query;
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(50, Math.max(1, parseInt(limit)));
+    const skip = (pageNum - 1) * limitNum;
+
+    const [orders, totalOrders] = await Promise.all([
+      Order.find({ user: req.user._id }).sort({ createdAt: -1 }).skip(skip).limit(limitNum),
+      Order.countDocuments({ user: req.user._id }),
+    ]);
+
+    res.json({
+      orders,
+      totalOrders,
+      totalPages: Math.ceil(totalOrders / limitNum),
+      currentPage: pageNum,
+    });
   } catch (error) {
     next(error);
   }
 };
 
-// @desc    Get all orders (admin)
+// @desc    Get all orders (admin, paginated)
 // @route   GET /api/orders
 export const getOrders = async (req, res, next) => {
   try {
-    const orders = await Order.find({})
-      .populate('user', 'name email phone')
-      .sort({ createdAt: -1 });
-    res.json(orders);
+    const { page = 1, limit = 20, status, search } = req.query;
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
+    const skip = (pageNum - 1) * limitNum;
+
+    let query = {};
+    if (status && status !== 'All') {
+      query.status = status;
+    }
+    // Allow search by customer name or order ID prefix
+    if (search) {
+      // Search by order ID if it looks like an ID
+      if (search.match(/^[a-f\d]{24}$/i)) {
+        query._id = search;
+      }
+    }
+
+    const [orders, totalOrders] = await Promise.all([
+      Order.find(query)
+        .populate('user', 'name email phone')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limitNum),
+      Order.countDocuments(query),
+    ]);
+
+    res.json({
+      orders,
+      totalOrders,
+      totalPages: Math.ceil(totalOrders / limitNum),
+      currentPage: pageNum,
+    });
   } catch (error) {
     next(error);
   }
@@ -213,35 +277,188 @@ export const updateOrderStatus = async (req, res, next) => {
 
 // @desc    User requests order cancellation or return
 // @route   PUT /api/orders/:id/cancel
-export const requestCancelOrReturn = async (req, res, next) => {
+export const requestCancelOrReturn = async (req, res) => {
+  const session = await mongoose.startSession();
   try {
+    session.startTransaction();
+
+    const order = await Order.findById(req.params.id).session(session);
+
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    if (order.status === 'Cancelled' || order.status === 'Return Requested') {
+      throw new Error('Order is already cancelled or return requested');
+    }
+
+    if (order.status === 'Shipped' || order.status === 'Delivered') {
+      order.status = 'Return Requested';
+    } else {
+      order.status = 'Cancelled';
+      
+      // Restock items since order is cancelled before shipping
+      for (const item of order.items) {
+        if (item.status !== 'Cancelled') {
+          item.status = 'Cancelled';
+          await Product.findByIdAndUpdate(
+            item.product,
+            { $inc: { stock: item.quantity } },
+            { session }
+          );
+        }
+      }
+    }
+
+    const updatedOrder = await order.save({ session });
+    
+    await session.commitTransaction();
+    res.json(updatedOrder);
+  } catch (error) {
+    await session.abortTransaction();
+    res.status(400).json({ message: error.message || 'Error processing request' });
+  } finally {
+    session.endSession();
+  }
+};
+
+// @desc    User requests single item cancellation
+// @route   PUT /api/orders/:id/cancel-item/:itemId
+export const cancelItem = async (req, res) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+
+    const order = await Order.findById(req.params.id).session(session);
+
+    if (!order) {
+      throw new Error('Order not found');
+    }
+
+    if (order.status === 'Cancelled' || order.status === 'Shipped' || order.status === 'Delivered' || order.status === 'Return Requested') {
+      throw new Error('Cannot cancel item at this stage');
+    }
+
+    const item = order.items.id(req.params.itemId);
+    if (!item) {
+      throw new Error('Item not found in order');
+    }
+
+    if (item.status === 'Cancelled') {
+      throw new Error('Item is already cancelled');
+    }
+
+    // Cancel item and restock
+    item.status = 'Cancelled';
+    await Product.findByIdAndUpdate(
+      item.product,
+      { $inc: { stock: item.quantity } },
+      { session }
+    );
+
+    // Recalculate total amount (subtract item price * quantity)
+    // Wait, price in item is the unit price. If price is total price for that item quantity, then subtract that.
+    // Let's verify how totalAmount was computed: itemTotal = product.price * item.quantity; totalAmount += itemTotal;
+    // So item.price is the unit price. We need to subtract (item.price * item.quantity).
+    order.totalAmount -= (item.price * item.quantity);
+
+    // If all items are cancelled, mark the entire order as cancelled
+    const allCancelled = order.items.every(i => i.status === 'Cancelled');
+    if (allCancelled) {
+      order.status = 'Cancelled';
+    }
+
+    const updatedOrder = await order.save({ session });
+    
+    await session.commitTransaction();
+    res.json(updatedOrder);
+  } catch (error) {
+    await session.abortTransaction();
+    res.status(400).json({ message: error.message || 'Error processing request' });
+  } finally {
+    session.endSession();
+  }
+};
+
+// @desc    Submit payment proof (UTR & Screenshot)
+// @route   PUT /api/orders/:id/submit-payment
+// @access  Public (Guest accessible with order ID)
+export const submitPaymentProof = async (req, res) => {
+  try {
+    const { utrNumber, paymentApp, screenshotUrl } = req.body;
     const order = await Order.findById(req.params.id);
 
     if (!order) {
       return res.status(404).json({ message: 'Order not found' });
     }
 
-    // Ensure user owns the order
-    if (order.user && order.user.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: 'Not authorized to update this order' });
+    if (!utrNumber || !screenshotUrl || !paymentApp) {
+      return res.status(400).json({ message: 'UTR Number, Payment App, and Screenshot are required' });
     }
 
-    if (order.status === 'Cancelled' || order.status === 'Return Requested') {
-      return res.status(400).json({ message: 'Order is already cancelled or return requested' });
+    // Duplicate UTR Check
+    const existingOrder = await Order.findOne({
+      'paymentProof.utrNumber': utrNumber,
+      _id: { $ne: order._id }, // Ignore the current order in case they are re-submitting the same UTR
+      paymentStatus: { $in: ['verification_pending', 'verified'] } // Check against pending or verified orders
+    });
+
+    if (existingOrder) {
+      return res.status(400).json({ 
+        message: 'This UTR number has already been used for another order. Please contact support if this is a mistake.' 
+      });
     }
 
-    const isShipped = order.status === 'Shipped' || order.status === 'Delivered';
-    order.status = isShipped ? 'Return Requested' : 'Cancelled';
+    order.paymentProof = {
+      utrNumber,
+      paymentApp,
+      screenshotUrl,
+      submittedAt: Date.now(),
+    };
+    order.paymentStatus = 'verification_pending';
+    order.status = 'Verification Pending';
 
-    // Restore stock
-    for (const item of order.items) {
-      await Product.updateOne({ _id: item.product }, { $inc: { stock: item.quantity } });
+    const updatedOrder = await order.save();
+    res.json(updatedOrder);
+  } catch (error) {
+    res.status(500).json({ message: error.message || 'Server Error' });
+  }
+};
+
+// @desc    Verify payment (Admin)
+// @route   PUT /api/orders/:id/verify-payment
+// @access  Private/Admin
+export const verifyPayment = async (req, res) => {
+  try {
+    const { isApproved } = req.body;
+    const order = await Order.findById(req.params.id);
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found' });
+    }
+
+    if (isApproved) {
+      order.paymentStatus = 'verified';
+      order.status = 'Confirmed';
+      order.isPaid = true;
+      order.paidAt = Date.now();
+      
+      if (!order.paymentProof) order.paymentProof = {};
+      order.paymentProof.verifiedAt = Date.now();
+      order.paymentProof.verifiedBy = req.user._id;
+    } else {
+      order.paymentStatus = 'rejected';
+      // Do not change order status from Verification Pending, let them try again.
+      // But clearing proof so they can re-upload if needed (optional)
+      if (!order.paymentProof) order.paymentProof = {};
+      order.paymentProof.verifiedAt = Date.now();
+      order.paymentProof.verifiedBy = req.user._id;
     }
 
     const updatedOrder = await order.save();
     res.json(updatedOrder);
   } catch (error) {
-    next(error);
+    res.status(500).json({ message: error.message || 'Server Error' });
   }
 };
 

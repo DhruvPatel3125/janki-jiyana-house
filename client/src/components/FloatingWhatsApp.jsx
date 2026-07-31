@@ -1,9 +1,14 @@
 import React from 'react';
 import { MessageCircle } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 
 export const FloatingWhatsApp = () => {
+  const location = useLocation();
   const storePhone = "9824934361";
   const whatsappUrl = `https://wa.me/91${storePhone}?text=Hello%20Janki%20Jiyana%20House,%20I%20want%20to%20inquire%20about%20products`;
+
+  // Admin dashboard pe WhatsApp button hide karo
+  if (location.pathname.startsWith('/admin')) return null;
 
   return (
     <a

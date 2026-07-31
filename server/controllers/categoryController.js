@@ -1,28 +1,7 @@
 import Category from '../models/Category.js';
 import Product from '../models/Product.js';
 
-const initialCategoriesData = [
-  {
-    name: 'Sanitary Pads',
-    description: 'Soft, rash-free ultra pads for complete protection',
-    image: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500&auto=format&fit=crop&q=80',
-  },
-  {
-    name: 'Adult Diapers',
-    description: 'Comfortable pull-up pants & taped adult diapers',
-    image: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=500&auto=format&fit=crop&q=80',
-  },
-  {
-    name: 'Children Diapers',
-    description: 'Ultra-soft 12-hour leakproof baby diaper pants',
-    image: 'https://images.unsplash.com/photo-1519689680058-324335c77eba?w=500&auto=format&fit=crop&q=80',
-  },
-  {
-    name: 'Baby Items',
-    description: 'Pure water wipes, gentle washes & care essentials',
-    image: 'https://images.unsplash.com/photo-1556228720-195a672e8a03?w=500&auto=format&fit=crop&q=80',
-  },
-];
+
 
 // @desc    Get all categories (auto-syncs defaults if empty)
 // @route   GET /api/categories
@@ -32,9 +11,6 @@ export const getCategories = async (req, res, next) => {
       .populate('parentCategory', 'name')
       .sort({ createdAt: 1 });
 
-    if (categories.length === 0) {
-      categories = await Category.insertMany(initialCategoriesData);
-    }
 
     res.json(categories);
   } catch (error) {

@@ -65,6 +65,7 @@ export const CartPage = () => {
                 <img
                   src={item.image || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=300'}
                   alt={item.name}
+                  loading="lazy"
                   className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-xl bg-slate-50 border border-slate-200 shrink-0"
                 />
                 <div className="space-y-1">

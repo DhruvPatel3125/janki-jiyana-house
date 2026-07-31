@@ -13,6 +13,12 @@ export const AdminProducts = () => {
   const [error, setError] = useState('');
   const { confirm } = useConfirm();
 
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const LIMIT = 20;
+
   // Debounced search query (300ms)
   const debouncedSearch = useDebounce(searchQuery, 300);
 
@@ -37,18 +43,35 @@ export const AdminProducts = () => {
   });
 
   useEffect(() => {
-    fetchData();
+    fetchCategories();
   }, []);
 
-  const fetchData = async () => {
-    setLoading(true);
+  useEffect(() => {
+    fetchProducts(1);
+  }, [debouncedSearch]);
+
+  const fetchCategories = async () => {
     try {
-      const [prodsData, catsData] = await Promise.all([api.getProducts(), api.getCategories()]);
-      setProducts(prodsData);
+      const catsData = await api.getCategories();
       setCategories(catsData);
       if (catsData.length > 0) {
         setFormData((prev) => ({ ...prev, category: catsData[0].name }));
       }
+    } catch (err) {
+      console.error('Failed to load categories', err);
+    }
+  };
+
+  const fetchProducts = async (page = 1) => {
+    setLoading(true);
+    try {
+      const params = { page, limit: LIMIT };
+      if (debouncedSearch) params.search = debouncedSearch;
+      const data = await api.getProducts(params);
+      setProducts(data.products || []);
+      setTotalPages(data.totalPages || 1);
+      setTotalProducts(data.totalProducts || 0);
+      setCurrentPage(page);
     } catch (err) {
       setError(err.message || 'Failed to load products');
     } finally {
@@ -101,6 +124,7 @@ export const AdminProducts = () => {
     try {
       await api.deleteProduct(id);
       setProducts(products.filter((p) => p._id !== id));
+      setTotalProducts(prev => prev - 1);
       showSuccessToast('Product deleted successfully');
     } catch (err) {
       showErrorToast(err.message || 'Failed to delete product');
@@ -150,6 +174,7 @@ export const AdminProducts = () => {
       } else {
         const created = await api.createProduct(payload);
         setProducts([created, ...products]);
+        setTotalProducts(prev => prev + 1);
         showSuccessToast('Product created successfully!');
       }
 
@@ -172,6 +197,25 @@ export const AdminProducts = () => {
       newImages[index] = data.imageUrl;
       setFormData({ ...formData, images: newImages });
       showSuccessToast('Image uploaded successfully');
+    } catch (err) {
+      showErrorToast(err.message || 'Image upload failed');
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
+    }
+  };
+
+  const uploadVariantImageHandler = async (e, index) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const data = await api.uploadFile(file);
+      const newVariants = [...formData.variants];
+      newVariants[index] = { ...newVariants[index], image: data.imageUrl };
+      setFormData({ ...formData, variants: newVariants });
+      showSuccessToast('Variant image uploaded successfully');
     } catch (err) {
       showErrorToast(err.message || 'Image upload failed');
     } finally {
@@ -206,11 +250,8 @@ export const AdminProducts = () => {
     setFormData({ ...formData, variants: formData.variants.filter((_, i) => i !== index) });
   };
 
-  const filteredProducts = products.filter(
-    (p) =>
-      p.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      p.category.toLowerCase().includes(debouncedSearch.toLowerCase())
-  );
+  // Server-side search — no client-side filter needed
+  const displayedProducts = products;
 
   return (
     <div className="space-y-6">
@@ -228,16 +269,17 @@ export const AdminProducts = () => {
         </button>
       </div>
 
-      {/* Filter / Debounced Search Bar */}
+      {/* Filter / Server Search Bar */}
       <div className="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm flex items-center gap-3">
         <Search className="w-4 h-4 text-slate-400" />
         <input
           type="text"
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Debounced search by product title or category..."
+          onChange={(e) => { setSearchQuery(e.target.value); }}
+          placeholder="Search products by name..."
           className="w-full text-xs font-semibold text-slate-800 focus:outline-none"
         />
+        <span className="text-[10px] text-slate-400 shrink-0 font-medium">{totalProducts} total</span>
       </div>
 
       {/* Table */}
@@ -259,13 +301,14 @@ export const AdminProducts = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium">
-                {filteredProducts.map((product) => (
+                {displayedProducts.map((product) => (
                   <tr key={product._id} className="hover:bg-slate-50/60 transition-colors">
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <img
                           src={product.images[0] || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=200'}
                           alt={product.name}
+                          loading="lazy"
                           className="w-10 h-10 object-cover rounded-xl bg-slate-100 border border-slate-200 shrink-0"
                         />
                         <div>
@@ -323,12 +366,13 @@ export const AdminProducts = () => {
 
           {/* Mobile Cards View */}
           <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
-            {filteredProducts.map((product) => (
+            {displayedProducts.map((product) => (
               <div key={product._id} className="bg-slate-50 border border-slate-100 p-4 rounded-2xl flex flex-col gap-3">
                 <div className="flex items-start gap-3 border-b border-slate-200/60 pb-3">
                   <img
                     src={product.images[0] || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=200'}
                     alt={product.name}
+                    loading="lazy"
                     className="w-12 h-12 object-cover rounded-xl bg-white border border-slate-200 shrink-0"
                   />
                   <div className="flex-1 min-w-0">
@@ -384,11 +428,34 @@ export const AdminProducts = () => {
                 </div>
               </div>
             ))}
-            {filteredProducts.length === 0 && (
+            {displayedProducts.length === 0 && (
               <div className="text-center py-6 text-slate-400 text-xs font-semibold">
                 No products found.
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <span className="text-xs text-slate-500 font-medium">Page {currentPage} of {totalPages}</span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => fetchProducts(currentPage - 1)}
+              disabled={currentPage <= 1 || loading}
+              className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              ← Prev
+            </button>
+            <button
+              onClick={() => fetchProducts(currentPage + 1)}
+              disabled={currentPage >= totalPages || loading}
+              className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              Next →
+            </button>
           </div>
         </div>
       )}
@@ -604,13 +671,19 @@ export const AdminProducts = () => {
                           </div>
                           <div>
                             <label className="block text-[10px] font-bold text-slate-500 mb-1">Image URL</label>
-                            <input
-                              type="url"
-                              value={variant.image || ''}
-                              onChange={(e) => handleVariantChange(index, 'image', e.target.value)}
-                              placeholder="Variant Image URL"
-                              className="w-full bg-white border border-slate-200 rounded-lg p-2 text-slate-900 font-semibold focus:outline-none focus:border-brand-500 text-xs"
-                            />
+                            <div className="flex items-center gap-2">
+                              <input
+                                type="url"
+                                value={variant.image || ''}
+                                onChange={(e) => handleVariantChange(index, 'image', e.target.value)}
+                                placeholder="Variant Image URL"
+                                className="w-full bg-white border border-slate-200 rounded-lg p-2 text-slate-900 font-semibold focus:outline-none focus:border-brand-500 text-xs flex-1"
+                              />
+                              <label className="cursor-pointer text-slate-600 hover:text-brand-600 bg-white border border-slate-200 px-3 py-2 rounded-lg text-[11px] font-bold flex items-center justify-center transition-colors">
+                                <Upload className="w-4 h-4" />
+                                <input type="file" onChange={(e) => uploadVariantImageHandler(e, index)} className="hidden" accept="image/jpeg, image/png, image/webp" />
+                              </label>
+                            </div>
                           </div>
                         </div>
                       </div>

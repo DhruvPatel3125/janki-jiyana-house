@@ -193,7 +193,7 @@ export const LoginPage = () => {
               setError('Google Login failed.');
               showErrorToast('Google Login failed.');
             }}
-            useOneTap
+            auto_select={true}
             shape="pill"
           />
         </div>

@@ -1,10 +1,10 @@
 import Product from '../models/Product.js';
 
-// @desc    Fetch all products with optional filter & search
+// @desc    Fetch all products with optional filter, search & pagination
 // @route   GET /api/products
 export const getProducts = async (req, res, next) => {
   try {
-    const { category, search, sort } = req.query;
+    const { category, search, sort, limit = 20, page = 1 } = req.query;
     let query = {};
 
     if (category && category !== 'All') {
@@ -12,6 +12,7 @@ export const getProducts = async (req, res, next) => {
     }
 
     if (search) {
+      // Use $text index if available, fallback to regex for partial matches
       query.name = { $regex: search, $options: 'i' };
     }
 
@@ -19,13 +20,32 @@ export const getProducts = async (req, res, next) => {
     if (sort === 'price-low') sortOptions = { price: 1 };
     if (sort === 'price-high') sortOptions = { price: -1 };
     if (sort === 'rating') sortOptions = { rating: -1 };
+    if (sort === 'newest') sortOptions = { createdAt: -1 };
 
-    const products = await Product.find(query).sort(sortOptions);
-    res.json(products);
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit))); // Cap at 100 per page
+    const skip = (pageNum - 1) * limitNum;
+
+    const [products, totalProducts] = await Promise.all([
+      Product.find(query).sort(sortOptions).skip(skip).limit(limitNum),
+      Product.countDocuments(query),
+    ]);
+
+    const totalPages = Math.ceil(totalProducts / limitNum);
+
+    res.json({
+      products,
+      totalProducts,
+      totalPages,
+      currentPage: pageNum,
+      hasNextPage: pageNum < totalPages,
+      hasPrevPage: pageNum > 1,
+    });
   } catch (error) {
     next(error);
   }
 };
+
 
 // @desc    Fetch single product by ID
 // @route   GET /api/products/:id

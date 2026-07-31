@@ -7,13 +7,17 @@ import {
   deleteVideo,
 } from '../controllers/videoController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
+import { validateBody, videoSchema } from '../middleware/validate.js';
 
 const router = express.Router();
 
-router.get('/', getVideos);
 router.get('/admin', protect, admin, getAllVideosAdmin);
-router.post('/', protect, admin, createVideo);
-router.put('/:id', protect, admin, updateVideo);
-router.delete('/:id', protect, admin, deleteVideo);
+router.route('/')
+  .get(getVideos)
+  .post(protect, admin, validateBody(videoSchema), createVideo);
+
+router.route('/:id')
+  .put(protect, admin, validateBody(videoSchema), updateVideo)
+  .delete(protect, admin, deleteVideo);
 
 export default router;

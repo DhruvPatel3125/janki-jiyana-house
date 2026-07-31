@@ -1,13 +1,22 @@
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
 const getHeaders = () => {
-  const user = JSON.parse(localStorage.getItem('userInfo') || 'null');
+  let user = null;
+  try {
+    user = JSON.parse(localStorage.getItem('userInfo') || 'null');
+  } catch (e) {
+    // Corrupted localStorage — clear it
+    localStorage.removeItem('userInfo');
+  }
   const headers = { 'Content-Type': 'application/json' };
   if (user && user.token) {
     headers['Authorization'] = `Bearer ${user.token}`;
   }
   return headers;
 };
+
+let cachedCategories = null;
+let categoriesPromise = null;
 
 // Safe Response Parser to prevent "Unexpected end of JSON input" errors
 const handleResponse = async (res, defaultError = 'Request failed') => {
@@ -32,6 +41,7 @@ export const api = {
     const query = new URLSearchParams(params).toString();
     const res = await fetch(`${API_BASE}/products?${query}`);
     return handleResponse(res, 'Failed to fetch products');
+    // Returns: { products, totalProducts, totalPages, currentPage, hasNextPage, hasPrevPage }
   },
 
   async getProductById(id) {
@@ -67,8 +77,17 @@ export const api = {
 
   // Categories
   async getCategories() {
-    const res = await fetch(`${API_BASE}/categories`);
-    return handleResponse(res, 'Failed to fetch categories');
+    if (cachedCategories) return cachedCategories;
+    if (categoriesPromise) return categoriesPromise;
+    categoriesPromise = fetch(`${API_BASE}/categories`).then(res => handleResponse(res, 'Failed to fetch categories')).then(data => {
+      cachedCategories = data;
+      categoriesPromise = null;
+      return data;
+    }).catch(err => {
+      categoriesPromise = null;
+      throw err;
+    });
+    return categoriesPromise;
   },
 
   async createCategory(categoryData) {
@@ -77,6 +96,7 @@ export const api = {
       headers: getHeaders(),
       body: JSON.stringify(categoryData),
     });
+    cachedCategories = null; // Invalidate cache
     return handleResponse(res, 'Failed to create category');
   },
 
@@ -86,6 +106,7 @@ export const api = {
       headers: getHeaders(),
       body: JSON.stringify(categoryData),
     });
+    cachedCategories = null; // Invalidate cache
     return handleResponse(res, 'Failed to update category');
   },
 
@@ -94,6 +115,7 @@ export const api = {
       method: 'DELETE',
       headers: getHeaders(),
     });
+    cachedCategories = null; // Invalidate cache
     return handleResponse(res, 'Failed to delete category');
   },
 
@@ -194,18 +216,21 @@ export const api = {
     return handleResponse(res, 'Order not found');
   },
 
-  async getMyOrders() {
-    const res = await fetch(`${API_BASE}/orders/myorders`, {
+  async getMyOrders(page = 1, limit = 10) {
+    const res = await fetch(`${API_BASE}/orders/myorders?page=${page}&limit=${limit}`, {
       headers: getHeaders(),
     });
     return handleResponse(res, 'Failed to fetch orders');
+    // Returns: { orders, totalOrders, totalPages, currentPage }
   },
 
-  async getAllOrders() {
-    const res = await fetch(`${API_BASE}/orders`, {
+  async getAllOrders(params = {}) {
+    const query = new URLSearchParams(params).toString();
+    const res = await fetch(`${API_BASE}/orders?${query}`, {
       headers: getHeaders(),
     });
     return handleResponse(res, 'Failed to fetch all orders');
+    // Returns: { orders, totalOrders, totalPages, currentPage }
   },
 
   async updateOrderStatus(id, status) {
@@ -217,12 +242,20 @@ export const api = {
     return handleResponse(res, 'Failed to update order status');
   },
 
-  async requestCancelOrReturn(id) {
-    const res = await fetch(`${API_BASE}/orders/${id}/cancel`, {
+  async requestCancelOrReturn(orderId) {
+    const res = await fetch(`${API_BASE}/orders/${orderId}/cancel`, {
       method: 'PUT',
       headers: getHeaders(),
     });
-    return handleResponse(res, 'Failed to update order status');
+    return handleResponse(res, 'Failed to cancel/return order');
+  },
+
+  async cancelItem(orderId, itemId) {
+    const res = await fetch(`${API_BASE}/orders/${orderId}/cancel-item/${itemId}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+    });
+    return handleResponse(res, 'Failed to cancel item');
   },
 
   async getAdminStats() {
@@ -230,6 +263,24 @@ export const api = {
       headers: getHeaders(),
     });
     return handleResponse(res, 'Failed to fetch admin stats');
+  },
+
+  async submitPaymentProof(id, proofData) {
+    const res = await fetch(`${API_BASE}/orders/${id}/submit-payment`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(proofData),
+    });
+    return handleResponse(res, 'Failed to submit payment proof');
+  },
+
+  async verifyPayment(id, isApproved) {
+    const res = await fetch(`${API_BASE}/orders/${id}/verify-payment`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ isApproved }),
+    });
+    return handleResponse(res, 'Failed to verify payment');
   },
 
   // Wishlist
@@ -313,5 +364,31 @@ export const api = {
       body: formData,
     });
     return handleResponse(res, 'Failed to upload image');
+  },
+
+  async uploadPaymentProof(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+    
+    const res = await fetch(`${API_BASE}/upload/payment-proof`, {
+      method: 'POST',
+      body: formData,
+    });
+    return handleResponse(res, 'Failed to upload payment proof');
+  },
+
+  // Settings
+  async getSettings() {
+    const res = await fetch(`${API_BASE}/settings`);
+    return handleResponse(res, 'Failed to fetch settings');
+  },
+
+  async updateSettings(settingsData) {
+    const res = await fetch(`${API_BASE}/settings`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(settingsData),
+    });
+    return handleResponse(res, 'Failed to update settings');
   },
 };

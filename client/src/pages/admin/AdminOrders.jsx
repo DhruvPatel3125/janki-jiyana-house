@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShoppingBag, Search, Eye, CheckCircle, Truck, Clock, XCircle, MapPin, Phone } from 'lucide-react';
 import { api } from '../../services/api';
 import { useConfirm } from '../../context/ConfirmContext';
+import { showErrorToast } from '../../utils/toast';
 
 export const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -11,17 +12,28 @@ export const AdminOrders = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const { confirm } = useConfirm();
 
-  const statuses = ['All', 'Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled', 'Return Requested'];
+  // Pagination
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalOrders, setTotalOrders] = useState(0);
+
+  const statuses = ['All', 'Pending', 'Verification Pending', 'Confirmed', 'Packed', 'Shipped', 'Delivered', 'Cancelled', 'Return Requested', 'Rejected'];
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    fetchOrders(1);
+  }, [statusFilter, searchQuery]);
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (page = 1) => {
     setLoading(true);
     try {
-      const data = await api.getAllOrders();
-      setOrders(data);
+      const params = { page, limit: 20 };
+      if (statusFilter !== 'All') params.status = statusFilter;
+      if (searchQuery.trim()) params.search = searchQuery.trim();
+      const data = await api.getAllOrders(params);
+      setOrders(data.orders || []);
+      setTotalPages(data.totalPages || 1);
+      setTotalOrders(data.totalOrders || 0);
+      setCurrentPage(page);
     } catch (err) {
       console.error('Failed to load orders', err);
     } finally {
@@ -50,17 +62,12 @@ export const AdminOrders = () => {
         setSelectedOrder(updated);
       }
     } catch (err) {
-      alert(err.message || 'Failed to update order status');
+      showErrorToast(err.message || 'Failed to update order status');
     }
   };
 
-  const filteredOrders = orders.filter((o) => {
-    const matchesStatus = statusFilter === 'All' || o.status === statusFilter;
-    const nameMatch = (o.user?.name || o.guestInfo?.name || '').toLowerCase().includes(searchQuery.toLowerCase());
-    const idMatch = o._id.toLowerCase().includes(searchQuery.toLowerCase());
-    const phoneMatch = (o.shippingAddress?.phone || '').includes(searchQuery);
-    return matchesStatus && (nameMatch || idMatch || phoneMatch);
-  });
+  // Server-side filtering — no client-side filter needed
+  const filteredOrders = orders;
 
   return (
     <div className="space-y-6">
@@ -78,7 +85,7 @@ export const AdminOrders = () => {
           {statuses.map((st) => (
             <button
               key={st}
-              onClick={() => setStatusFilter(st)}
+              onClick={() => { setStatusFilter(st); setCurrentPage(1); }}
               className={`px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ${
                 statusFilter === st
                   ? 'bg-brand-600 text-white shadow-md'
@@ -177,6 +184,7 @@ export const AdminOrders = () => {
                             <option value="Delivered">Delivered</option>
                             <option value="Cancelled">Cancelled</option>
                             <option value="Return Requested">Return Requested</option>
+                            <option value="Rejected">Rejected</option>
                           </select>
                         </td>
                         <td className="py-3.5 px-4 text-right">
@@ -257,6 +265,7 @@ export const AdminOrders = () => {
                         <option value="Delivered">Delivered</option>
                         <option value="Cancelled">Cancelled</option>
                         <option value="Return Requested">Return Requested</option>
+                        <option value="Rejected">Rejected</option>
                       </select>
                       <button
                         onClick={() => setSelectedOrder(order)}
@@ -307,12 +316,15 @@ export const AdminOrders = () => {
             <div className="space-y-2 text-xs">
               <span className="font-bold text-slate-800 block">Ordered Items ({selectedOrder.items?.length})</span>
               {selectedOrder.items?.map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between p-2 rounded-xl bg-slate-50">
+                <div key={idx} className={`flex items-center justify-between p-2 rounded-xl ${item.status === 'Cancelled' ? 'bg-rose-50 opacity-60' : 'bg-slate-50'}`}>
                   <div className="flex items-center gap-2">
                     <img src={item.image} alt={item.name} className="w-8 h-8 object-cover rounded-lg" />
-                    <span className="font-semibold text-slate-800 line-clamp-1 max-w-[180px]">{item.name}</span>
+                    <div className="flex flex-col">
+                      <span className="font-semibold text-slate-800 line-clamp-1 max-w-[180px]">{item.name}</span>
+                      {item.status === 'Cancelled' && <span className="text-[9px] font-bold text-rose-600 uppercase">Cancelled</span>}
+                    </div>
                   </div>
-                  <span className="font-bold">
+                  <span className={`font-bold ${item.status === 'Cancelled' ? 'line-through text-slate-400' : ''}`}>
                     {item.quantity} x ₹{item.price}
                   </span>
                 </div>
@@ -323,6 +335,28 @@ export const AdminOrders = () => {
               <span className="font-bold text-slate-800">Total Paid/Payable</span>
               <span className="font-black text-slate-900 text-lg">₹{selectedOrder.totalAmount}</span>
             </div>
+          </div>
+        </div>
+      )}
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="bg-white p-4 rounded-3xl border border-slate-200 shadow-sm flex items-center justify-between">
+          <span className="text-xs text-slate-500 font-medium">{totalOrders} total · Page {currentPage} of {totalPages}</span>
+          <div className="flex gap-2">
+            <button
+              onClick={() => fetchOrders(currentPage - 1)}
+              disabled={currentPage <= 1 || loading}
+              className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              ← Prev
+            </button>
+            <button
+              onClick={() => fetchOrders(currentPage + 1)}
+              disabled={currentPage >= totalPages || loading}
+              className="px-4 py-2 text-xs font-bold rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+            >
+              Next →
+            </button>
           </div>
         </div>
       )}

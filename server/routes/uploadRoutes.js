@@ -41,4 +41,18 @@ router.post('/', protect, admin, upload.single('image'), (req, res) => {
   }
 });
 
+// @route   POST /api/upload/payment-proof
+// @desc    Upload payment screenshot (Public/Customer)
+// @access  Public
+router.post('/payment-proof', upload.single('image'), (req, res) => {
+  if (req.file && req.file.path) {
+    res.json({
+      message: 'Payment proof uploaded successfully',
+      imageUrl: req.file.path,
+    });
+  } else {
+    res.status(400).json({ message: 'No image uploaded' });
+  }
+});
+
 export default router;

@@ -1,6 +1,7 @@
 import React, { useState, useRef,useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShieldCheck, Truck, Banknote, CreditCard, Lock, CheckCircle2, MailCheck, X, AlertCircle, ShieldAlert, MessageCircle } from 'lucide-react';
+import { ShieldCheck, Truck, Banknote, CreditCard, Lock, CheckCircle2, MailCheck, X, AlertCircle, ShieldAlert, MessageCircle, UploadCloud, Copy, IndianRupee } from 'lucide-react';
+import { QRCodeSVG } from 'qrcode.react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { api } from '../services/api';
@@ -21,7 +22,7 @@ export const CheckoutPage = () => {
     city: user?.address?.city || '',
     state: user?.address?.state || 'Gujarat',
     zipCode: user?.address?.zipCode || '',
-    paymentMethod: 'WhatsApp',
+    paymentMethod: 'UPI_QR',
   });
 
   // Sync formData with user data if user loads after mount
@@ -40,21 +41,36 @@ export const CheckoutPage = () => {
     }
   }, [user]);
 
+  // Redirect to cart if empty
+  useEffect(() => {
+    if (cartItems.length === 0) navigate('/cart');
+  }, [cartItems]);
   const [fieldErrors, setFieldErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Email OTP Modal State
-  const [showOtpModal, setShowOtpModal] = useState(false);
-  const [otpCode, setOtpCode] = useState('');
-  const [otpLoading, setOtpLoading] = useState(false);
-  const [otpError, setOtpError] = useState('');
-  const [otpSentMsg, setOtpSentMsg] = useState('');
+  // Payment Modal State
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [utrNumber, setUtrNumber] = useState('');
+  const [paymentApp, setPaymentApp] = useState('Google Pay');
+  const [screenshot, setScreenshot] = useState(null);
+  const [screenshotPreview, setScreenshotPreview] = useState('');
+  const [paymentSubmitting, setPaymentSubmitting] = useState(false);
+  const [settings, setSettings] = useState(null);
+  const fileInputRef = useRef(null);
 
-  if (cartItems.length === 0) {
-    navigate('/cart');
-    return null;
-  }
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        const data = await api.getSettings();
+        setSettings(data);
+      } catch (err) {
+        console.error('Failed to load settings', err);
+      }
+    };
+    fetchSettings();
+  }, []);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -100,7 +116,7 @@ export const CheckoutPage = () => {
   };
 
   // Helper to trigger direct order creation
-  const finalizeOrderCreation = async () => {
+  const finalizeOrderCreation = async (paymentProof = null) => {
     const orderPayload = {
       guestInfo: user
         ? null
@@ -121,12 +137,13 @@ export const CheckoutPage = () => {
         product: item.product,
         quantity: item.quantity,
       })),
+      ...(paymentProof && { paymentProof })
     };
 
     const createdOrder = await api.createOrder(orderPayload, idempotencyKeyRef.current);
     clearCart();
     
-    // If WhatsApp Order, open WhatsApp in a new tab with the Order ID
+    // Redirect based on payment method
     if (formData.paymentMethod === 'WhatsApp') {
       const text = encodeURIComponent(
         `Hello Janki Jiyana House,\n\nI want to place a new order.\n*Order ID:* ${createdOrder._id}\n\n` +
@@ -140,11 +157,11 @@ export const CheckoutPage = () => {
       );
       window.open(`https://wa.me/919824934361?text=${text}`, '_blank');
       showSuccessToast('Order placed! Redirecting to WhatsApp...');
+      navigate(`/order-success/${createdOrder._id}`);
     } else {
       showSuccessToast('Order placed successfully! Thank you for shopping with us.');
+      navigate(`/order-success/${createdOrder._id}`);
     }
-    
-    navigate(`/order-success/${createdOrder._id}`);
   };
 
   // Main Submit Handler
@@ -164,64 +181,78 @@ export const CheckoutPage = () => {
     setFieldErrors({});
     setError('');
 
-    // Check if user is already verified
-    if (user && user.isPhoneVerified && user.email === formData.email.trim().toLowerCase()) {
-      setLoading(true);
-      try {
-        await finalizeOrderCreation();
-      } catch (err) {
-        const msg = err.message || 'Failed to place order. Please try again.';
-        setError(msg);
-        showErrorToast(msg);
-      } finally {
-        setLoading(false);
+    // Check payment method
+    if (formData.paymentMethod === 'UPI_QR') {
+      setShowPaymentModal(true);
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      await finalizeOrderCreation();
+    } catch (err) {
+      const msg = err.message || 'Failed to place order. Please try again.';
+      setError(msg);
+      showErrorToast(msg);
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        showErrorToast('File size must be less than 5MB');
+        return;
       }
-    } else {
-      // Trigger Nodemailer Email OTP Verification Modal
-      setOtpLoading(true);
-      setOtpError('');
-      try {
-        const res = await sendOtp(formData.email.trim().toLowerCase(), formData.phone);
-        const msg = res.message || `OTP verification code sent to ${formData.email}`;
-        setOtpSentMsg(msg);
-        showSuccessToast(msg);
-        setShowOtpModal(true);
-      } catch (err) {
-        const msg = err.message || 'Failed to send OTP verification email. Please check your email address.';
-        setError(msg);
-        showErrorToast(msg);
-      } finally {
-        setOtpLoading(false);
-      }
+      setScreenshot(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setScreenshotPreview(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  // Modal OTP Verification Submit
-  const handleVerifyOtpAndPlaceOrder = async (e) => {
+  const handleCopyUpi = () => {
+    if (settings?.storeUpiId) {
+      navigator.clipboard.writeText(settings.storeUpiId);
+      showSuccessToast('UPI ID copied to clipboard');
+    }
+  };
+
+  const handleSubmitPayment = async (e) => {
     e.preventDefault();
-    if (!otpCode || otpCode.trim().length < 6) {
-      const msg = 'Please enter the 6-digit verification code sent to your email';
-      setOtpError(msg);
-      showErrorToast(msg);
+    if (!utrNumber.trim()) {
+      showErrorToast('Please enter the UTR/Reference Number');
+      return;
+    }
+    if (!screenshot) {
+      showErrorToast('Please upload a screenshot of the payment');
       return;
     }
 
-    setOtpLoading(true);
-    setOtpError('');
-
+    setPaymentSubmitting(true);
     try {
-      // Verify Email OTP via Nodemailer API
-      await verifyOtp(formData.email.trim().toLowerCase(), otpCode.trim(), formData.name);
+      // 1. Upload screenshot first
+      const uploadRes = await api.uploadPaymentProof(screenshot);
+      const imageUrl = uploadRes.imageUrl;
 
-      // Verification Successful! Proceed to place order
-      await finalizeOrderCreation();
-      setShowOtpModal(false);
-    } catch (err) {
-      const msg = err.message || 'Invalid OTP code. Please check your email inbox.';
-      setOtpError(msg);
-      showErrorToast(msg);
+      // 2. Prepare payment proof object
+      const paymentProof = {
+        utrNumber,
+        paymentApp,
+        screenshotUrl: imageUrl
+      };
+
+      // 3. Finalize order creation with proof
+      await finalizeOrderCreation(paymentProof);
+      
+      setShowPaymentModal(false);
+    } catch (error) {
+      showErrorToast(error.message || 'Failed to submit payment details');
     } finally {
-      setOtpLoading(false);
+      setPaymentSubmitting(false);
     }
   };
 
@@ -388,6 +419,28 @@ export const CheckoutPage = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 pt-1">
               <label
+                className={`p-4 rounded-2xl border-2 cursor-pointer flex items-start gap-3 transition-all ${formData.paymentMethod === 'UPI_QR'
+                    ? 'border-brand-600 bg-brand-50/40 shadow-sm'
+                    : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
+                  }`}
+              >
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="UPI_QR"
+                  checked={formData.paymentMethod === 'UPI_QR'}
+                  onChange={handleChange}
+                  className="mt-1 accent-brand-600"
+                />
+                <div>
+                  <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs sm:text-sm">
+                    <Banknote className="w-4 h-4 text-emerald-600 shrink-0" /> Pay via UPI QR
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Google Pay, PhonePe, Paytm, BHIM.</p>
+                </div>
+              </label>
+
+              <label
                 className={`p-4 rounded-2xl border-2 cursor-pointer flex items-start gap-3 transition-all ${formData.paymentMethod === 'WhatsApp'
                     ? 'border-brand-600 bg-brand-50/40 shadow-sm'
                     : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
@@ -408,28 +461,6 @@ export const CheckoutPage = () => {
                   <p className="text-[11px] text-slate-500 mt-0.5">Send order details directly to our WhatsApp to confirm.</p>
                 </div>
               </label>
-
-              <label
-                className={`p-4 rounded-2xl border-2 cursor-pointer flex items-start gap-3 transition-all ${formData.paymentMethod === 'Razorpay'
-                    ? 'border-brand-600 bg-brand-50/40 shadow-sm'
-                    : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
-                  }`}
-              >
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="Razorpay"
-                  checked={formData.paymentMethod === 'Razorpay'}
-                  onChange={handleChange}
-                  className="mt-1 accent-brand-600"
-                />
-                <div>
-                  <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs sm:text-sm">
-                    <CreditCard className="w-4 h-4 text-sky-600 shrink-0" /> Razorpay / Online
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">UPI, Credit/Debit Cards, NetBanking.</p>
-                </div>
-              </label>
             </div>
           </div>
         </div>
@@ -441,17 +472,22 @@ export const CheckoutPage = () => {
           </h3>
 
           <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
-            {cartItems.map((item) => (
-              <div key={item.product} className="flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                  <img src={item.image} alt={item.name} className="w-9 h-9 object-cover rounded-lg bg-slate-50 border border-slate-100" />
-                  <span className="font-semibold text-slate-800 line-clamp-1 max-w-[130px] sm:max-w-[160px]">{item.name}</span>
+            {cartItems.map((item) => {
+              const itemId = item.uniqueId || item.product;
+              return (
+                <div key={itemId} className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <img src={item.image} alt={item.name} className="w-9 h-9 object-cover rounded-lg bg-slate-50 border border-slate-100" />
+                    <span className="font-semibold text-slate-800 line-clamp-2 max-w-[130px] sm:max-w-[160px]">
+                      {item.name} {item.variant ? `(${item.variant.name}: ${item.variant.value})` : ''}
+                    </span>
+                  </div>
+                  <span className="font-bold text-slate-900 shrink-0">
+                    {item.quantity} x ₹{item.price}
+                  </span>
                 </div>
-                <span className="font-bold text-slate-900 shrink-0">
-                  {item.quantity} x ₹{item.price}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           <div className="border-t border-slate-100 pt-3 space-y-2 text-xs">
@@ -471,16 +507,16 @@ export const CheckoutPage = () => {
 
           <button
             type="submit"
-            disabled={loading || otpLoading}
-            className={`w-full py-4 rounded-2xl font-bold text-xs sm:text-sm text-white shadow-md transition-all flex items-center justify-center gap-2 active:scale-95 ${loading || otpLoading
+            disabled={loading}
+            className={`w-full py-4 rounded-2xl font-bold text-xs sm:text-sm text-white shadow-md transition-all flex items-center justify-center gap-2 active:scale-95 ${loading
                 ? 'bg-slate-400 cursor-not-allowed'
                 : 'bg-emerald-600 hover:bg-emerald-700 shadow-emerald-600/20'
               }`}
           >
-            {loading || otpLoading ? (
+            {loading ? (
               <>
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Sending Verification...
+                Processing...
               </>
             ) : (
               <>
@@ -507,55 +543,130 @@ export const CheckoutPage = () => {
         </div>
       </form>
 
-      {/* NODEMAILER EMAIL OTP VERIFICATION MODAL */}
-      {showOtpModal && (
-        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl border border-slate-200 max-w-md w-full p-6 sm:p-8 space-y-5 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+      {/* UPI QR PAYMENT MODAL */}
+      {showPaymentModal && (
+        <div className="fixed inset-0 z-[60] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl border border-slate-200 max-w-md w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl relative animate-in fade-in zoom-in duration-200">
             <button
-              onClick={() => setShowOtpModal(false)}
+              onClick={() => setShowPaymentModal(false)}
               className="absolute top-4 right-4 p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100"
             >
               <X className="w-5 h-5" />
             </button>
 
             <div className="text-center space-y-2">
-              <div className="w-14 h-14 bg-brand-50 text-brand-600 rounded-2xl flex items-center justify-center mx-auto border border-brand-100 shadow-sm">
-                <MailCheck className="w-7 h-7" />
-              </div>
-              <h3 className="text-xl font-black text-slate-900">Email Verification Required</h3>
-              <p className="text-slate-500 text-xs leading-relaxed">
-                To confirm your order & prevent fake bookings, we sent a 6-digit OTP code to{' '}
-                <span className="font-bold text-slate-800">{formData.email}</span>.
+              <h3 className="text-xl font-black text-slate-900">Scan & Pay to Confirm</h3>
+              <p className="text-slate-500 text-xs">
+                Your order will be created once you upload the payment proof.
               </p>
             </div>
 
-            {otpError && (
-              <div className="bg-rose-50 border border-rose-200 text-rose-700 p-3 rounded-xl text-xs font-semibold">
-                {otpError}
+            <div className="bg-slate-50 p-4 rounded-2xl flex justify-between items-center border border-slate-100">
+              <span className="text-xs font-bold text-slate-500">Amount to Pay</span>
+              <div className="text-xl font-black text-slate-900 flex items-center gap-1">
+                <IndianRupee className="w-5 h-5 text-emerald-600" />
+                {cartSubtotal}
               </div>
+            </div>
+
+            {settings?.storeUpiId ? (
+              <div className="flex flex-col items-center space-y-4">
+                <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-100">
+                  <QRCodeSVG 
+                    value={`upi://pay?pa=${encodeURIComponent(settings.storeUpiId)}&pn=${encodeURIComponent(settings.storeName)}&am=${cartSubtotal}&cu=INR`}
+                    size={160}
+                    level="H"
+                    includeMargin={true}
+                  />
+                </div>
+                
+                <div className="w-full">
+                  <label className="block text-[10px] font-bold text-slate-500 mb-1 text-center">Or pay directly to this UPI ID</label>
+                  <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl p-1 max-w-[250px] mx-auto">
+                    <div className="flex-1 px-2 text-xs font-bold text-slate-700 truncate text-center">
+                      {settings.storeUpiId}
+                    </div>
+                    <button 
+                      type="button"
+                      onClick={handleCopyUpi}
+                      className="p-1.5 bg-white rounded-lg border border-slate-200 text-slate-600 hover:text-brand-600"
+                    >
+                      <Copy className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center text-rose-500 text-sm font-bold">Store UPI ID is not configured.</div>
             )}
 
-            <form onSubmit={handleVerifyOtpAndPlaceOrder} noValidate className="space-y-4">
+            <form onSubmit={handleSubmitPayment} className="space-y-4 pt-2 border-t border-slate-100">
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1 text-center">
-                  Enter 6-Digit Email Verification Code
-                </label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Payment App Used *</label>
+                <select
+                  value={paymentApp}
+                  onChange={(e) => setPaymentApp(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-semibold focus:outline-none focus:border-brand-500"
+                >
+                  <option value="Google Pay">Google Pay</option>
+                  <option value="PhonePe">PhonePe</option>
+                  <option value="Paytm">Paytm</option>
+                  <option value="BHIM">BHIM UPI</option>
+                  <option value="Other">Other Bank App</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">12-Digit UTR / Ref Number *</label>
                 <input
                   type="text"
-                  maxLength={6}
-                  value={otpCode}
-                  onChange={(e) => setOtpCode(e.target.value)}
-                  placeholder="Enter 6-digit code"
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-center tracking-widest text-xl font-black text-slate-900 focus:outline-none focus:border-brand-500"
+                  value={utrNumber}
+                  onChange={(e) => setUtrNumber(e.target.value)}
+                  placeholder="e.g. 312456789012"
+                  className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs font-semibold focus:outline-none focus:border-brand-500"
+                  required
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Payment Screenshot *</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className={`border-2 border-dashed rounded-xl p-4 text-center cursor-pointer transition-colors ${
+                    screenshotPreview 
+                      ? 'border-emerald-500 bg-emerald-50/50' 
+                      : 'border-slate-300 hover:border-brand-500 hover:bg-slate-50'
+                  }`}
+                >
+                  {screenshotPreview ? (
+                    <div className="space-y-2">
+                      <img src={screenshotPreview} alt="Preview" className="h-20 object-contain mx-auto rounded-lg shadow-sm" />
+                      <p className="text-[10px] font-bold text-emerald-700">Click to change</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <UploadCloud className="w-5 h-5 text-slate-400 mx-auto" />
+                      <div>
+                        <p className="text-xs font-bold text-slate-700">Upload screenshot</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <button
                 type="submit"
-                disabled={otpLoading}
-                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-xs sm:text-sm active:scale-95"
+                disabled={paymentSubmitting}
+                className="w-full bg-slate-900 hover:bg-black text-white font-bold py-3.5 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 text-xs active:scale-95 disabled:bg-slate-400 mt-2"
               >
-                {otpLoading ? 'Verifying OTP Code...' : 'Verify OTP & Complete Order'} <CheckCircle2 className="w-4 h-4" />
+                {paymentSubmitting ? 'Uploading Proof...' : 'Submit Proof & Place Order'}
               </button>
             </form>
           </div>

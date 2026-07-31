@@ -45,12 +45,17 @@ export const ProductDetailPage = () => {
           setSelectedVariant({ ...firstVariant, value: firstValue });
         }
 
-        // Fetch similar products
-        const allProds = await api.getProducts();
-        let sameCatProds = allProds.filter((p) => p.category === data.category && p._id !== data._id);
+        // Fetch similar products efficiently by passing limit to the backend
+        const allProdsData = await api.getProducts({ category: data.category, limit: 5 });
+        const allProds = allProdsData.products || [];
+        let sameCatProds = allProds.filter((p) => p._id !== data._id);
+        
+        // If we don't have enough similar products in the same category, fetch some random ones
         if (sameCatProds.length < 4) {
-          const otherProds = allProds.filter((p) => p._id !== data._id && !sameCatProds.some((cp) => cp._id === p._id));
-          sameCatProds = [...sameCatProds, ...otherProds];
+          const otherProdsData = await api.getProducts({ limit: 5 });
+          const otherProds = otherProdsData.products || [];
+          const newProds = otherProds.filter((p) => p._id !== data._id && !sameCatProds.some((cp) => cp._id === p._id));
+          sameCatProds = [...sameCatProds, ...newProds];
         }
         setSimilarProducts(sameCatProds.slice(0, 4));
       } catch (err) {
@@ -191,6 +196,7 @@ export const ProductDetailPage = () => {
             <img
               src={selectedImage || PLACEHOLDER_IMAGE}
               alt={product.name}
+              loading="lazy"
               onError={(e) => { e.target.onerror = null; e.target.src = PLACEHOLDER_IMAGE; }}
               className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-out"
             />
@@ -213,7 +219,7 @@ export const ProductDetailPage = () => {
                   onClick={() => setSelectedImage(img)}
                   className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 transition-all duration-300 shrink-0 bg-white ${selectedImage === img ? 'border-brand-600 shadow-md scale-105' : 'border-transparent opacity-60 hover:opacity-100 hover:scale-95'}`}
                 >
-                  <img src={img} alt={`Thumb ${idx + 1}`} className="w-full h-full object-contain p-1.5" />
+                  <img src={img} alt={`Thumb ${idx + 1}`} loading="lazy" className="w-full h-full object-contain p-1.5" />
                 </button>
               ))}
             </div>

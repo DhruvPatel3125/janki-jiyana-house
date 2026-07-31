@@ -18,6 +18,9 @@ export const ShopPage = () => {
   const [selectedCategory, setSelectedCategory] = useState(initialCategory);
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const [sortBy, setSortBy] = useState('newest');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
   
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -37,10 +40,16 @@ export const ShopPage = () => {
     fetchCategories();
   }, []);
 
-  // Sync state with URL params
+  // Sync state with URL params — reset page on filter change
   useEffect(() => {
     const cat = searchParams.get('category') || 'All';
+    const search = searchParams.get('search') || '';
     setSelectedCategory(cat);
+    setCurrentPage(1);
+    setProducts([]);
+    if (search) {
+      setSearchQuery(search);
+    }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [searchParams]);
 
@@ -78,21 +87,22 @@ export const ShopPage = () => {
   // Fetch products ONLY when in product display mode or searching
   useEffect(() => {
     if (displayMode === 'categories' && !debouncedSearch) {
-      // No need to fetch products if we are just showing categories and there is no search query
       setLoading(false);
       return;
     }
     
     const fetchProducts = async () => {
       setLoading(true);
+      setCurrentPage(1);
       try {
-        const params = {};
+        const params = { page: 1, limit: 20 };
         if (selectedCategory !== 'All') params.category = selectedCategory;
         if (debouncedSearch) params.search = debouncedSearch;
         if (sortBy) params.sort = sortBy;
 
         const data = await api.getProducts(params);
-        setProducts(data);
+        setProducts(data.products || []);
+        setTotalPages(data.totalPages || 1);
         setError('');
       } catch (err) {
         console.error('Failed to fetch products', err);
@@ -103,6 +113,26 @@ export const ShopPage = () => {
     };
     fetchProducts();
   }, [selectedCategory, debouncedSearch, sortBy, displayMode]);
+
+  const handleLoadMore = async () => {
+    const nextPage = currentPage + 1;
+    setLoadingMore(true);
+    try {
+      const params = { page: nextPage, limit: 20 };
+      if (selectedCategory !== 'All') params.category = selectedCategory;
+      if (debouncedSearch) params.search = debouncedSearch;
+      if (sortBy) params.sort = sortBy;
+
+      const data = await api.getProducts(params);
+      setProducts(prev => [...prev, ...(data.products || [])]);
+      setTotalPages(data.totalPages || 1);
+      setCurrentPage(nextPage);
+    } catch (err) {
+      console.error('Failed to load more products', err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   // Handle category navigation
   const navigateToCategory = (catName) => {
@@ -221,11 +251,29 @@ export const ShopPage = () => {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 items-stretch">
-            {products.map((product) => (
-              <ProductCard key={product._id} product={product} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6 items-stretch">
+              {products.map((product) => (
+                <ProductCard key={product._id} product={product} />
+              ))}
+            </div>
+            {/* Load More Button */}
+            {currentPage < totalPages && (
+              <div className="flex justify-center pt-4">
+                <button
+                  onClick={handleLoadMore}
+                  disabled={loadingMore}
+                  className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold px-8 py-3 rounded-2xl shadow-md transition-all active:scale-95 disabled:opacity-60"
+                >
+                  {loadingMore ? (
+                    <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Loading...</>
+                  ) : (
+                    <><RefreshCw className="w-3.5 h-3.5" /> Load More Products</>
+                  )}
+                </button>
+              </div>
+            )}
+          </>
         )
       ) : (
         // Render Categories Hierarchy

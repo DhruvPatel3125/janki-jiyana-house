@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { CheckCircle2, Package, MapPin, Truck, ShoppingBag, PhoneCall, MessageCircle, ShieldCheck } from 'lucide-react';
 import { api } from '../services/api';
 
 export const OrderSuccessPage = () => {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -13,8 +14,12 @@ export const OrderSuccessPage = () => {
       try {
         const data = await api.getOrderById(id);
         setOrder(data);
-      } catch (err) {
-        console.error('Failed to load order', err);
+      } catch (error) {
+        if (error.message.includes('Not authorized') || error.message.includes('log in')) {
+          navigate('/login', { state: { returnTo: `/order-success/${id}` } });
+        } else {
+          console.error('Failed to load order', error);
+        }
       } finally {
         setLoading(false);
       }

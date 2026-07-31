@@ -7,6 +7,7 @@ import { TrustBadges } from '../components/TrustBadges';
 import { TrendingVideosSection } from '../components/TrendingVideosSection';
 import { ProductSkeleton } from '../components/skeletons/ProductSkeleton';
 
+
 export const HomePage = () => {
   const [newProducts, setNewProducts] = useState([]);
   const [featuredProducts, setFeaturedProducts] = useState([]);
@@ -79,11 +80,12 @@ export const HomePage = () => {
     const fetchData = async () => {
       try {
         const [prodsData, catsData] = await Promise.all([
-          api.getProducts(),
+          api.getProducts({ limit: 12 }),
           api.getCategories(),
         ]);
-        setNewProducts(prodsData.slice(0, 6));
-        setFeaturedProducts(prodsData.slice().reverse().slice(0, 6));
+        const prods = prodsData.products || [];
+        setNewProducts(prods.slice(0, 6));
+        setFeaturedProducts(prods.slice(-6).reverse());
         setCategories(catsData);
       } catch (err) {
         console.error('Failed to load homepage data', err);

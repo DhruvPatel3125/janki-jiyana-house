@@ -160,6 +160,30 @@ export const productSchema = Joi.object({
   ).optional(),
 });
 
+// Category Schema (Create/Update)
+export const categorySchema = Joi.object({
+  name: Joi.string().trim().required().messages({
+    'string.empty': 'Category name is required'
+  }),
+  description: Joi.string().trim().optional().allow(''),
+  image: Joi.string().trim().uri().optional().allow('').messages({
+    'string.uri': 'Image must be a valid URL'
+  }),
+  parentCategory: Joi.string().optional().allow(null, ''),
+});
+
+// Video Schema (Create/Update)
+export const videoSchema = Joi.object({
+  title: Joi.string().trim().required().messages({
+    'string.empty': 'Video title is required'
+  }),
+  youtubeId: Joi.string().trim().required().messages({
+    'string.empty': 'YouTube Video ID is required'
+  }),
+  thumbnail: Joi.string().trim().uri().optional().allow(''),
+  isActive: Joi.boolean().optional(),
+});
+
 // Express Validation Middleware
 export const validateBody = (schema) => (req, res, next) => {
   const { error } = schema.validate(req.body, { abortEarly: false });

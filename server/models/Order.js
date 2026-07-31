@@ -10,6 +10,11 @@ const orderItemSchema = new mongoose.Schema({
   image: { type: String, required: true },
   price: { type: Number, required: true },
   quantity: { type: Number, required: true, min: 1 },
+  status: {
+    type: String,
+    enum: ['Active', 'Cancelled', 'Returned'],
+    default: 'Active',
+  },
 });
 
 const orderSchema = new mongoose.Schema(
@@ -39,13 +44,29 @@ const orderSchema = new mongoose.Schema(
     },
     paymentMethod: {
       type: String,
-      enum: ['COD', 'Razorpay', 'WhatsApp'],
+      enum: ['COD', 'Razorpay', 'WhatsApp', 'UPI_QR'],
       default: 'WhatsApp',
+    },
+    paymentStatus: {
+      type: String,
+      enum: ['pending', 'verification_pending', 'verified', 'rejected'],
+      default: 'pending',
     },
     status: {
       type: String,
-      enum: ['Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled', 'Return Requested'],
+      enum: ['Pending', 'Pending Payment', 'Verification Pending', 'Payment Verified', 'Confirmed', 'Packed', 'Shipped', 'Delivered', 'Cancelled', 'Return Requested', 'Rejected'],
       default: 'Pending',
+    },
+    paymentProof: {
+      utrNumber: String,
+      paymentApp: String,
+      screenshotUrl: String,
+      submittedAt: Date,
+      verifiedAt: Date,
+      verifiedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
     },
     isPaid: {
       type: Boolean,
@@ -62,6 +83,12 @@ const orderSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+orderSchema.index({ user: 1, createdAt: -1 });
+orderSchema.index({ status: 1, createdAt: -1 });
+orderSchema.index({ createdAt: -1 });
+orderSchema.index({ 'paymentProof.utrNumber': 1 });
+orderSchema.index({ paymentStatus: 1 });
 
 const Order = mongoose.model('Order', orderSchema);
 export default Order;
