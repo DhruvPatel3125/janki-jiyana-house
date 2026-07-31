@@ -18,4 +18,5 @@ Disallow: /login
 Disallow: /register
 
 # Sitemap location for Google Search Console
-Sitemap: https://jankijiyanahouse.com/sitemap.xml
+Sitemap: https://janki-jiyana-house.vercel.app/sitemap.xml
+
