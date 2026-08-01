@@ -1,12 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { ShoppingBag, Search, Eye, CheckCircle, Truck, Clock, XCircle, MapPin, Phone } from 'lucide-react';
 import { api } from '../../services/api';
 import { useConfirm } from '../../context/ConfirmContext';
 import { showErrorToast } from '../../utils/toast';
 
 export const AdminOrders = () => {
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const initialStatus = queryParams.get('status') || 'All';
+
   const [orders, setOrders] = useState([]);
-  const [statusFilter, setStatusFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -20,15 +25,16 @@ export const AdminOrders = () => {
   const statuses = ['All', 'Pending', 'Verification Pending', 'Confirmed', 'Packed', 'Shipped', 'Delivered', 'Cancelled', 'Return Requested', 'Rejected'];
 
   useEffect(() => {
-    fetchOrders(1);
+    fetchOrders(1, statusFilter, searchQuery);
   }, [statusFilter, searchQuery]);
 
-  const fetchOrders = async (page = 1) => {
+  const fetchOrders = async (page = 1, currentStatus = statusFilter, currentSearch = searchQuery) => {
     setLoading(true);
     try {
       const params = { page, limit: 20 };
-      if (statusFilter !== 'All') params.status = statusFilter;
-      if (searchQuery.trim()) params.search = searchQuery.trim();
+      if (currentStatus !== 'All') params.status = currentStatus;
+      if (currentSearch.trim()) params.search = currentSearch.trim();
+      
       const data = await api.getAllOrders(params);
       setOrders(data.orders || []);
       setTotalPages(data.totalPages || 1);
@@ -66,8 +72,23 @@ export const AdminOrders = () => {
     }
   };
 
-  // Server-side filtering — no client-side filter needed
-  const filteredOrders = orders;
+  // Client-side filtering as a reliable fallback in case server-side params are dropped
+  const filteredOrders = orders.filter((order) => {
+    let match = true;
+    if (statusFilter !== 'All' && order.status !== statusFilter) {
+      match = false;
+    }
+    if (searchQuery.trim()) {
+      const search = searchQuery.toLowerCase();
+      const idStr = order._id.toLowerCase();
+      const custName = (order.user?.name || order.guestInfo?.name || '').toLowerCase();
+      const custPhone = (order.shippingAddress?.phone || order.guestInfo?.phone || '').toLowerCase();
+      if (!idStr.includes(search) && !custName.includes(search) && !custPhone.includes(search)) {
+        match = false;
+      }
+    }
+    return match;
+  });
 
   return (
     <div className="space-y-6">

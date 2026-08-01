@@ -120,9 +120,14 @@ export const Footer = () => {
             <ul className="space-y-3 text-xs">
               <li className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-brand-400 shrink-0 mt-0.5" />
-                <a href="https://maps.app.goo.gl/sSd4z5fBGNXG1VFX9" target="_blank" rel="noreferrer" className="leading-relaxed hover:text-white transition-colors">
-                  {storeAddress}
-                </a>
+                <div className="flex flex-col gap-1.5">
+                  <a href="https://maps.app.goo.gl/sSd4z5fBGNXG1VFX9" target="_blank" rel="noreferrer" className="leading-relaxed hover:text-white transition-colors">
+                    {storeAddress}
+                  </a>
+                  <a href="https://maps.app.goo.gl/sSd4z5fBGNXG1VFX9" target="_blank" rel="noreferrer" className="text-brand-400 hover:text-brand-300 font-semibold underline underline-offset-2 w-max inline-flex items-center gap-1">
+                    View on Map
+                  </a>
+                </div>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-brand-400 shrink-0" />

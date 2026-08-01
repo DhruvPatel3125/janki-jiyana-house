@@ -11,6 +11,7 @@ import {
   PieChart as PieIcon,
   BarChart3,
   Package,
+  CheckCircle,
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -120,14 +121,14 @@ export const AdminOverview = () => {
       value: stats?.pendingOrdersCount || 0,
       icon: Clock,
       bg: 'bg-amber-50 text-amber-600 border-amber-100',
-      link: '/admin/orders',
+      link: '/admin/orders?status=Pending',
     },
     {
-      label: 'Low Stock Items',
-      value: stats?.lowStockProductsCount || 0,
-      icon: AlertTriangle,
-      bg: 'bg-rose-50 text-rose-600 border-rose-100',
-      link: '/admin/products',
+      label: 'Confirmed Orders',
+      value: stats?.confirmedOrdersCount || 0,
+      icon: CheckCircle,
+      bg: 'bg-blue-50 text-blue-600 border-blue-100',
+      link: '/admin/orders?status=Confirmed',
     },
     {
       label: 'Total Customers',

@@ -27,7 +27,7 @@ export const HomePage = () => {
   const heroSlides = [
     {
       id: 1,
-      tag: 'FEMININE HYGIENE & MINT FRESHNESS',
+      tag: 'CIAZA HYGIENE & MINT FRESHNESS',
       title: '320mm Mint Cooling Sanitary Pads',
       subtitle: 'Extra long 320mm sanitary pads with cooling mint freshness. Provides 100% leak protection, odour control, and soft cotton feel for heavy flow days.',
       highlights: [
@@ -146,7 +146,7 @@ export const HomePage = () => {
     '@graph': [
       {
         '@type': 'Organization',
-        '@id': 'https://janki-jiyana-house.vercel.app/#organization',
+        '@id': 'https://janki-jiyana-house.verce+l.app/#organization',
         'name': 'Janki Jiyana House',
         'url': 'https://janki-jiyana-house.vercel.app',
         'logo': 'https://janki-jiyana-house.vercel.app/logo.png',
