@@ -33,5 +33,18 @@
       "src": "^/(?!api/)(.*)$",
       "dest": "/client/index.html"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "janki-jiyana-house.vercel.app"
+        }
+      ],
+      "destination": "https://www.jankijiyanahouse.com/$1",
+      "permanent": true
+    }
   ]
 }
