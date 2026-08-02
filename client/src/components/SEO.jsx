@@ -23,8 +23,8 @@ export const SEO = ({
     'Janki Jiyana House, baby care store Surat, baby diapers, adult diapers Surat, sanitary pads, pull up diapers, hygiene products Surat, kids clothing Surat';
   const metaKeywords = keywords || defaultKeywords;
 
-  const currentUrl = canonical || (typeof window !== 'undefined' ? window.location.href : 'https://janki-jiyana-house.vercel.app');
-  const defaultOgImage = typeof window !== 'undefined' ? `${window.location.origin}/logo.png` : 'https://janki-jiyana-house.vercel.app/logo.png';
+  const currentUrl = canonical || (typeof window !== 'undefined' ? window.location.href : 'https://www.jankijiyanahouse.com');
+  const defaultOgImage = typeof window !== 'undefined' ? `${window.location.origin}/logo.png` : 'https://www.jankijiyanahouse.com/logo.png';
 
   const metaOgImage = ogImage || defaultOgImage;
 

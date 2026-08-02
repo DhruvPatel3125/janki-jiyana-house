@@ -1,4 +1,4 @@
-# User-agent directives for Googlebot & all search engines
+@# User-agent directives for Googlebot & all search engines
 User-agent: *
 Allow: /
 Allow: /shop
@@ -18,5 +18,5 @@ Disallow: /login
 Disallow: /register
 
 # Sitemap location for Google Search Console
-Sitemap: https://janki-jiyana-house.vercel.app/sitemap.xml
+Sitemap: https://www.jankijiyanahouse.com/sitemap.xml
 

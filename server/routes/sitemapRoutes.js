@@ -9,7 +9,7 @@ router.get('/', async (req, res) => {
   try {
     const host = req.get('host');
     const protocol = req.protocol || 'https';
-    const baseUrl = process.env.CLIENT_URL || `${protocol}://${host}` || 'https://janki-jiyana-house.vercel.app';
+    const baseUrl = process.env.CLIENT_URL || `${protocol}://${host}` || 'https://www.jankijiyanahouse.com';
     const products = await Product.find({}).select('_id updatedAt').lean();
 
     const staticPages = [

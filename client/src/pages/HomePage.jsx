@@ -146,18 +146,17 @@ export const HomePage = () => {
     '@graph': [
       {
         '@type': 'Organization',
-        '@id': 'https://janki-jiyana-house.verce+l.app/#organization',
+        '@id': 'https://www.jankijiyanahouse.com/#organization',
         'name': 'Janki Jiyana House',
-        'url': 'https://janki-jiyana-house.vercel.app',
-        'logo': 'https://janki-jiyana-house.vercel.app/logo.png',
+        'url': 'https://www.jankijiyanahouse.com',
+        'logo': 'https://www.jankijiyanahouse.com/logo.png',
         'description': 'Leading Baby Care, Adult Care Diapers and Personal Hygiene Store in Surat, Gujarat.',
         'telephone': '+919824934361'
       },
       {
         '@type': 'LocalBusiness',
-        '@id': 'https://janki-jiyana-house.vercel.app/#store',
         'name': 'Janki Jiyana House',
-        'image': 'https://janki-jiyana-house.vercel.app/logo.png',
+        'image': 'https://www.jankijiyanahouse.com/logo.png',
 
         'telephone': '+919824934361',
         'priceRange': '₹',
