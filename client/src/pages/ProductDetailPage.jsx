@@ -30,6 +30,7 @@ export const ProductDetailPage = () => {
 
   // Fetch product
   useEffect(() => {
+    window.scrollTo(0, 0);
     const fetchProductDetails = async () => {
       setLoading(true);
       setError('');
