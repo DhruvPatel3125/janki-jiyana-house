@@ -1,4 +1,4 @@
-@# User-agent directives for Googlebot & all search engines
+# User-agent directives for Googlebot & all search engines
 User-agent: *
 Allow: /
 Allow: /shop
