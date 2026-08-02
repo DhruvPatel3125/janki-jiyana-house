@@ -1,0 +1,4 @@
+name,category,price,mrp,stock,description,features,images,isFeatured,variants
+Ultra Soft Baby Wipes,Baby Care,199,250,150,Gentle and safe for baby skin.,Aloe Vera Enriched|Alcohol Free|Hypoallergenic,https://example.com/wipe1.jpg,true,Pack Size::Single::199::250::100::SKU1:: | Pack Size::Combo of 3::500::750::50::SKU2::
+Organic Cotton Sanitary Pads,Sanitary Pads,150,180,200,Super absorbent organic cotton pads for heavy flow.,100% Organic|Super Absorbent|Zero Leaks,https://example.com/pad1.jpg,false,Size::XL::150::180::100::SKU-XL:: | Size::XXL::180::200::100::SKU-XXL::
+Herbal Baby Massage Oil,Baby Care,299,350,50,Nourishing massage oil for strong bones.,Ayurvedic Formula|No Mineral Oil,https://example.com/oil1.jpg,true,

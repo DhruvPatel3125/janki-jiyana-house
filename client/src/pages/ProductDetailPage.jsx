@@ -4,6 +4,7 @@ import { ShoppingBag, Star, ShieldCheck, Truck, ArrowLeft, Check, Plus, Minus, P
 import { api } from '../services/api';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
+import { useAuth } from '../context/AuthContext';
 import { ProductCard } from '../components/ProductCard';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { showCartToast, showSuccessToast } from '../utils/toast';
@@ -17,6 +18,7 @@ export const ProductDetailPage = () => {
   const navigate = useNavigate();
   const { addToCart, removeFromCart, updateQuantity, cartItems } = useCart();
   const { isInWishlist, toggleWishlist } = useWishlist();
+  const { user } = useAuth();
 
   const [product, setProduct] = useState(null);
   const [similarProducts, setSimilarProducts] = useState([]);
@@ -39,7 +41,7 @@ export const ProductDetailPage = () => {
         } else {
           setSelectedImage(PLACEHOLDER_IMAGE);
         }
-        
+
         // Auto-select first variant if available
         if (data.variants && data.variants.length > 0) {
           const firstVariant = data.variants[0];
@@ -51,7 +53,7 @@ export const ProductDetailPage = () => {
         const allProdsData = await api.getProducts({ category: data.category, limit: 5 });
         const allProds = allProdsData.products || [];
         let sameCatProds = allProds.filter((p) => p._id !== data._id);
-        
+
         // If we don't have enough similar products in the same category, fetch some random ones
         if (sameCatProds.length < 4) {
           const otherProdsData = await api.getProducts({ limit: 5 });
@@ -75,9 +77,9 @@ export const ProductDetailPage = () => {
   const currentStock = selectedVariant?.stock !== undefined ? selectedVariant.stock : (product?.stock || 0);
   const currentSku = selectedVariant?.sku || 'N/A';
   const cartUniqueId = selectedVariant ? `${product?._id}_${selectedVariant.name}_${selectedVariant.value}` : product?._id;
-  
+
   const isItemInCart = cartItems.some((item) => item.uniqueId === cartUniqueId || (!item.uniqueId && item.product === product?._id));
-  
+
   useEffect(() => {
     if (isItemInCart) {
       const item = cartItems.find((i) => i.uniqueId === cartUniqueId || (!i.uniqueId && i.product === product?._id));
@@ -214,7 +216,7 @@ export const ProductDetailPage = () => {
         ogType="product"
         schema={productSchema}
       />
-      
+
       <Breadcrumbs paths={breadcrumbPaths} />
 
 
@@ -267,9 +269,11 @@ export const ProductDetailPage = () => {
               <span className="text-[10px] font-extrabold text-brand-700 uppercase tracking-wider px-3 py-1 bg-brand-50 rounded-full border border-brand-100">
                 {product.category}
               </span>
-              <span className={`text-[10px] font-extrabold px-3 py-1 rounded-full ${currentStock > 0 ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'}`}>
-                {currentStock > 0 ? `In Stock (${currentStock})` : 'Out of Stock'}
-              </span>
+              {currentStock <= 0 && (
+                <span className="text-[10px] font-extrabold px-3 py-1 rounded-full bg-rose-50 text-rose-700 border border-rose-100">
+                  Out of Stock
+                </span>
+              )}
               {currentSku !== 'N/A' && (
                 <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
                   SKU: {currentSku}
@@ -305,11 +309,10 @@ export const ProductDetailPage = () => {
                     <button
                       key={idx}
                       onClick={() => handleVariantSelect(variant)}
-                      className={`px-4 py-2.5 rounded-xl text-xs font-bold border-2 transition-all ${
-                        isSelected 
-                          ? 'border-brand-600 bg-brand-50 text-brand-700 shadow-sm' 
+                      className={`px-4 py-2.5 rounded-xl text-xs font-bold border-2 transition-all ${isSelected
+                          ? 'border-brand-600 bg-brand-50 text-brand-700 shadow-sm'
                           : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300 hover:bg-slate-50'
-                      }`}
+                        }`}
                     >
                       <span className="text-slate-400 text-[10px] mr-1">{variant.name}:</span>
                       {variant.value}
@@ -334,9 +337,8 @@ export const ProductDetailPage = () => {
               </div>
               <button
                 onClick={() => toggleWishlist(product)}
-                className={`h-14 px-6 rounded-2xl border-2 transition-all flex items-center justify-center gap-2 font-bold text-sm shadow-sm active:scale-95 ${
-                  isInWishlist(id) ? 'border-rose-200 bg-rose-50 text-rose-600' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
-                }`}
+                className={`h-14 px-6 rounded-2xl border-2 transition-all flex items-center justify-center gap-2 font-bold text-sm shadow-sm active:scale-95 ${isInWishlist(id) ? 'border-rose-200 bg-rose-50 text-rose-600' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+                  }`}
               >
                 <Heart className={`w-5 h-5 ${isInWishlist(id) ? 'fill-rose-500' : ''}`} />
                 <span className="hidden sm:inline">{isInWishlist(id) ? 'Saved' : 'Save'}</span>
@@ -347,13 +349,12 @@ export const ProductDetailPage = () => {
               <button
                 onClick={handleCartToggle}
                 disabled={currentStock <= 0}
-                className={`flex-1 h-14 rounded-2xl font-black text-sm shadow-md transition-all flex items-center justify-center gap-2 hover:-translate-y-0.5 ${
-                  currentStock <= 0
+                className={`flex-1 h-14 rounded-2xl font-black text-sm shadow-md transition-all flex items-center justify-center gap-2 hover:-translate-y-0.5 ${currentStock <= 0
                     ? 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none border-0'
                     : isItemInCart
                       ? 'bg-rose-600 text-white shadow-rose-600/20'
                       : 'bg-white border-2 border-slate-900 text-slate-900 hover:bg-slate-900 hover:text-white'
-                }`}
+                  }`}
               >
                 {isItemInCart ? <><Trash2 className="w-4 h-4" /> Remove from Cart</> : <><ShoppingBag className="w-4 h-4" /> Add to Cart</>}
               </button>
@@ -368,38 +369,44 @@ export const ProductDetailPage = () => {
           </div>
 
           {/* Description */}
-          <div className="space-y-4 pt-2 pb-2">
-            <h1 className="text-xl font-black text-slate-900 capitalize tracking-tight flex items-center gap-3">
-              <div className="w-2.5 h-2.5 rounded-full bg-brand-600"></div> Description
-            </h1>
-            <div className="text-slate-600 text-sm leading-relaxed">
-              <ul className="space-y-2">
+          {product.description && (
+            <div className="pt-8 border-t border-slate-100">
+              <div className="flex items-center justify-between cursor-pointer group">
+                <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+                  Product Details
+                </h2>
+                <Minus className="w-5 h-5 text-slate-400 group-hover:text-brand-600 transition-colors" />
+              </div>
+              <div className="mt-5 text-slate-600 text-sm sm:text-[15px] leading-relaxed font-medium space-y-4">
                 {product.description?.split('\n').filter(line => line.trim() !== '').map((line, idx) => (
-                  <li key={idx} className="flex items-start gap-2">
-                    <span className="text-brand-500 mt-1.5 shrink-0 w-1.5 h-1.5 rounded-full bg-brand-500"></span>
-                    <span>{line.replace(/^-\s*/, '')}</span>
-                  </li>
+                  <p key={idx} className="text-justify">
+                    {line.replace(/^[-\d.)]+\s*/, '')}
+                  </p>
                 ))}
-              </ul>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Features */}
           {product.features && product.features.length > 0 && (
-            <div className="bg-slate-50 p-6 rounded-3xl border border-slate-200 shadow-sm space-y-5">
-              <h1 className="text-xl font-black text-slate-900 capitalize tracking-tight flex items-center gap-3">
-                <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div> Key Features
-              </h1>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {product.features.map((feat, idx) => (
-                  <div key={idx} className="flex items-start gap-3 text-sm sm:text-base font-bold text-slate-800">
-                    <div className="w-6 h-6 mt-0.5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 shadow-sm">
-                      <Check className="w-4 h-4 stroke-[3]" />
-                    </div>
-                    <span>{feat}</span>
-                  </div>
-                ))}
-              </div>
+            <div className="pt-8">
+              <h2 className="text-2xl sm:text-3xl font-black text-slate-600 tracking-tight flex items-center gap-3 mb-5">
+                <Sparkles className="w-7 h-7" /> Key Features:
+              </h2>
+              <ul className="space-y-3">
+                {product.features.map((feat, idx) => {
+                  let text = feat;
+                  text = text.replace(/^[-\d.)]+\s*/, '');
+                  return (
+                    <li key={idx} className="flex items-start gap-3 text-sm sm:text-[15px] text-slate-700 font-semibold">
+                      <div className="mt-1 shrink-0 text-blue-600">
+                        <Check className="w-4 h-4 stroke-[3]" />
+                      </div>
+                      <span className="leading-snug">{text}</span>
+                    </li>
+                  );
+                })}
+              </ul>
             </div>
           )}
         </div>

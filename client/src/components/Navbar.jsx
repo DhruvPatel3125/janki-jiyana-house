@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { ShoppingBag, Search, User, Menu, X, ShieldCheck, PhoneCall, ChevronRight, MapPin, MessageCircle, Heart } from 'lucide-react';
 import { useCart } from '../context/CartContext';
@@ -11,15 +11,32 @@ export const Navbar = () => {
   const { wishlistCount } = useWishlist();
   const { user, logout } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [categories, setCategories] = useState([]);
+  const dropdownRef = useRef(null);
   const navigate = useNavigate();
   const location = useLocation();
 
   // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
+    setProfileDropdownOpen(false);
   }, [location]);
+
+  // Close profile dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setProfileDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchCats = async () => {
@@ -142,13 +159,17 @@ export const Navbar = () => {
 
             {/* Auth status / Profile Dropdown */}
             {user ? (
-              <div className="relative group">
-                <button className="flex items-center gap-1.5 p-2 rounded-xl text-slate-700 hover:bg-slate-50 transition-colors text-xs font-bold">
+              <div className="relative group" ref={dropdownRef}>
+                <button 
+                  onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                  className="flex items-center gap-1.5 p-2 rounded-xl text-slate-700 hover:bg-slate-50 transition-colors text-xs font-bold"
+                >
                   <User className="w-5 h-5 text-brand-600 shrink-0" />
                   <span className="hidden sm:inline">{user.name.split(' ')[0]}</span>
                 </button>
-                <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 hidden group-hover:block z-50">
-                  <div className="px-4 py-2 border-b border-slate-100">
+                {profileDropdownOpen && (
+                  <div className="absolute right-0 top-full mt-1 w-48 bg-white rounded-2xl shadow-xl border border-slate-100 py-2 z-50">
+                    <div className="px-4 py-2 border-b border-slate-100">
                     <p className="text-[10px] text-slate-400 font-bold uppercase">Signed in as</p>
                     <p className="text-xs font-bold text-slate-800 truncate">{user.email}</p>
                   </div>
@@ -163,13 +184,17 @@ export const Navbar = () => {
                   <Link to="/orders" className="block px-4 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">
                     My Orders
                   </Link>
-                  <button
-                    onClick={logout}
-                    className="w-full text-left px-4 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50"
-                  >
-                    Logout
-                  </button>
-                </div>
+                    <button
+                      onClick={() => {
+                        setProfileDropdownOpen(false);
+                        logout();
+                      }}
+                      className="w-full text-left px-4 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50"
+                    >
+                      Logout
+                    </button>
+                  </div>
+                )}
               </div>
             ) : (
               <Link

@@ -75,6 +75,24 @@ export const api = {
     return handleResponse(res, 'Failed to delete product');
   },
 
+  async importProducts(file) {
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    const user = JSON.parse(localStorage.getItem('userInfo') || 'null');
+    const headers = {};
+    if (user && user.token) {
+      headers['Authorization'] = `Bearer ${user.token}`;
+    }
+
+    const res = await fetch(`${API_BASE}/products/import`, {
+      method: 'POST',
+      headers,
+      body: formData,
+    });
+    return handleResponse(res, 'Failed to import products');
+  },
+
   // Categories
   async getCategories() {
     if (cachedCategories) return cachedCategories;

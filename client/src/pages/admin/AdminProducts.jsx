@@ -27,6 +27,7 @@ export const AdminProducts = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
   // Form State
   const [formData, setFormData] = useState({
@@ -128,6 +129,23 @@ export const AdminProducts = () => {
       showSuccessToast('Product deleted successfully');
     } catch (err) {
       showErrorToast(err.message || 'Failed to delete product');
+    }
+  };
+
+  const handleImportProducts = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setIsImporting(true);
+    try {
+      const res = await api.importProducts(file);
+      showSuccessToast(res.message || 'Products imported successfully');
+      fetchProducts(1); // Refresh the list
+    } catch (err) {
+      showErrorToast(err.message || 'Failed to import products');
+    } finally {
+      setIsImporting(false);
+      e.target.value = ''; // Reset input
     }
   };
 
@@ -261,12 +279,19 @@ export const AdminProducts = () => {
           <h1 className="text-2xl font-black text-slate-900">Manage Products</h1>
           <p className="text-xs text-slate-500 mt-1">Add, edit, or remove hygiene & baby care items from your catalog.</p>
         </div>
-        <button
-          onClick={handleOpenAddModal}
-          className="bg-accent-orange hover:bg-orange-600 text-white font-bold px-5 py-3 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
-        >
-          <Plus className="w-4 h-4" /> Add New Product
-        </button>
+        <div className="flex items-center gap-3">
+          <label className={`cursor-pointer bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold px-5 py-3 rounded-2xl text-xs flex items-center justify-center gap-2 transition-all ${isImporting ? 'opacity-50 pointer-events-none' : ''}`}>
+            {isImporting ? <div className="w-4 h-4 border-2 border-slate-700 border-t-transparent rounded-full animate-spin"></div> : <Upload className="w-4 h-4" />}
+            {isImporting ? 'Importing...' : 'Import Excel/CSV'}
+            <input type="file" className="hidden" accept=".xlsx, .xls, .csv" onChange={handleImportProducts} disabled={isImporting} />
+          </label>
+          <button
+            onClick={handleOpenAddModal}
+            className="bg-accent-orange hover:bg-orange-600 text-white font-bold px-5 py-3 rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg transition-all"
+          >
+            <Plus className="w-4 h-4" /> Add New Product
+          </button>
+        </div>
       </div>
 
       {/* Filter / Server Search Bar */}

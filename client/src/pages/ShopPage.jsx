@@ -63,26 +63,43 @@ export const ShopPage = () => {
   const isRootLevel = !selectedCategory || selectedCategory === 'All';
   
   let currentCategoryObj = null;
+  let parentCategoryObj = null;
   let childrenCategories = [];
-  let displayMode = 'products'; // 'categories' or 'products'
+  let isDisplayingTabs = false;
+  let activeTab = 'All';
+  let categoriesToFetch = 'All';
+  let displayMode = 'products';
 
   if (isRootLevel) {
-    // Show only root categories
     displayMode = 'categories';
     childrenCategories = allCategories.filter(c => !c.parentCategory);
   } else {
     currentCategoryObj = allCategories.find(c => c.name === selectedCategory);
     
-    // Check if this category has children
-    const children = allCategories.filter(c => c.parentCategory && (c.parentCategory._id === currentCategoryObj?._id || c.parentCategory.name === currentCategoryObj?.name));
-    
-    if (children.length > 0) {
-      // It's a parent category! Show its children
-      displayMode = 'categories';
-      childrenCategories = children;
+    if (currentCategoryObj) {
+      if (currentCategoryObj.parentCategory) {
+        parentCategoryObj = allCategories.find(c => c._id === currentCategoryObj.parentCategory._id || c.name === currentCategoryObj.parentCategory.name);
+        activeTab = currentCategoryObj.name;
+      } else {
+        parentCategoryObj = currentCategoryObj;
+        activeTab = 'All';
+      }
+      
+      if (parentCategoryObj) {
+        const subCats = allCategories.filter(c => c.parentCategory && (c.parentCategory._id === parentCategoryObj._id || c.parentCategory.name === parentCategoryObj.name));
+        if (subCats.length > 0) {
+          childrenCategories = subCats;
+          isDisplayingTabs = true;
+        }
+      }
+
+      if (activeTab === 'All' && isDisplayingTabs) {
+        categoriesToFetch = [parentCategoryObj.name, ...childrenCategories.map(c => c.name)].join(',');
+      } else {
+        categoriesToFetch = selectedCategory;
+      }
     } else {
-      // It's a child category (leaf node), show products
-      displayMode = 'products';
+       categoriesToFetch = selectedCategory;
     }
   }
 
@@ -98,7 +115,7 @@ export const ShopPage = () => {
       setCurrentPage(1);
       try {
         const params = { page: 1, limit: 20 };
-        if (selectedCategory !== 'All') params.category = selectedCategory;
+        if (categoriesToFetch !== 'All') params.category = categoriesToFetch;
         if (debouncedSearch) params.search = debouncedSearch;
         if (sortBy) params.sort = sortBy;
 
@@ -114,14 +131,14 @@ export const ShopPage = () => {
       }
     };
     fetchProducts();
-  }, [selectedCategory, debouncedSearch, sortBy, displayMode]);
+  }, [categoriesToFetch, debouncedSearch, sortBy, displayMode]);
 
   const handleLoadMore = async () => {
     const nextPage = currentPage + 1;
     setLoadingMore(true);
     try {
       const params = { page: nextPage, limit: 20 };
-      if (selectedCategory !== 'All') params.category = selectedCategory;
+      if (categoriesToFetch !== 'All') params.category = categoriesToFetch;
       if (debouncedSearch) params.search = debouncedSearch;
       if (sortBy) params.sort = sortBy;
 
@@ -189,6 +206,35 @@ export const ShopPage = () => {
           </p>
         </div>
       </div>
+
+      {/* Category Tabs */}
+      {isDisplayingTabs && !isSearching && (
+        <div className="flex overflow-x-auto hide-scrollbar gap-2 py-2">
+          <button
+            onClick={() => navigateToCategory(parentCategoryObj.name)}
+            className={`whitespace-nowrap px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+              activeTab === 'All'
+                ? 'bg-teal-600 text-white shadow-md'
+                : 'bg-white text-slate-600 border border-slate-200 hover:border-teal-300 hover:bg-teal-50'
+            }`}
+          >
+            All {parentCategoryObj.name}
+          </button>
+          {childrenCategories.map(cat => (
+            <button
+              key={cat._id}
+              onClick={() => navigateToCategory(cat.name)}
+              className={`whitespace-nowrap px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+                activeTab === cat.name
+                  ? 'bg-teal-600 text-white shadow-md'
+                  : 'bg-white text-slate-600 border border-slate-200 hover:border-teal-300 hover:bg-teal-50'
+              }`}
+            >
+              {cat.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Filter & Search Bar */}
       <div className="bg-white p-4 sm:p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
