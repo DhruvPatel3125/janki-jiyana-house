@@ -15,6 +15,11 @@ export const Navbar = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [categories, setCategories] = useState([]);
   const dropdownRef = useRef(null);
+  const searchRef = useRef(null);
+  const mobileSearchRef = useRef(null);
+  const [suggestions, setSuggestions] = useState([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -22,13 +27,20 @@ export const Navbar = () => {
   useEffect(() => {
     setMobileMenuOpen(false);
     setProfileDropdownOpen(false);
+    setShowSuggestions(false);
   }, [location]);
 
-  // Close profile dropdown on outside click
+  // Close profile dropdown and suggestions on outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setProfileDropdownOpen(false);
+      }
+      if (
+        searchRef.current && !searchRef.current.contains(event.target) &&
+        mobileSearchRef.current && !mobileSearchRef.current.contains(event.target)
+      ) {
+        setShowSuggestions(false);
       }
     };
 
@@ -50,12 +62,35 @@ export const Navbar = () => {
     fetchCats();
   }, []);
 
+  // Fetch suggestions
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (searchQuery.trim().length < 2) {
+        setSuggestions([]);
+        return;
+      }
+      setIsLoadingSuggestions(true);
+      try {
+        const data = await api.getProducts({ search: searchQuery.trim(), limit: 5 });
+        setSuggestions(data.products || []);
+      } catch (err) {
+        console.error('Failed to fetch suggestions', err);
+      } finally {
+        setIsLoadingSuggestions(false);
+      }
+    };
+    
+    const debounceTimer = setTimeout(fetchSuggestions, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [searchQuery]);
+
   const handleSearchSubmit = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/shop?search=${encodeURIComponent(searchQuery.trim())}`);
       setSearchQuery('');
       setMobileMenuOpen(false);
+      setShowSuggestions(false);
     }
   };
 
@@ -113,21 +148,83 @@ export const Navbar = () => {
           </Link>
 
           {/* Desktop Search Bar */}
-          <form onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-xl relative mx-2">
+          <form ref={searchRef} onSubmit={handleSearchSubmit} className="hidden md:flex flex-1 max-w-xl relative mx-2">
             <input
               type="text"
               placeholder="Search kids wear, toys, diapers, sanitary pads..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowSuggestions(true);
+              }}
+              onFocus={() => {
+                if (searchQuery.trim().length >= 2) setShowSuggestions(true);
+              }}
               className="w-full bg-slate-50 border border-slate-200/90 rounded-full py-2.5 pl-4 pr-10 text-xs font-medium focus:outline-none focus:border-brand-500 focus:bg-white transition-all shadow-inner"
             />
             <button
               type="submit"
               aria-label="Search"
-              className="absolute right-1.5 top-1.5 bg-brand-600 hover:bg-brand-700 text-white p-1.5 rounded-full transition-colors shadow-sm"
+              className="absolute right-1.5 top-1.5 bg-brand-600 hover:bg-brand-700 text-white p-1.5 rounded-full transition-colors shadow-sm z-10"
             >
               <Search className="w-4 h-4" />
             </button>
+            
+            {/* Search Suggestions Dropdown */}
+            {showSuggestions && (searchQuery.trim().length >= 2) && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-50">
+                {isLoadingSuggestions ? (
+                  <div className="p-4 text-center text-xs text-slate-500">Loading...</div>
+                ) : suggestions.length > 0 ? (
+                  <ul className="max-h-96 overflow-y-auto">
+                    {suggestions.map(product => (
+                      <li key={product._id} className="border-b border-slate-50 last:border-0">
+                        <Link
+                          to={`/product/${product._id}`}
+                          onClick={() => {
+                            setShowSuggestions(false);
+                            setSearchQuery('');
+                          }}
+                          className="flex items-center gap-3 p-3 hover:bg-slate-50 transition-colors"
+                        >
+                          <div className="w-12 h-12 shrink-0 bg-slate-100 rounded-lg overflow-hidden flex items-center justify-center">
+                            {product.images && product.images.length > 0 ? (
+                              <img 
+                                src={product.images[0]} 
+                                alt={product.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-slate-400 text-[10px]">No Image</span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-xs font-bold text-slate-800 truncate">{product.name}</h4>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-xs font-bold text-brand-600">₹{product.price}</span>
+                              {product.originalPrice > product.price && (
+                                <span className="text-[10px] text-slate-400 line-through">₹{product.originalPrice}</span>
+                              )}
+                            </div>
+                          </div>
+                        </Link>
+                      </li>
+                    ))}
+                    <li className="p-2 text-center bg-slate-50 border-t border-slate-100">
+                      <button 
+                        onClick={handleSearchSubmit}
+                        type="button"
+                        className="text-xs font-bold text-brand-600 hover:text-brand-700 w-full py-1"
+                      >
+                        View all results
+                      </button>
+                    </li>
+                  </ul>
+                ) : (
+                  <div className="p-4 text-center text-xs text-slate-500">No products found for "{searchQuery}"</div>
+                )}
+              </div>
+            )}
           </form>
 
           {/* Desktop & Mobile Actions */}
@@ -247,18 +344,81 @@ export const Navbar = () => {
         </div>
 
         {/* Mobile Search Input Bar */}
-        <div className="md:hidden pb-3">
-          <form onSubmit={handleSearchSubmit} className="relative">
+        <div className="md:hidden pb-3 relative">
+          <form ref={mobileSearchRef} onSubmit={handleSearchSubmit} className="relative px-4">
             <input
               type="text"
               placeholder="Search kids wear, toys, diapers, pads..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-100/80 rounded-full py-2 pl-4 pr-10 text-xs focus:outline-none focus:bg-white border border-slate-200"
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowSuggestions(true);
+              }}
+              onFocus={() => {
+                if (searchQuery.trim().length >= 2) setShowSuggestions(true);
+              }}
+              className="w-full bg-slate-100/80 rounded-full py-2 pl-4 pr-10 text-xs focus:outline-none focus:border-brand-500 focus:bg-white border border-slate-200"
             />
-            <button type="submit" aria-label="Search" className="absolute right-2.5 top-2 text-slate-500">
-              <Search className="w-4 h-4" />
+            <button type="submit" aria-label="Search" className="absolute right-6 top-1.5 bg-brand-600 hover:bg-brand-700 text-white p-1.5 rounded-full transition-colors shadow-sm z-10">
+              <Search className="w-3.5 h-3.5" />
             </button>
+            
+            {/* Mobile Search Suggestions Dropdown */}
+            {showSuggestions && (searchQuery.trim().length >= 2) && (
+              <div className="absolute top-full left-4 right-4 mt-1 bg-white rounded-2xl shadow-xl border border-slate-100 overflow-hidden z-[60]">
+                {isLoadingSuggestions ? (
+                  <div className="p-4 text-center text-xs text-slate-500">Loading...</div>
+                ) : suggestions.length > 0 ? (
+                  <ul className="max-h-72 overflow-y-auto">
+                    {suggestions.map(product => (
+                      <li key={product._id} className="border-b border-slate-50 last:border-0">
+                        <Link
+                          to={`/product/${product._id}`}
+                          onClick={() => {
+                            setShowSuggestions(false);
+                            setSearchQuery('');
+                            setMobileMenuOpen(false);
+                          }}
+                          className="flex items-center gap-3 p-2 hover:bg-slate-50 transition-colors"
+                        >
+                          <div className="w-10 h-10 shrink-0 bg-slate-100 rounded-lg overflow-hidden flex items-center justify-center">
+                            {product.images && product.images.length > 0 ? (
+                              <img 
+                                src={product.images[0]} 
+                                alt={product.name}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <span className="text-slate-400 text-[8px]">No Image</span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h4 className="text-[11px] font-bold text-slate-800 truncate">{product.name}</h4>
+                            <div className="flex items-center gap-1.5 mt-0.5">
+                              <span className="text-[11px] font-bold text-brand-600">₹{product.price}</span>
+                              {product.originalPrice > product.price && (
+                                <span className="text-[9px] text-slate-400 line-through">₹{product.originalPrice}</span>
+                              )}
+                            </div>
+                          </div>
+                        </Link>
+                      </li>
+                    ))}
+                    <li className="p-2 text-center bg-slate-50 border-t border-slate-100">
+                      <button 
+                        onClick={handleSearchSubmit}
+                        type="button"
+                        className="text-[11px] font-bold text-brand-600 hover:text-brand-700 w-full py-1"
+                      >
+                        View all results
+                      </button>
+                    </li>
+                  </ul>
+                ) : (
+                  <div className="p-4 text-center text-xs text-slate-500">No products found</div>
+                )}
+              </div>
+            )}
           </form>
         </div>
       </div>

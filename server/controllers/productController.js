@@ -15,7 +15,7 @@ export const getProducts = async (req, res, next) => {
 
     if (search) {
       // Use $text index if available, fallback to regex for partial matches
-      query.name = { $regex: search, $oxptions: 'i' };
+      query.name = { $regex: search, $options: 'i' };
     }
 
     let sortOptions = { createdAt: -1 };
