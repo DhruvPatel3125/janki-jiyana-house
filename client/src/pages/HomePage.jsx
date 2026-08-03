@@ -37,7 +37,7 @@ export const HomePage = () => {
         '100% Soft & Rash-Free Cotton'
       ],
       btnText: 'Shop Sanitary Pads',
-      link: '/shop?category=Sanitary%20Pads',
+      link: '/shop?category=Sanitary+Pads',
       image: '/hero/slide_1.jpg',
       badge: '100% Rash-Free & Mint Fresh',
       bgGradient: 'from-pink-50 via-rose-50/60 to-purple-50',
@@ -54,7 +54,7 @@ export const HomePage = () => {
         '12-Hour Day & Night Protection'
       ],
       btnText: 'Shop Adult Care',
-      link: '/shop?category=Adult%20Diapers',
+      link: '/shop?category=Adult+Diapers',
       image: '/hero/slide_2.jpg',
       badge: '100% Plain Discreet Box Delivery',
       bgGradient: 'from-sky-50 via-blue-50/60 to-teal-50',
@@ -341,7 +341,7 @@ export const HomePage = () => {
           {categories.filter(cat => !cat.parentCategory).map((cat, idx) => (
             <Link
               key={cat._id || idx}
-              to={`/shop?category=${encodeURIComponent(cat.name)}`}
+              to={`/shop?category=${encodeURIComponent(cat.name).replace(/%20/g, '+')}`}
               className="flex flex-col items-center text-center space-y-2 group shrink-0"
             >
               <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full p-1 bg-gradient-to-tr from-brand-200 via-orange-100 to-teal-200 shadow-md group-hover:shadow-xl group-hover:scale-105 transition-all duration-300 border-2 border-white relative overflow-hidden">

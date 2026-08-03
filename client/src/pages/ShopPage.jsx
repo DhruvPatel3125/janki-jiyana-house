@@ -168,7 +168,7 @@ export const ShopPage = () => {
   const breadcrumbPaths = [{ name: 'Categories', link: '/shop' }];
   if (currentCategoryObj) {
     if (currentCategoryObj.parentCategory) {
-      breadcrumbPaths.push({ name: currentCategoryObj.parentCategory.name, link: `/shop?category=${encodeURIComponent(currentCategoryObj.parentCategory.name)}` });
+      breadcrumbPaths.push({ name: currentCategoryObj.parentCategory.name, link: `/shop?category=${encodeURIComponent(currentCategoryObj.parentCategory.name).replace(/%20/g, '+')}` });
       breadcrumbPaths.push({ name: currentCategoryObj.name });
     } else {
       breadcrumbPaths.push({ name: currentCategoryObj.name });

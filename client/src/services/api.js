@@ -268,10 +268,11 @@ export const api = {
     return handleResponse(res, 'Failed to cancel/return order');
   },
 
-  async cancelItem(orderId, itemId) {
+  async cancelItem(orderId, itemId, quantity = undefined) {
     const res = await fetch(`${API_BASE}/orders/${orderId}/cancel-item/${itemId}`, {
       method: 'PUT',
       headers: getHeaders(),
+      body: quantity !== undefined ? JSON.stringify({ quantity }) : undefined,
     });
     return handleResponse(res, 'Failed to cancel item');
   },

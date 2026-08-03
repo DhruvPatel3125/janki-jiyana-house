@@ -371,19 +371,58 @@ export const cancelItem = async (req, res) => {
       throw new Error('Item is already cancelled');
     }
 
-    // Cancel item and restock
-    item.status = 'Cancelled';
+    const originalQuantity = item.quantity;
+    let cancelQuantity = originalQuantity;
+
+    if (req.body.quantity !== undefined) {
+      cancelQuantity = parseInt(req.body.quantity, 10);
+      if (isNaN(cancelQuantity) || cancelQuantity <= 0 || cancelQuantity > originalQuantity) {
+        throw new Error('Invalid cancellation quantity');
+      }
+    }
+
+    if (cancelQuantity < originalQuantity) {
+      // Partial cancellation: Split item
+      item.quantity = originalQuantity - cancelQuantity;
+      
+      const cancelledItem = {
+        product: item.product,
+        name: item.name,
+        image: item.image,
+        price: item.price,
+        quantity: cancelQuantity,
+        variant: item.variant,
+        status: 'Cancelled'
+      };
+      order.items.push(cancelledItem);
+    } else {
+      // Full cancellation
+      item.status = 'Cancelled';
+    }
+
+    // Restock product stock
     await Product.findByIdAndUpdate(
       item.product,
-      { $inc: { stock: item.quantity } },
+      { $inc: { stock: cancelQuantity } },
       { session }
     );
 
-    // Recalculate total amount (subtract item price * quantity)
-    // Wait, price in item is the unit price. If price is total price for that item quantity, then subtract that.
-    // Let's verify how totalAmount was computed: itemTotal = product.price * item.quantity; totalAmount += itemTotal;
-    // So item.price is the unit price. We need to subtract (item.price * item.quantity).
-    order.totalAmount -= (item.price * item.quantity);
+    // Restock variant stock if applicable
+    if (item.variant) {
+      const productObj = await Product.findById(item.product).session(session);
+      if (productObj && productObj.variants) {
+        const variantIndex = productObj.variants.findIndex(
+          (v) => v.name === item.variant.name && v.value === item.variant.value
+        );
+        if (variantIndex !== -1) {
+          productObj.variants[variantIndex].stock += cancelQuantity;
+          await productObj.save({ session });
+        }
+      }
+    }
+
+    // Recalculate total amount
+    order.totalAmount -= (item.price * cancelQuantity);
 
     // If all items are cancelled, mark the entire order as cancelled
     const allCancelled = order.items.every(i => i.status === 'Cancelled');

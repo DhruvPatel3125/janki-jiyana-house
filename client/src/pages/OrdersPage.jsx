@@ -14,6 +14,9 @@ export const OrdersPage = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
+  
+  // Custom Modal State for Partial Cancellation
+  const [cancelModal, setCancelModal] = useState({ isOpen: false, order: null, item: null, maxQty: 1, selectedQty: 1 });
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -47,10 +50,11 @@ export const OrdersPage = () => {
     }
   };
 
-  const getWhatsAppActionUrl = (order, item = null) => {
+  const getWhatsAppActionUrl = (order, item = null, cancelQuantity = null) => {
     const isShipped = order.status === 'Shipped' || order.status === 'Delivered';
     const actionType = isShipped ? 'Report Defective Product' : 'Cancellation';
-    const itemsList = item ? `${item.name} (x${item.quantity})` : order.items.map((i) => `${i.name} (x${i.quantity})`).join(', ');
+    const qty = cancelQuantity || (item ? item.quantity : 0);
+    const itemsList = item ? `${item.name} (x${qty})` : order.items.map((i) => `${i.name} (x${i.quantity})`).join(', ');
     
     let text = '';
     if (isShipped) {
@@ -61,14 +65,30 @@ export const OrdersPage = () => {
     return `https://wa.me/919737474672?text=${text}`;
   };
 
-  const handleCancelItem = async (order, item) => {
+  const openCancelModal = (order, item) => {
     const isShipped = order.status === 'Shipped' || order.status === 'Delivered';
-    
+    if (!isShipped && item.quantity > 1) {
+      setCancelModal({
+        isOpen: true,
+        order,
+        item,
+        maxQty: item.quantity,
+        selectedQty: item.quantity
+      });
+    } else {
+      // Proceed directly to confirmation for single items or shipped items
+      processCancellation(order, item, item.quantity);
+    }
+  };
+
+  const processCancellation = async (order, item, cancelQuantity) => {
+    const isShipped = order.status === 'Shipped' || order.status === 'Delivered';
+
     const isConfirmed = await confirm({
       title: isShipped ? 'Report Defective Product' : 'Cancel Item',
       message: isShipped 
         ? `Are you sure you want to report ${item.name} as defective? You will be redirected to WhatsApp to share unboxing photos/videos.`
-        : `Are you sure you want to cancel ${item.name} from this order?`,
+        : `Are you sure you want to cancel ${cancelQuantity} x ${item.name} from this order?`,
       confirmText: isShipped ? 'Yes, Report Defect' : 'Yes, Cancel Item',
       isDanger: true
     });
@@ -77,16 +97,17 @@ export const OrdersPage = () => {
 
     try {
       // Open WhatsApp first so the browser doesn't block the popup during async await
-      const url = getWhatsAppActionUrl(order, item);
+      const url = getWhatsAppActionUrl(order, item, cancelQuantity);
       window.open(url, '_blank');
       
       // Update DB if not shipped yet
       if (!isShipped) {
-        const updatedOrder = await api.cancelItem(order._id, item._id);
+        const updatedOrder = await api.cancelItem(order._id, item._id, cancelQuantity);
         setOrders(orders.map((o) => (o._id === order._id ? updatedOrder : o)));
       }
     } catch (err) {
       console.error('Failed to cancel item', err);
+      alert('Failed to cancel item. Please try again.');
     }
   };
 
@@ -186,7 +207,7 @@ export const OrdersPage = () => {
                       ) : (
                         order.status !== 'Cancelled' && order.status !== 'Return Requested' && (
                           <button
-                            onClick={() => handleCancelItem(order, item)}
+                            onClick={() => openCancelModal(order, item)}
                             className="inline-flex items-center gap-1.5 bg-white hover:bg-slate-100 text-slate-700 border border-slate-200 text-xs font-bold px-3 py-2 rounded-xl transition-colors shadow-sm w-full sm:w-auto justify-center"
                             title={order.status === 'Shipped' || order.status === 'Delivered' ? 'Report Defective Product' : 'Cancel Item'}
                           >
@@ -253,6 +274,57 @@ export const OrdersPage = () => {
           </button>
         </div>
       )}
+
+      {/* Custom Quantity Cancellation Modal */}
+      {cancelModal.isOpen && cancelModal.item && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-sm w-full shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <h3 className="text-xl font-black text-slate-900 mb-2">Cancel Item</h3>
+            <p className="text-slate-500 text-sm mb-6">
+              You ordered {cancelModal.maxQty} pieces of this item. How many would you like to cancel?
+            </p>
+            
+            <div className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-2xl p-2 mb-8">
+              <button
+                onClick={() => setCancelModal(prev => ({ ...prev, selectedQty: Math.max(1, prev.selectedQty - 1) }))}
+                className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm text-slate-600 font-bold hover:bg-slate-100 disabled:opacity-50"
+                disabled={cancelModal.selectedQty <= 1}
+              >
+                -
+              </button>
+              <span className="text-xl font-black text-slate-900 w-12 text-center">
+                {cancelModal.selectedQty}
+              </span>
+              <button
+                onClick={() => setCancelModal(prev => ({ ...prev, selectedQty: Math.min(prev.maxQty, prev.selectedQty + 1) }))}
+                className="w-10 h-10 flex items-center justify-center bg-white rounded-xl shadow-sm text-slate-600 font-bold hover:bg-slate-100 disabled:opacity-50"
+                disabled={cancelModal.selectedQty >= cancelModal.maxQty}
+              >
+                +
+              </button>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setCancelModal({ isOpen: false, order: null, item: null, maxQty: 1, selectedQty: 1 })}
+                className="flex-1 py-3 px-4 rounded-xl font-bold text-sm text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors"
+              >
+                Close
+              </button>
+              <button
+                onClick={() => {
+                  setCancelModal(prev => ({ ...prev, isOpen: false }));
+                  processCancellation(cancelModal.order, cancelModal.item, cancelModal.selectedQty);
+                }}
+                className="flex-1 py-3 px-4 rounded-xl font-bold text-sm text-white bg-rose-600 hover:bg-rose-700 transition-colors shadow-lg shadow-rose-500/25"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

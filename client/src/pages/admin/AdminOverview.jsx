@@ -248,7 +248,7 @@ export const AdminOverview = () => {
                     <Cell key={`cell-${index}`} fill={entry.color || '#0d9488'} />
                   ))}
                 </Pie>
-                <Tooltip formatter={(value) => [`${value} items`, 'Count']} />
+                <Tooltip formatter={(value, name, props) => [`${value} items`, props.payload.name]} />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} />
               </PieChart>
             </ResponsiveContainer>
