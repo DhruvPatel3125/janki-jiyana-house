@@ -126,7 +126,7 @@ export const CartPage = () => {
             </div>
             <div className="flex justify-between text-slate-600 font-medium">
               <span>Estimated Delivery</span>
-              <span className="font-bold text-emerald-600">FREE</span>
+              <span className="font-bold text-emerald-600">Additional</span>
             </div>
             <div className="flex justify-between text-slate-600 font-medium items-center">
               <span>Packaging Type</span>
