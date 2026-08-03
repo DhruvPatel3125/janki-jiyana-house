@@ -153,7 +153,14 @@ export const Footer = () => {
             >
               <Instagram className="w-5 h-5" /> Instagram
             </a>
-
+<a 
+              href={whatsappUrl} 
+              target="_blank" 
+              rel="noreferrer"
+              className="flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#25D366]/90 text-white py-2.5 px-4 rounded-lg font-medium transition-transform hover:-translate-y-1 shadow-sm text-sm"
+            >
+              <MessageCircle className="w-5 h-5" /> WhatsApp
+            </a>
             <a 
               href="https://youtube.com/@jankijiyanahouse?si=Vi_756cIXjOy9I1c" 
               target="_blank" 
@@ -172,14 +179,7 @@ export const Footer = () => {
               <AtSign className="w-5 h-5" /> Threads
             </a>
 
-            <a 
-              href={whatsappUrl} 
-              target="_blank" 
-              rel="noreferrer"
-              className="flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#25D366]/90 text-white py-2.5 px-4 rounded-lg font-medium transition-transform hover:-translate-y-1 shadow-sm text-sm"
-            >
-              <MessageCircle className="w-5 h-5" /> WhatsApp
-            </a>
+            
           </div>
         </div>
         </div>

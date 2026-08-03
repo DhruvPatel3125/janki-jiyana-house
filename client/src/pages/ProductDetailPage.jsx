@@ -107,6 +107,15 @@ export const ProductDetailPage = () => {
     return flattened;
   }, [product]);
 
+  const mediaItems = React.useMemo(() => {
+    if (!product) return [];
+    const items = [...(product.images || [])];
+    if (product.videoUrl) {
+      items.push('VIDEO');
+    }
+    return items;
+  }, [product]);
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center space-y-3">
@@ -165,17 +174,17 @@ export const ProductDetailPage = () => {
   };
 
   const handlePrevImage = () => {
-    if (!product.images || product.images.length <= 1) return;
-    const currentIndex = product.images.indexOf(selectedImage);
-    const prevIndex = currentIndex > 0 ? currentIndex - 1 : product.images.length - 1;
-    setSelectedImage(product.images[prevIndex]);
+    if (mediaItems.length <= 1) return;
+    const currentIndex = mediaItems.indexOf(selectedImage);
+    const prevIndex = currentIndex > 0 ? currentIndex - 1 : mediaItems.length - 1;
+    setSelectedImage(mediaItems[prevIndex]);
   };
 
   const handleNextImage = () => {
-    if (!product.images || product.images.length <= 1) return;
-    const currentIndex = product.images.indexOf(selectedImage);
-    const nextIndex = (currentIndex + 1) % product.images.length;
-    setSelectedImage(product.images[nextIndex]);
+    if (mediaItems.length <= 1) return;
+    const currentIndex = mediaItems.indexOf(selectedImage);
+    const nextIndex = (currentIndex + 1) % mediaItems.length;
+    setSelectedImage(mediaItems[nextIndex]);
   };
 
   const breadcrumbPaths = [
@@ -225,19 +234,57 @@ export const ProductDetailPage = () => {
         {/* Gallery Section */}
         <div className="space-y-4 lg:sticky lg:top-24 w-full">
           <div className="w-full aspect-square bg-white rounded-3xl overflow-hidden border border-slate-200/80 relative group shadow-sm flex items-center justify-center p-6">
-            {discountPercent > 0 && (
-              <span className="absolute top-4 left-4 z-10 bg-gradient-to-r from-rose-500 to-orange-500 text-white text-[11px] font-black px-3 py-1.5 rounded-full shadow-md">
-                {discountPercent}% OFF
-              </span>
+            {selectedImage === 'VIDEO' ? (
+              (() => {
+                const url = product.videoUrl;
+                let embedUrl = url;
+                try {
+                  if (url.includes('youtube.com/watch') || url.includes('m.youtube.com/watch')) {
+                    const urlObj = new URL(url);
+                    const videoId = urlObj.searchParams.get('v');
+                    if (videoId) embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                  } else if (url.includes('youtu.be/')) {
+                    const videoId = url.split('youtu.be/')[1]?.split('?')[0];
+                    if (videoId) embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                  } else if (url.includes('youtube.com/shorts/')) {
+                    const videoId = url.split('youtube.com/shorts/')[1]?.split('?')[0];
+                    if (videoId) embedUrl = `https://www.youtube.com/embed/${videoId}`;
+                  } else if (url.includes('vimeo.com/')) {
+                    const videoId = url.split('vimeo.com/')[1]?.split('?')[0];
+                    if (videoId) embedUrl = `https://player.vimeo.com/video/${videoId}`;
+                  }
+                } catch (err) {
+                  // ignore
+                }
+                const isMp4 = url.endsWith('.mp4');
+                return (
+                  <div className="w-full h-full bg-black flex items-center justify-center">
+                    {isMp4 ? (
+                      <video src={url} controls className="w-full h-full object-contain" />
+                    ) : (
+                      <iframe src={embedUrl} title="Product Video" className="w-full h-full border-0" allowFullScreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"></iframe>
+                    )}
+                  </div>
+                );
+              })()
+            ) : (
+              <>
+                {discountPercent > 0 && (
+                  <span className="absolute top-4 left-4 z-10 bg-gradient-to-r from-rose-500 to-orange-500 text-white text-[11px] font-black px-3 py-1.5 rounded-full shadow-md">
+                    {discountPercent}% OFF
+                  </span>
+                )}
+                <img
+                  src={selectedImage || PLACEHOLDER_IMAGE}
+                  alt={product.name}
+                  loading="lazy"
+                  onError={(e) => { e.target.onerror = null; e.target.src = PLACEHOLDER_IMAGE; }}
+                  className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-out"
+                />
+              </>
             )}
-            <img
-              src={selectedImage || PLACEHOLDER_IMAGE}
-              alt={product.name}
-              loading="lazy"
-              onError={(e) => { e.target.onerror = null; e.target.src = PLACEHOLDER_IMAGE; }}
-              className="w-full h-full object-contain mix-blend-multiply group-hover:scale-105 transition-transform duration-700 ease-out"
-            />
-            {product.images && product.images.length > 1 && (
+            
+            {mediaItems.length > 1 && (
               <>
                 <button onClick={handlePrevImage} className="absolute left-4 top-1/2 -translate-y-1/2 bg-white/90 hover:bg-white text-slate-900 p-2.5 rounded-full shadow-lg backdrop-blur-md transition-all hover:scale-110 active:scale-95 z-10">
                   <ChevronLeft className="w-5 h-5" />
@@ -248,20 +295,29 @@ export const ProductDetailPage = () => {
               </>
             )}
           </div>
-          {product.images && product.images.length > 1 && (
+          {mediaItems.length > 1 && (
             <div className="flex items-center gap-3 overflow-x-auto py-2 scrollbar-none px-1">
-              {product.images.map((img, idx) => (
+              {mediaItems.map((item, idx) => (
                 <button
                   key={idx}
-                  onClick={() => setSelectedImage(img)}
-                  className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 transition-all duration-300 shrink-0 bg-white ${selectedImage === img ? 'border-brand-600 shadow-md scale-105' : 'border-transparent opacity-60 hover:opacity-100 hover:scale-95'}`}
+                  onClick={() => setSelectedImage(item)}
+                  className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 transition-all duration-300 shrink-0 bg-white ${selectedImage === item ? 'border-brand-600 shadow-md scale-105' : 'border-transparent opacity-60 hover:opacity-100 hover:scale-95'}`}
                 >
-                  <img src={img} alt={`Thumb ${idx + 1}`} loading="lazy" className="w-full h-full object-contain p-1.5" />
+                  {item === 'VIDEO' ? (
+                    <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-500 hover:text-brand-600 hover:bg-brand-50 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8 mb-1"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+                      <span className="text-[9px] font-bold">VIDEO</span>
+                    </div>
+                  ) : (
+                    <img src={item} alt={`Thumb ${idx + 1}`} loading="lazy" className="w-full h-full object-contain p-1.5" />
+                  )}
                 </button>
               ))}
             </div>
           )}
         </div>
+
+
 
         {/* Details Section */}
         <div className="w-full flex flex-col space-y-6">

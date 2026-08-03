@@ -41,6 +41,7 @@ export const AdminProducts = () => {
     features: '',
     isFeatured: false,
     variants: [],
+    videoUrl: '',
   });
 
   useEffect(() => {
@@ -93,6 +94,7 @@ export const AdminProducts = () => {
       features: '',
       isFeatured: false,
       variants: [],
+      videoUrl: '',
     });
     setModalOpen(true);
   };
@@ -110,6 +112,7 @@ export const AdminProducts = () => {
       features: Array.isArray(product.features) ? product.features.join('\n') : product.features || '',
       isFeatured: product.isFeatured || false,
       variants: Array.isArray(product.variants) ? product.variants : [],
+      videoUrl: product.videoUrl || '',
     });
     setModalOpen(true);
   };
@@ -183,6 +186,7 @@ export const AdminProducts = () => {
         features: featuresArr,
         isFeatured: formData.isFeatured,
         variants: variantsArr,
+        videoUrl: formData.videoUrl,
       };
 
       if (editingProduct) {
@@ -561,6 +565,18 @@ export const AdminProducts = () => {
                     placeholder="e.g. 399"
                     className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 font-semibold focus:outline-none focus:border-brand-500"
                   />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label className="block font-bold text-slate-700 mb-1">Video URL (Optional)</label>
+                  <input
+                    type="url"
+                    value={formData.videoUrl || ''}
+                    onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                    placeholder="e.g. https://www.youtube.com/watch?v=..."
+                    className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 font-semibold focus:outline-none focus:border-brand-500"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1">Add a YouTube or Vimeo link to show a video on the product page.</p>
                 </div>
               </div>
 

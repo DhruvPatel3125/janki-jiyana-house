@@ -142,6 +142,7 @@ export const productSchema = Joi.object({
     'any.required': 'Stock quantity is required'
   }),
   images: Joi.array().items(Joi.string().trim().allow('')).required(),
+  videoUrl: Joi.string().trim()  .optional().allow(''),
   description: Joi.string().trim().required().messages({
     'string.empty': 'Description is required'
   }),

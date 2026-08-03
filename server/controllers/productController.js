@@ -15,7 +15,7 @@ export const getProducts = async (req, res, next) => {
 
     if (search) {
       // Use $text index if available, fallback to regex for partial matches
-      query.name = { $regex: search, $options: 'i' };
+      query.name = { $regex: search, $oxptions: 'i' };
     }
 
     let sortOptions = { createdAt: -1 };
@@ -68,7 +68,7 @@ export const getProductById = async (req, res, next) => {
 // @route   POST /api/products
 export const createProduct = async (req, res, next) => {
   try {
-    const { name, category, price, mrp, stock, images, description, features, isFeatured, variants } = req.body;
+    const { name, category, price, mrp, stock, images, videoUrl, description, features, isFeatured, variants } = req.body;
     const product = new Product({
       name,
       category,
@@ -80,6 +80,7 @@ export const createProduct = async (req, res, next) => {
       features: features || [],
       isFeatured: isFeatured || false,
       variants: variants || [],
+      videoUrl: videoUrl || '',
     });
     const createdProduct = await product.save();
     res.status(201).json(createdProduct);
@@ -104,6 +105,9 @@ export const updateProduct = async (req, res, next) => {
       product.features = req.body.features || product.features;
       product.isFeatured = req.body.isFeatured !== undefined ? req.body.isFeatured : product.isFeatured;
       product.variants = req.body.variants !== undefined ? req.body.variants : product.variants;
+      if (req.body.videoUrl !== undefined) {
+        product.videoUrl = req.body.videoUrl;
+      }
 
       const updatedProduct = await product.save();
       res.json(updatedProduct);
