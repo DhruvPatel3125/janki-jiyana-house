@@ -275,11 +275,7 @@ export const ProductDetailPage = () => {
                   Out of Stock
                 </span>
               )}
-              {currentSku !== 'N/A' && (
-                <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full border border-slate-200">
-                  SKU: {currentSku}
-                </span>
-              )}
+
             </div>
 
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 leading-tight tracking-tight">
@@ -293,9 +289,7 @@ export const ProductDetailPage = () => {
                   <span className="text-base sm:text-lg text-slate-400 line-through font-bold decoration-slate-300">₹{currentMrp}</span>
                 )}
               </div>
-              <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200 mb-1.5">
-                Taxes Included
-              </span>
+
             </div>
           </div>
 
@@ -310,13 +304,22 @@ export const ProductDetailPage = () => {
                     <button
                       key={idx}
                       onClick={() => handleVariantSelect(variant)}
-                      className={`px-4 py-2.5 rounded-xl text-xs font-bold border-2 transition-all ${isSelected
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold border-2 transition-all ${isSelected
                           ? 'border-brand-600 bg-brand-50 text-brand-700 shadow-sm'
                           : 'border-slate-200 bg-white text-slate-600 hover:border-brand-300 hover:bg-slate-50'
                         }`}
                     >
-                      <span className="text-slate-400 text-[10px] mr-1">{variant.name}:</span>
-                      {variant.value}
+                      {variant.image && (
+                        <img 
+                          src={variant.image} 
+                          alt={variant.value} 
+                          className="w-6 h-6 rounded-full object-cover border border-slate-200 shrink-0"
+                        />
+                      )}
+                      <span>
+                        <span className="text-slate-400 text-[10px] mr-1">{variant.name}:</span>
+                        {variant.value}
+                      </span>
                     </button>
                   );
                 })}
