@@ -4,7 +4,7 @@ import { useLocation } from 'react-router-dom';
 
 export const FloatingWhatsApp = () => {
   const location = useLocation();
-  const storePhone = "9824934361";
+  const storePhone = "9737474672";
   const whatsappUrl = `https://wa.me/91${storePhone}?text=Hello%20Janki%20Jiyana%20House,%20I%20want%20to%20inquire%20about%20products`;
 
   // Admin dashboard pe WhatsApp button hide karo
@@ -23,7 +23,7 @@ export const FloatingWhatsApp = () => {
         Need Help? Chat on WhatsApp
       </span>
       <span className="absolute -top-8 right-0 bg-slate-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">
-        WhatsApp: +91 98249 34361
+        WhatsApp: +91 97374 74672
       </span>
     </a>
   );

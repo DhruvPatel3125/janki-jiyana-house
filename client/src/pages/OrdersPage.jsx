@@ -58,7 +58,7 @@ export const OrdersPage = () => {
     } else {
       text = `Hello Janki Jiyana House,%0A%0AI want to request a *${actionType}* for a specific item in my order.%0A%0A*Order ID:* ${order._id}%0A*Item:* ${itemsList}%0A%0APlease assist me with the ${actionType.toLowerCase()}.`;
     }
-    return `https://wa.me/919824934361?text=${text}`;
+    return `https://wa.me/919737474672?text=${text}`;
   };
 
   const handleCancelItem = async (order, item) => {

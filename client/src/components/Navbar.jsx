@@ -61,8 +61,8 @@ export const Navbar = () => {
 
   const storeAddress = "G-8-9 Apple Square, Near, Lajamni Chowk, Maruti Dham Society, Mota Varachha, Surat, Gujarat 394101, India.";
   const shortAddress = "G-8-9 Apple Square, Near Lajamni Chowk, Mota Varachha, Surat - 394101";
-  const storePhone = "+91 98249 34361";
-  const whatsappUrl = "https://wa.me/919824934361?text=Hello%20Janki%20Jiyana%20House,%20I%20have%20an%20inquiry";
+  const storePhone = "+91 97374 74672";
+  const whatsappUrl = "https://wa.me/919737474672?text=Hello%20Janki%20Jiyana%20House,%20I%20have%20an%20inquiry";
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-200/80">
@@ -80,7 +80,7 @@ export const Navbar = () => {
           {/* Contact Details & WhatsApp */}
           <div className="flex items-center gap-3 sm:gap-5 font-semibold text-[11px] shrink-0 ml-auto sm:ml-0">
             <a
-              href="tel:+919824934361"
+              href="tel:+919737474672"
               className="flex items-center gap-1 hover:text-brand-300 transition-colors"
             >
               <PhoneCall className="w-3 h-3 text-brand-400" /> Call: {storePhone}
@@ -277,7 +277,7 @@ export const Navbar = () => {
             </div>
             <div className="flex items-center justify-between pt-2 border-t border-slate-200">
               <a
-                href="tel:+919824934361"
+                href="tel:+919737474672"
                 className="flex items-center gap-1 text-slate-900 font-bold text-xs"
               >
                 <PhoneCall className="w-3.5 h-3.5 text-brand-600" /> {storePhone}

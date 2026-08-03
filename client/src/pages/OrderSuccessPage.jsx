@@ -127,7 +127,7 @@ export const OrderSuccessPage = () => {
             </Link>
 
             <a
-              href={`https://wa.me/919824934361?text=Hello%20Janki%20Jiyana%20House,%20I%20want%20to%20track/manage%20my%20Order%20%23${order?._id || id}`}
+              href={`https://wa.me/919737474672?text=Hello%20Janki%20Jiyana%20House,%20I%20want%20to%20track/manage%20my%20Order%20%23${order?._id || id}`}
               target="_blank"
               rel="noreferrer"
               className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm px-6 py-3 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2"

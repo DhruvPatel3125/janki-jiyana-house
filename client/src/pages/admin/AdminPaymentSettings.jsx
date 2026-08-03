@@ -116,7 +116,7 @@ export const AdminPaymentSettings = () => {
               name="whatsappNumber"
               value={settings.whatsappNumber}
               onChange={handleChange}
-              placeholder="e.g. 919824934361"
+              placeholder="e.g. 919737474672"
               className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:border-brand-500 transition-colors"
             />
           </div>

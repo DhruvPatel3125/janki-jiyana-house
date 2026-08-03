@@ -4,7 +4,7 @@ const settingSchema = new mongoose.Schema(
   {
     storeUpiId: {
       type: String,
-      default: 'dhruvjpatel5@okhdfcbank',
+      default: 'bajajpay.6879729.c337835225@indus',
     },
     storeName: {
       type: String,
@@ -20,7 +20,7 @@ const settingSchema = new mongoose.Schema(
     },
     whatsappNumber: {
       type: String,
-      default: '919824934361',
+      default: '919737474672',
     },
   },
   {

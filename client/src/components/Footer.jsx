@@ -1,16 +1,16 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Phone, Mail, MapPin, Heart, MessageCircle, Instagram, Facebook, Youtube } from 'lucide-react';
+import { ShieldCheck, Phone, Mail, MapPin, Heart, MessageCircle, Instagram, Facebook, Youtube, AtSign } from 'lucide-react';
 
 export const Footer = () => {
   const storeAddress = "G-8-9 Apple Square, Near, Lajamni Chowk, Maruti Dham Society, Mota Varachha, Surat, Gujarat 394101, India.";
-  const storePhone = "+91 98249 34361";
-  const whatsappUrl = "https://wa.me/919824934361?text=Hello%20Janki%20Jiyana%20House,%20I%20have%20an%20inquiry";
+  const storePhone = "+91 97374 74672";
+  const whatsappUrl = "https://wa.me/919737474672?text=Hello%20Janki%20Jiyana%20House,%20I%20have%20an%20inquiry";
 
   return (
     <footer className="bg-slate-900 text-slate-300 pt-14 pb-8 border-t border-slate-800">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-slate-800">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 border-b border-slate-800">
           {/* Brand Col */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
@@ -34,18 +34,6 @@ export const Footer = () => {
                 className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-full transition-colors shadow-sm"
               >
                 <MessageCircle className="w-4 h-4" /> Order on WhatsApp
-              </a>
-            </div>
-            {/* Social Media Links */}
-            <div className="flex items-center gap-4 pt-6">
-              <a href="https://www.instagram.com/reel/DXyJh7DsEbN/?igsh=NDQ3Z2xoN2V4Z2o5" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-pink-500 transition-colors">
-                <Instagram className="w-5 h-5" />
-              </a>
-              <a href="https://www.facebook.com/share/16p98Xcoiy/" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-blue-500 transition-colors">
-                <Facebook className="w-5 h-5" />
-              </a>
-              <a href="https://youtube.com/@jankijiyanahouse?si=_FMqOxSHBMzx5PgJ" target="_blank" rel="noreferrer" className="text-slate-400 hover:text-red-500 transition-colors">
-                <Youtube className="w-5 h-5" />
               </a>
             </div>
           </div>
@@ -131,24 +119,76 @@ export const Footer = () => {
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-brand-400 shrink-0" />
-                <a href="tel:+919824934361" className="hover:text-white font-semibold">
+                <a href="tel:+919737474672" className="hover:text-white font-semibold">
                   {storePhone}
                 </a>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="w-5 h-5 text-brand-400 shrink-0" />
-                <a href="mailto:dhruvjpatel5@gmail.com" className="hover:text-white">
-                  dhruvjpatel5@gmail.com
+                <a href="mailto:jdvekariya717@gmail.com" className="hover:text-white">
+                  jdvekariya717@gmail.com
                 </a>
               </li>
             </ul>
           </div>
+
+        {/* Connect With Us Section */}
+        <div className="py-8 border-b border-slate-800 col-span-full">
+          <h4 className="text-white font-semibold text-base mb-5">Connect With Us</h4>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+            <a 
+              href="https://www.facebook.com/share/18xWrU44Zw/" 
+              target="_blank" 
+              rel="noreferrer"
+              className="flex items-center justify-center gap-2 bg-[#1877F2] hover:bg-[#1877F2]/90 text-white py-2.5 px-4 rounded-lg font-medium transition-transform hover:-translate-y-1 shadow-sm text-sm"
+            >
+              <Facebook className="w-5 h-5" /> Facebook
+            </a>
+            
+            <a 
+              href="https://www.instagram.com/janki_jiyana_house_?igsh=MnA0amg3eDRod2R4" 
+              target="_blank" 
+              rel="noreferrer"
+              className="flex items-center justify-center gap-2 bg-gradient-to-r from-[#833AB4] via-[#FD1D1D] to-[#F56040] hover:opacity-90 text-white py-2.5 px-4 rounded-lg font-medium transition-transform hover:-translate-y-1 shadow-sm text-sm"
+            >
+              <Instagram className="w-5 h-5" /> Instagram
+            </a>
+
+            <a 
+              href="https://youtube.com/@jankijiyanahouse?si=Vi_756cIXjOy9I1c" 
+              target="_blank" 
+              rel="noreferrer"
+              className="flex items-center justify-center gap-2 bg-[#FF0000] hover:bg-[#FF0000]/90 text-white py-2.5 px-4 rounded-lg font-medium transition-transform hover:-translate-y-1 shadow-sm text-sm"
+            >
+              <Youtube className="w-5 h-5" /> YouTube
+            </a>
+
+            <a 
+              href="https://www.threads.com/@janki_jiyana_house_" 
+              target="_blank" 
+              rel="noreferrer"
+              className="flex items-center justify-center gap-2 bg-[#111111] hover:bg-[#222222] border border-slate-700 text-white py-2.5 px-4 rounded-lg font-medium transition-transform hover:-translate-y-1 shadow-sm text-sm"
+            >
+              <AtSign className="w-5 h-5" /> Threads
+            </a>
+
+            <a 
+              href={whatsappUrl} 
+              target="_blank" 
+              rel="noreferrer"
+              className="flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#25D366]/90 text-white py-2.5 px-4 rounded-lg font-medium transition-transform hover:-translate-y-1 shadow-sm text-sm"
+            >
+              <MessageCircle className="w-5 h-5" /> WhatsApp
+            </a>
+          </div>
+        </div>
         </div>
 
         {/* Footer bottom */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-500 gap-4">
           <p>© {new Date().getFullYear()} Janki Jiyana House. All Rights Reserved.</p>
           <div className="flex items-center gap-6">
+            <p className='text-slate-500 font-bold font-inter justify-center'>Develop by DJ PATEL</p>
             <span className="flex items-center gap-1">
               <ShieldCheck className="w-4 h-4 text-emerald-500" /> 100% Secure Checkout
             </span>

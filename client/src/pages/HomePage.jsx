@@ -151,14 +151,14 @@ export const HomePage = () => {
         'url': 'https://www.jankijiyanahouse.com',
         'logo': 'https://www.jankijiyanahouse.com/logo.png',
         'description': 'Leading Baby Care, Adult Care Diapers and Personal Hygiene Store in Surat, Gujarat.',
-        'telephone': '+919824934361'
+        'telephone': '+919737474672'
       },
       {
         '@type': 'LocalBusiness',
         'name': 'Janki Jiyana House',
         'image': 'https://www.jankijiyanahouse.com/logo.png',
 
-        'telephone': '+919824934361',
+        'telephone': '+919737474672',
         'priceRange': '₹',
         'address': {
           '@type': 'PostalAddress',
@@ -244,7 +244,7 @@ export const HomePage = () => {
                         {slide.btnText} <ArrowRight className="w-4 h-4" />
                       </Link>
                       <a
-                        href="https://wa.me/919824934361?text=Hello%20Janki%20Jiyana%20House,%20I%20want%20to%20order"
+                        href="https://wa.me/919737474672?text=Hello%20Janki%20Jiyana%20House,%20I%20want%20to%20order"
                         target="_blank"
                         rel="noreferrer"
                         className="w-full sm:w-auto bg-white hover:bg-slate-50 text-slate-800 px-6 py-3.5 rounded-full font-bold text-xs sm:text-sm border border-slate-200 shadow-sm flex items-center justify-center gap-2 active:scale-95"

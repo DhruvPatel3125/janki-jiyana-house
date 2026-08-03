@@ -155,7 +155,7 @@ export const CheckoutPage = () => {
         cartItems.map(item => `- ${item.name} ${item.variant ? `(${item.variant.name}: ${item.variant.value})` : ''} (Qty: ${item.quantity}) = ₹${item.price * item.quantity}`).join('\n') +
         `\n\n*Total Payable:* ₹${cartSubtotal}`
       );
-      window.open(`https://wa.me/919824934361?text=${text}`, '_blank');
+      window.open(`https://wa.me/919737474672?text=${text}`, '_blank');
       showSuccessToast('Order placed! Redirecting to WhatsApp...');
       navigate(`/order-success/${createdOrder._id}`);
     } else {

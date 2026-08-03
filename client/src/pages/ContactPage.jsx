@@ -4,14 +4,14 @@ import { SEO } from '../components/SEO';
 
 export const ContactPage = () => {
   const storeAddress = "G-8-9 Apple Square, Near, Lajamni Chowk, Maruti Dham Society, Mota Varachha, Surat, Gujarat 394101, India.";
-  const storePhone = "+91 98249 34361";
-  const whatsappUrl = "https://wa.me/919824934361?text=Hello%20Janki%20Jiyana%20House,%20I%20need%20product%20help";
+  const storePhone = "+91 97374 74672";
+  const whatsappUrl = "https://wa.me/919737474672?text=Hello%20Janki%20Jiyana%20House,%20I%20need%20product%20help";
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
       <SEO
         title="Contact Us & Store Location Surat"
-        description="Visit Janki Jiyana House store at Mota Varachha, Surat or call/WhatsApp +91 98249 34361 for baby diapers, adult care products & hygiene items."
+        description="Visit Janki Jiyana House store at Mota Varachha, Surat or call/WhatsApp +91 97374 74672 for baby diapers, adult care products & hygiene items."
         keywords="Janki Jiyana House location Surat, Mota Varachha baby store, contact Janki Jiyana House"
       />
 
@@ -63,7 +63,7 @@ export const ContactPage = () => {
             <div>
               <h3 className="font-bold text-slate-800 text-base">Customer Helpline</h3>
               <p className="text-xs text-slate-500 mt-1">Call for orders & inquiries.</p>
-              <a href="tel:+919824934361" className="font-bold text-brand-600 text-sm mt-3 block hover:underline">
+              <a href="tel:+919737474672" className="font-bold text-brand-600 text-sm mt-3 block hover:underline">
                 {storePhone}
               </a>
             </div>
@@ -77,8 +77,8 @@ export const ContactPage = () => {
             <div>
               <h3 className="font-bold text-slate-800 text-base">Email Support</h3>
               <p className="text-xs text-slate-500 mt-1">For bulk quotes & distributors.</p>
-              <a href="mailto:dhruvjpatel5@gmail.com" className="font-bold text-slate-800 text-sm mt-3 block hover:underline">
-                dhruvjpatel5@gmail.com
+              <a href="mailto:jdvekariya717@gmail.com" className="font-bold text-slate-800 text-sm mt-3 block hover:underline">
+                jdvekariya717@gmail.com
               </a>
             </div>
           </div>
