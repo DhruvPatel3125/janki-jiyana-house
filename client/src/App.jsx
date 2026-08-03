@@ -34,6 +34,7 @@ import { AdminUsers } from './pages/admin/AdminUsers';
 import { AdminVideos } from './pages/admin/AdminVideos';
 import { AdminPaymentSettings } from './pages/admin/AdminPaymentSettings';
 import { AdminPaymentVerification } from './pages/admin/AdminPaymentVerification';
+import { AdminSecurity } from './pages/admin/AdminSecurity';
 
 import { FloatingWhatsApp } from './components/FloatingWhatsApp';
 import { ConfirmProvider } from './context/ConfirmContext'; // NEW: Confirmation Modal Context
@@ -65,6 +66,7 @@ export function App() {
                         <Route path="videos" element={<AdminVideos />} />
                         <Route path="payment-settings" element={<AdminPaymentSettings />} />
                         <Route path="payment-verification" element={<AdminPaymentVerification />} />
+                        <Route path="security" element={<AdminSecurity />} />
                       </Route>
                     </Route>
 

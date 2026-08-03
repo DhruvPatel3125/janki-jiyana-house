@@ -274,6 +274,34 @@ export const updateUserProfile = async (req, res, next) => {
   }
 };
 
+// @desc    Change user password
+// @route   PUT /api/users/change-password
+export const changePassword = async (req, res, next) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ message: 'Please provide both old and new passwords' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ message: 'New password must be at least 6 characters long' });
+    }
+
+    const user = await User.findById(req.user._id);
+
+    if (user && (await user.matchPassword(oldPassword))) {
+      user.password = newPassword;
+      await user.save();
+      res.json({ message: 'Password updated successfully' });
+    } else {
+      res.status(401).json({ message: 'Incorrect old password' });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Get all users (admin)
 // @route   GET /api/users
 export const getUsers = async (req, res, next) => {

@@ -10,6 +10,7 @@ import {
   toggleBlockUser,
   deleteUser,
   googleLogin,
+  changePassword,
 } from '../controllers/userController.js';
 import { protect, admin } from '../middleware/authMiddleware.js';
 import {
@@ -29,6 +30,7 @@ router.post('/google-login', googleLogin);
 router.post('/send-otp', validateBody(sendOtpSchema), sendOtp);
 router.post('/verify-otp', validateBody(verifyOtpSchema), verifyOtp);
 router.route('/profile').get(protect, getUserProfile).put(protect, updateUserProfile);
+router.put('/change-password', protect, changePassword);
 
 // Admin block and delete user routes
 router.put('/:id/block', protect, admin, toggleBlockUser);

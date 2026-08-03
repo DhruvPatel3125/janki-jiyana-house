@@ -15,6 +15,7 @@ import {
   Youtube,
   Banknote,
   CheckCircle,
+  Key,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { SEO } from '../../components/SEO';
@@ -34,6 +35,7 @@ export const AdminLayout = () => {
     { label: 'Trending Videos', path: '/admin/videos', icon: Youtube },
     { label: 'Verify Payments', path: '/admin/payment-verification', icon: CheckCircle },
     { label: 'Payment Settings', path: '/admin/payment-settings', icon: Banknote },
+    { label: 'Change Password', path: '/admin/security', icon: Key },
   ];
 
   const handleLogout = () => {

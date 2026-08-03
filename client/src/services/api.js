@@ -190,6 +190,15 @@ export const api = {
     return handleResponse(res, 'Failed to load profile');
   },
 
+  async changePassword(oldPassword, newPassword) {
+    const res = await fetch(`${API_BASE}/users/change-password`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify({ oldPassword, newPassword }),
+    });
+    return handleResponse(res, 'Failed to change password');
+  },
+
   async getUsers() {
     const res = await fetch(`${API_BASE}/users`, {
       headers: getHeaders(),
