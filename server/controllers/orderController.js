@@ -72,25 +72,48 @@ export const createOrder = async (req, res, next) => {
         return res.status(404).json({ message: `Product ${item.product} not found` });
       }
 
+      let currentPrice = product.price;
+      
+      if (item.variant && product.variants && product.variants.length > 0) {
+        const matchedVariant = product.variants.find(
+          (v) => v.name === item.variant.name && v.value === item.variant.value
+        );
+        if (matchedVariant && matchedVariant.price != null) {
+          currentPrice = matchedVariant.price;
+        }
+      }
+
       if (product.stock < item.quantity) {
         await session.abortTransaction();
         session.endSession();
         return res.status(400).json({ message: `Insufficient stock for product: ${product.name}` });
       }
 
-      const itemTotal = product.price * item.quantity;
+      const itemTotal = currentPrice * item.quantity;
       totalAmount += itemTotal;
 
       orderItems.push({
         product: product._id,
         name: product.name,
         image: product.images[0] || '',
-        price: product.price,
+        price: currentPrice,
         quantity: item.quantity,
+        variant: item.variant || undefined,
       });
 
       // Deduct stock quantity
       product.stock -= item.quantity;
+      
+      // Also deduct from variant stock if applicable
+      if (item.variant && product.variants && product.variants.length > 0) {
+        const variantIndex = product.variants.findIndex(
+          (v) => v.name === item.variant.name && v.value === item.variant.value
+        );
+        if (variantIndex !== -1 && product.variants[variantIndex].stock >= item.quantity) {
+          product.variants[variantIndex].stock -= item.quantity;
+        }
+      }
+
       await product.save({ session });
     }
 

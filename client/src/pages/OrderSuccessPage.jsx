@@ -92,11 +92,18 @@ export const OrderSuccessPage = () => {
             <div className="pt-2 border-t border-slate-200 space-y-2">
               <span className="text-slate-400 block font-semibold">Ordered Items</span>
               {order.items.map((item, idx) => (
-                <div key={idx} className="flex justify-between items-center text-slate-700">
-                  <span>
-                    {item.name} (x{item.quantity})
-                  </span>
-                  <span className="font-bold">₹{item.price * item.quantity}</span>
+                <div key={idx} className="flex justify-between items-start text-slate-700">
+                  <div className="flex flex-col pr-4">
+                    <span>
+                      {item.name} (x{item.quantity})
+                    </span>
+                    {item.variant && (
+                      <span className="text-[10px] text-brand-600 font-bold mt-0.5">
+                        {item.variant.name}: {item.variant.value}
+                      </span>
+                    )}
+                  </div>
+                  <span className="font-bold shrink-0">₹{item.price * item.quantity}</span>
                 </div>
               ))}
               <div className="flex justify-between items-center text-slate-900 font-extrabold text-sm pt-2 border-t border-slate-200">

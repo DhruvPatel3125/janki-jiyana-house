@@ -15,6 +15,10 @@ const orderItemSchema = new mongoose.Schema({
     enum: ['Active', 'Cancelled', 'Returned'],
     default: 'Active',
   },
+  variant: {
+    name: String,
+    value: String
+  },
 });
 
 const orderSchema = new mongoose.Schema(

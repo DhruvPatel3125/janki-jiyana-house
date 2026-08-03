@@ -169,6 +169,11 @@ export const OrdersPage = () => {
                       <img src={item.image} alt={item.name} loading="lazy" className="w-12 h-12 object-cover rounded-lg bg-white shadow-sm" />
                       <div className="flex flex-col">
                         <span className="font-bold text-slate-800">{item.name}</span>
+                        {item.variant && (
+                          <span className="text-[10px] text-brand-600 font-bold mb-0.5">
+                            {item.variant.name}: {item.variant.value}
+                          </span>
+                        )}
                         <span className="text-slate-500">
                           {item.quantity} x ₹{item.price}
                         </span>

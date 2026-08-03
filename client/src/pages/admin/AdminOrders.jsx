@@ -337,15 +337,20 @@ export const AdminOrders = () => {
             <div className="space-y-2 text-xs">
               <span className="font-bold text-slate-800 block">Ordered Items ({selectedOrder.items?.length})</span>
               {selectedOrder.items?.map((item, idx) => (
-                <div key={idx} className={`flex items-center justify-between p-2 rounded-xl ${item.status === 'Cancelled' ? 'bg-rose-50 opacity-60' : 'bg-slate-50'}`}>
-                  <div className="flex items-center gap-2">
-                    <img src={item.image} alt={item.name} className="w-8 h-8 object-cover rounded-lg" />
-                    <div className="flex flex-col">
-                      <span className="font-semibold text-slate-800 line-clamp-1 max-w-[180px]">{item.name}</span>
-                      {item.status === 'Cancelled' && <span className="text-[9px] font-bold text-rose-600 uppercase">Cancelled</span>}
+                <div key={idx} className={`flex items-start justify-between p-2.5 rounded-xl ${item.status === 'Cancelled' ? 'bg-rose-50 opacity-60' : 'bg-slate-50'}`}>
+                  <div className="flex items-start gap-3 flex-1 min-w-0">
+                    <img src={item.image} alt={item.name} className="w-10 h-10 object-cover rounded-lg shrink-0" />
+                    <div className="flex flex-col flex-1 min-w-0 pr-2">
+                      <span className="font-semibold text-slate-800 break-words leading-tight mt-0.5">{item.name}</span>
+                      {item.variant && (
+                        <span className="text-[10px] font-bold text-brand-600 mt-1">
+                          {item.variant.name}: {item.variant.value}
+                        </span>
+                      )}
+                      {item.status === 'Cancelled' && <span className="text-[9px] font-bold text-rose-600 uppercase mt-0.5">Cancelled</span>}
                     </div>
                   </div>
-                  <span className={`font-bold ${item.status === 'Cancelled' ? 'line-through text-slate-400' : ''}`}>
+                  <span className={`font-bold shrink-0 mt-0.5 ${item.status === 'Cancelled' ? 'line-through text-slate-400' : ''}`}>
                     {item.quantity} x ₹{item.price}
                   </span>
                 </div>

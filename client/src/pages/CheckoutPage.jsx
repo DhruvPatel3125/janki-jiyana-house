@@ -136,6 +136,7 @@ export const CheckoutPage = () => {
       items: cartItems.map((item) => ({
         product: item.product,
         quantity: item.quantity,
+        variant: item.variant || undefined,
       })),
       ...(paymentProof && { paymentProof })
     };
