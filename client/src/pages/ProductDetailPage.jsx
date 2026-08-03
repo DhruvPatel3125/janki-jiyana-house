@@ -111,7 +111,11 @@ export const ProductDetailPage = () => {
     if (!product) return [];
     const items = [...(product.images || [])];
     if (product.videoUrl) {
-      items.push('VIDEO');
+      if (items.length > 0) {
+        items.splice(1, 0, 'VIDEO');
+      } else {
+        items.push('VIDEO');
+      }
     }
     return items;
   }, [product]);
@@ -304,10 +308,42 @@ export const ProductDetailPage = () => {
                   className={`w-16 h-16 sm:w-20 sm:h-20 rounded-2xl overflow-hidden border-2 transition-all duration-300 shrink-0 bg-white ${selectedImage === item ? 'border-brand-600 shadow-md scale-105' : 'border-transparent opacity-60 hover:opacity-100 hover:scale-95'}`}
                 >
                   {item === 'VIDEO' ? (
-                    <div className="w-full h-full flex flex-col items-center justify-center bg-slate-100 text-slate-500 hover:text-brand-600 hover:bg-brand-50 transition-colors">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-8 h-8 mb-1"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
-                      <span className="text-[9px] font-bold">VIDEO</span>
-                    </div>
+                    (() => {
+                      const url = product?.videoUrl || '';
+                      let videoId = null;
+                      let isYoutube = false;
+                      try {
+                        if (url.includes('youtube.com/watch') || url.includes('m.youtube.com/watch')) {
+                          videoId = new URL(url).searchParams.get('v');
+                          isYoutube = true;
+                        } else if (url.includes('youtu.be/')) {
+                          videoId = url.split('youtu.be/')[1]?.split('?')[0];
+                          isYoutube = true;
+                        } else if (url.includes('youtube.com/shorts/')) {
+                          videoId = url.split('youtube.com/shorts/')[1]?.split('?')[0];
+                          isYoutube = true;
+                        }
+                      } catch(e) {}
+                      
+                      return (
+                        <div className="w-full h-full relative flex items-center justify-center bg-slate-100 overflow-hidden">
+                          {isYoutube && videoId ? (
+                            <img src={`https://img.youtube.com/vi/${videoId}/0.jpg`} alt="Video Thumbnail" className="w-full h-full object-cover" />
+                          ) : url.endsWith('.mp4') ? (
+                            <video src={`${url}#t=0.1`} preload="metadata" className="w-full h-full object-cover" muted playsInline />
+                          ) : (
+                            <div className="w-full h-full flex flex-col items-center justify-center text-slate-500">
+                               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><circle cx="12" cy="12" r="10"></circle><polygon points="10 8 16 12 10 16 10 8"></polygon></svg>
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+                             <div className="w-7 h-7 bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-md">
+                               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3.5 h-3.5 text-brand-600 ml-0.5"><path fillRule="evenodd" d="M4.5 5.653c0-1.427 1.529-2.33 2.779-1.643l11.54 6.347c1.295.712 1.295 2.573 0 3.286L7.28 19.99c-1.25.687-2.779-.217-2.779-1.643V5.653Z" clipRule="evenodd" /></svg>
+                             </div>
+                          </div>
+                        </div>
+                      )
+                    })()
                   ) : (
                     <img src={item} alt={`Thumb ${idx + 1}`} loading="lazy" className="w-full h-full object-contain p-1.5" />
                   )}

@@ -139,9 +139,11 @@ const VideoCard = ({ video, onClick }) => {
 
       {/* Top Channel Header Pill Overlay */}
       <div className="absolute top-3 left-3 right-3 pointer-events-none z-10 flex items-center gap-2 bg-black/60 backdrop-blur-md p-2 rounded-2xl border border-white/20">
-        <div className="w-7 h-7 rounded-xl bg-brand-600 text-white flex items-center justify-center font-black text-xs shrink-0 shadow-sm">
-          JJ
-        </div>
+        <img 
+          src="/logo.png" 
+          alt="Janki Jiyana House Logo" 
+          className="w-7 h-7 rounded-xl bg-white object-contain shrink-0 shadow-sm p-0.5" 
+        />
         <div className="min-w-0 flex-1">
           <p className="text-[11px] font-extrabold text-white truncate leading-tight">
             {video.channelName || 'Janki Jiyana House'}
