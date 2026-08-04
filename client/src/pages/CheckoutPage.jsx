@@ -498,7 +498,7 @@ export const CheckoutPage = () => {
             </div>
             <div className="flex justify-between text-slate-600 font-medium">
               <span>Delivery Fee</span>
-              <span className="font-bold text-emerald-600">FREE</span>
+              <span className="font-bold text-emerald-600">Extra</span>
             </div>
             <div className="flex justify-between items-baseline pt-2 border-t border-slate-100">
               <span className="font-black text-slate-900 text-sm">Total Payable</span>

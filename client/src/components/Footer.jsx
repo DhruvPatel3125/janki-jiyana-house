@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Phone, Mail, MapPin, Heart, MessageCircle, Instagram, Facebook, Youtube, AtSign } from 'lucide-react';
+import { ShieldCheck, Phone, Mail, MapPin, Heart, MessageCircle, Instagram, Facebook, Youtube, AtSign, Clock } from 'lucide-react';
 
 export const Footer = () => {
   const storeAddress = "G-8-9 Apple Square, Near, Lajamni Chowk, Maruti Dham Society, Mota Varachha, Surat, Gujarat 394101, India.";
@@ -130,6 +130,16 @@ export const Footer = () => {
                 </a>
               </li>
             </ul>
+            <div className="mt-5 space-y-3 text-xs">
+              <div className="flex items-start gap-3">
+                <Clock className="w-5 h-5 text-brand-400 shrink-0" />
+                <div className="flex flex-col gap-1">
+                  <span className="text-white font-semibold">Store Hours</span>
+                  <span>Mon - Sat: 10:00 AM - 7:00 PM</span>
+                  <span>Sunday: 10:00 AM - 5:00 PM</span>
+                </div>
+              </div>
+            </div>
           </div>
 
         {/* Connect With Us Section */}

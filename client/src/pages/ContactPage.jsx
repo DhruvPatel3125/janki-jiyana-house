@@ -111,8 +111,8 @@ export const ContactPage = () => {
                   <Clock className="w-5 h-5 text-teal-600 shrink-0" /> Store Operating Hours
                 </h4>
                 <div className="text-sm text-slate-600 space-y-1.5 font-medium">
-                  <p>Mon – Sat: <span className="text-slate-800">9:00 AM – 9:00 PM</span></p>
-                  <p>Sunday: <span className="text-slate-800">10:00 AM – 6:00 PM</span></p>
+                  <p>Mon – Sat: <span className="text-slate-800">10:00 AM – 7:00 PM</span></p>
+                  <p>Sunday: <span className="text-slate-800">10:00 AM – 5:00 PM</span></p>
                   <p className="text-emerald-600 font-bold mt-3 flex items-center gap-1.5 bg-emerald-50 w-fit px-3 py-1 rounded-lg">
                     <ShieldCheck className="w-4 h-4" /> Online Store Open 24/7
                   </p>
