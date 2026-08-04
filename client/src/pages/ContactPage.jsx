@@ -147,13 +147,13 @@ export const ContactPage = () => {
               </div>
               <p className="text-xs text-slate-500 mb-5">Follow us on social media for the latest updates, new arrivals, and special offers.</p>
               <div className="flex items-center gap-4">
-                <a href="https://www.instagram.com/reel/DXyJh7DsEbN/?igsh=NDQ3Z2xoN2V4Z2o5" target="_blank" rel="noreferrer" className="p-3 bg-slate-50 rounded-xl text-slate-400 hover:text-white hover:bg-pink-600 hover:shadow-lg hover:shadow-pink-600/20 transition-all">
+                <a href="https://www.instagram.com/janki_jiyana_house_?igsh=MnA0amg3eDRod2R4" target="_blank" rel="noreferrer" className="p-3 bg-slate-50 rounded-xl text-slate-400 hover:text-white hover:bg-pink-600 hover:shadow-lg hover:shadow-pink-600/20 transition-all">
                   <Instagram className="w-5 h-5" />
                 </a>
-                <a href="https://www.facebook.com/share/16p98Xcoiy/" target="_blank" rel="noreferrer" className="p-3 bg-slate-50 rounded-xl text-slate-400 hover:text-white hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-600/20 transition-all">
+                <a href="https://www.facebook.com/share/18xWrU44Zw/" target="_blank" rel="noreferrer" className="p-3 bg-slate-50 rounded-xl text-slate-400 hover:text-white hover:bg-blue-600 hover:shadow-lg hover:shadow-blue-600/20 transition-all">
                   <Facebook className="w-5 h-5" />
                 </a>
-                <a href="https://youtube.com/@jankijiyanahouse?si=_FMqOxSHBMzx5PgJ" target="_blank" rel="noreferrer" className="p-3 bg-slate-50 rounded-xl text-slate-400 hover:text-white hover:bg-red-600 hover:shadow-lg hover:shadow-red-600/20 transition-all">
+                <a href="https://youtube.com/@jankijiyanahouse?si=Vi_756cIXjOy9I1c" target="_blank" rel="noreferrer" className="p-3 bg-slate-50 rounded-xl text-slate-400 hover:text-white hover:bg-red-600 hover:shadow-lg hover:shadow-red-600/20 transition-all">
                   <Youtube className="w-5 h-5" />
                 </a>
               </div>
@@ -168,6 +168,10 @@ export const ContactPage = () => {
                 Want to cancel an order or request a return? Use the <strong>"Cancel / Return"</strong> button on <span className="font-bold text-brand-600">My Orders</span> page.
               </p>
               <ul className="text-slate-500 space-y-2">
+                <li className="flex gap-2">
+                  <span className="text-slate-300">•</span>
+                  <span><strong>Returns:</strong> Items can only be returned if they are defective or damaged upon delivery.</span>
+                </li>
                 <li className="flex gap-2">
                   <span className="text-slate-300">•</span>
                   <span><strong>WhatsApp Orders:</strong> Instantly cancelled with zero fees via message.</span>
