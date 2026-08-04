@@ -37,6 +37,11 @@ const productSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    detailImages: [
+      {
+        type: String,
+      },
+    ],
     description: {
       type: String,
       required: [true, 'Description is required'],

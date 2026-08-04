@@ -464,8 +464,8 @@ export const ProductDetailPage = () => {
             </div>
           </div>
 
-          {/* Description */}
-          {product.description && (
+          {/* Description & Detail Images */}
+          {(product.description || (product.detailImages && product.detailImages.length > 0)) && (
             <div className="pt-8 border-t border-slate-100">
               <div className="flex items-center justify-between cursor-pointer group">
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
@@ -473,13 +473,29 @@ export const ProductDetailPage = () => {
                 </h2>
                 <Minus className="w-5 h-5 text-slate-400 group-hover:text-brand-600 transition-colors" />
               </div>
-              <div className="mt-5 text-slate-600 text-sm sm:text-[15px] leading-relaxed font-medium space-y-4">
-                {product.description?.split('\n').filter(line => line.trim() !== '').map((line, idx) => (
-                  <p key={idx} className="text-justify">
-                    {line.replace(/^[-\d.)]+\s*/, '')}
-                  </p>
-                ))}
-              </div>
+              {product.detailImages && product.detailImages.length > 0 && (
+                <div className="mt-6 space-y-4">
+                  {product.detailImages.map((imgUrl, idx) => (
+                    <div key={idx} className="w-full rounded-2xl overflow-hidden border border-slate-200/60 shadow-sm bg-white p-1.5 sm:p-3">
+                      <img 
+                        src={imgUrl} 
+                        alt={`Product Detail ${idx + 1}`} 
+                        loading="lazy" 
+                        className="w-full h-auto object-contain rounded-xl"
+                      />
+                    </div>
+                  ))}
+                </div>
+              )}
+              {product.description && (
+                <div className="mt-5 text-slate-600 text-sm sm:text-[15px] leading-relaxed font-medium space-y-4">
+                  {product.description?.split('\n').filter(line => line.trim() !== '').map((line, idx) => (
+                    <p key={idx} className="text-justify">
+                      {line.replace(/^[-\d.)]+\s*/, '')}
+                    </p>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

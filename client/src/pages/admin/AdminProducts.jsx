@@ -42,6 +42,7 @@ export const AdminProducts = () => {
     isFeatured: false,
     variants: [],
     videoUrl: '',
+    detailImages: [],
   });
 
   useEffect(() => {
@@ -95,6 +96,7 @@ export const AdminProducts = () => {
       isFeatured: false,
       variants: [],
       videoUrl: '',
+      detailImages: [],
     });
     setModalOpen(true);
   };
@@ -113,6 +115,7 @@ export const AdminProducts = () => {
       isFeatured: product.isFeatured || false,
       variants: Array.isArray(product.variants) ? product.variants : [],
       videoUrl: product.videoUrl || '',
+      detailImages: Array.isArray(product.detailImages) ? product.detailImages : [],
     });
     setModalOpen(true);
   };
@@ -160,6 +163,10 @@ export const AdminProducts = () => {
         .map((s) => s.trim())
         .filter((s) => s.length > 0);
 
+      const detailImagesArr = formData.detailImages
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+
       const featuresArr = formData.features
         .split('\n')
         .map((s) => s.trim())
@@ -187,6 +194,7 @@ export const AdminProducts = () => {
         isFeatured: formData.isFeatured,
         variants: variantsArr,
         videoUrl: formData.videoUrl,
+        detailImages: detailImagesArr,
       };
 
       if (editingProduct) {
@@ -258,6 +266,38 @@ export const AdminProducts = () => {
     const newImages = formData.images.filter((_, i) => i !== index);
     if (newImages.length === 0) newImages.push(''); // keep at least one
     setFormData({ ...formData, images: newImages });
+  };
+
+  const uploadDetailImageHandler = async (e, index) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const data = await api.uploadFile(file);
+      const newImages = [...formData.detailImages];
+      newImages[index] = data.imageUrl;
+      setFormData({ ...formData, detailImages: newImages });
+      showSuccessToast('Detail image uploaded successfully');
+    } catch (err) {
+      showErrorToast(err.message || 'Image upload failed');
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleDetailImageChange = (index, value) => {
+    const newImages = [...formData.detailImages];
+    newImages[index] = value;
+    setFormData({ ...formData, detailImages: newImages });
+  };
+  const addDetailImageInput = () => {
+    setFormData({ ...formData, detailImages: [...formData.detailImages, ''] });
+  };
+  const removeDetailImageInput = (index) => {
+    const newImages = formData.detailImages.filter((_, i) => i !== index);
+    setFormData({ ...formData, detailImages: newImages });
   };
 
   const handleVariantChange = (index, field, value) => {
@@ -612,6 +652,48 @@ export const AdminProducts = () => {
                         <button
                           type="button"
                           onClick={() => removeImageInput(index)}
+                          className="p-2.5 text-slate-400 hover:text-rose-600 bg-white border border-slate-200 rounded-lg transition-colors"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block font-bold text-slate-700">Product Detail Images (Size Chart, etc.)</label>
+                  <button
+                    type="button"
+                    onClick={addDetailImageInput}
+                    className="text-brand-600 hover:text-brand-700 font-bold text-[11px] flex items-center gap-1 bg-brand-50 hover:bg-brand-100 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <Plus className="w-3 h-3" /> Add Image Box
+                  </button>
+                </div>
+                
+                <div className="space-y-3">
+                  {formData.detailImages.map((img, index) => (
+                    <div key={index} className="flex flex-col sm:flex-row gap-2 items-start sm:items-center bg-slate-50 border border-slate-200 p-2 rounded-xl">
+                      <div className="flex-1 w-full flex items-center gap-2">
+                        <input
+                          type="url"
+                          value={img}
+                          onChange={(e) => handleDetailImageChange(index, e.target.value)}
+                          placeholder="Detail Image URL"
+                          className="flex-1 bg-white border border-slate-200 rounded-lg p-2.5 text-slate-900 font-mono text-[11px] focus:outline-none focus:border-brand-500"
+                        />
+                      </div>
+                      <div className="flex items-center gap-2 w-full sm:w-auto mt-2 sm:mt-0">
+                        <label className="flex-1 sm:flex-none cursor-pointer text-slate-600 hover:text-brand-600 bg-white border border-slate-200 px-3 py-2.5 rounded-lg text-[11px] font-bold text-center flex items-center justify-center gap-1 transition-colors">
+                          <Upload className="w-3 h-3" />
+                          <input type="file" onChange={(e) => uploadDetailImageHandler(e, index)} className="hidden" accept="image/jpeg, image/png, image/webp" />
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => removeDetailImageInput(index)}
                           className="p-2.5 text-slate-400 hover:text-rose-600 bg-white border border-slate-200 rounded-lg transition-colors"
                         >
                           <Trash2 className="w-4 h-4" />
