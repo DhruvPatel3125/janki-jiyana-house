@@ -125,14 +125,8 @@ export const CartPage = () => {
               <span className="font-bold text-slate-900">₹{cartSubtotal}</span>
             </div>
             <div className="flex justify-between text-slate-600 font-medium">
-              <span>Estimated Delivery</span>
-              <span className="font-bold text-emerald-600">Additional</span>
-            </div>
-            <div className="flex justify-between text-slate-600 font-medium items-center">
-              <span>Packaging Type</span>
-              <span className="font-bold text-teal-700 text-[10px] bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100">
-                100% Plain Box
-              </span>
+              <span>Estimated Delivery (Shipping)</span>
+              <span className="font-bold text-emerald-600">Extra</span>
             </div>
 
             <div className="border-t border-slate-100 pt-3 flex justify-between items-baseline">

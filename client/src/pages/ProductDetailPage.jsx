@@ -469,7 +469,7 @@ export const ProductDetailPage = () => {
             <div className="pt-8 border-t border-slate-100">
               <div className="flex items-center justify-between cursor-pointer group">
                 <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                  Product Details
+                  Product Details :-
                 </h2>
                 <Minus className="w-5 h-5 text-slate-400 group-hover:text-brand-600 transition-colors" />
               </div>
