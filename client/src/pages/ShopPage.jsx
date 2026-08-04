@@ -105,6 +105,8 @@ export const ShopPage = () => {
 
   // Fetch products ONLY when in product display mode or searching
   useEffect(() => {
+    let ignore = false;
+
     if (displayMode === 'categories' && !debouncedSearch) {
       setLoading(false);
       return;
@@ -120,17 +122,27 @@ export const ShopPage = () => {
         if (sortBy) params.sort = sortBy;
 
         const data = await api.getProducts(params);
-        setProducts(data.products || []);
-        setTotalPages(data.totalPages || 1);
-        setError('');
+        if (!ignore) {
+          setProducts(data.products || []);
+          setTotalPages(data.totalPages || 1);
+          setError('');
+        }
       } catch (err) {
-        console.error('Failed to fetch products', err);
-        setError('Unable to fetch products. Please try again.');
+        if (!ignore) {
+          console.error('Failed to fetch products', err);
+          setError('Unable to fetch products. Please try again.');
+        }
       } finally {
-        setLoading(false);
+        if (!ignore) {
+          setLoading(false);
+        }
       }
     };
     fetchProducts();
+
+    return () => {
+      ignore = true;
+    };
   }, [categoriesToFetch, debouncedSearch, sortBy, displayMode]);
 
   const handleLoadMore = async () => {
