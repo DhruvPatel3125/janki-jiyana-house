@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { Search, Filter, RefreshCw, AlertCircle, ArrowRight, Sparkles } from 'lucide-react';
 import { api } from '../services/api';
@@ -28,6 +28,7 @@ export const ShopPage = () => {
   const [error, setError] = useState('');
 
   const debouncedSearch = useDebounce(searchQuery, 350);
+  const observerTarget = useRef(null);
 
   // 1. Fetch Categories
   useEffect(() => {
@@ -145,7 +146,9 @@ export const ShopPage = () => {
     };
   }, [categoriesToFetch, debouncedSearch, sortBy, displayMode]);
 
-  const handleLoadMore = async () => {
+  const handleLoadMore = useCallback(async () => {
+    if (loadingMore || currentPage >= totalPages) return;
+    
     const nextPage = currentPage + 1;
     setLoadingMore(true);
     try {
@@ -163,7 +166,28 @@ export const ShopPage = () => {
     } finally {
       setLoadingMore(false);
     }
-  };
+  }, [currentPage, totalPages, loadingMore, categoriesToFetch, debouncedSearch, sortBy]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          handleLoadMore();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+
+    return () => {
+      if (observerTarget.current) {
+        observer.unobserve(observerTarget.current);
+      }
+    };
+  }, [handleLoadMore]);
 
   // Handle category navigation
   const navigateToCategory = (catName) => {
@@ -323,20 +347,15 @@ export const ShopPage = () => {
                 <ProductCard key={product._id} product={product} />
               ))}
             </div>
-            {/* Load More Button */}
+            {/* Infinite Scroll Target */}
             {currentPage < totalPages && (
-              <div className="flex justify-center pt-4">
-                <button
-                  onClick={handleLoadMore}
-                  disabled={loadingMore}
-                  className="inline-flex items-center gap-2 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold px-8 py-3 rounded-2xl shadow-md transition-all active:scale-95 disabled:opacity-60"
-                >
-                  {loadingMore ? (
-                    <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" /> Loading...</>
-                  ) : (
-                    <><RefreshCw className="w-3.5 h-3.5" /> Load More Products</>
-                  )}
-                </button>
+              <div ref={observerTarget} className="flex justify-center pt-8 pb-4">
+                {loadingMore && (
+                  <div className="flex items-center gap-2 text-teal-600 font-bold text-sm">
+                    <div className="w-5 h-5 border-2 border-teal-600 border-t-transparent rounded-full animate-spin" />
+                    Loading more products...
+                  </div>
+                )}
               </div>
             )}
           </>

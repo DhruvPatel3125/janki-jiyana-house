@@ -5,7 +5,7 @@ import * as xlsx from 'xlsx';
 // @route   GET /api/products
 export const getProducts = async (req, res, next) => {
   try {
-    const { category, search, sort, limit = 20, page = 1 } = req.query;
+    const { category, search, sort, isFeatured, limit = 20, page = 1 } = req.query;
     let query = {};
 
     if (category && category !== 'All') {
@@ -16,6 +16,10 @@ export const getProducts = async (req, res, next) => {
     if (search) {
       // Use $text index if available, fallback to regex for partial matches
       query.name = { $regex: search, $options: 'i' };
+    }
+    
+    if (isFeatured === 'true') {
+      query.isFeatured = true;
     }
 
     let sortOptions = { createdAt: -1 };

@@ -22,7 +22,7 @@ export const AdminOrders = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
 
-  const statuses = ['All', 'Pending', 'Verification Pending', 'Confirmed', 'Packed', 'Shipped', 'Delivered', 'Cancelled', 'Return Requested', 'Rejected'];
+  const statuses = ['All', 'Pending', 'Verification Pending', 'Confirmed', 'Shipped', 'Delivered', 'Cancelled', 'Return Requested', 'Rejected'];
 
   useEffect(() => {
     fetchOrders(1, statusFilter, searchQuery);

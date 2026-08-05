@@ -138,6 +138,31 @@ export const AdminProducts = () => {
     }
   };
 
+  const handleToggleFeatured = async (product) => {
+    try {
+      const payload = {
+        name: product.name,
+        category: product.category,
+        price: Number(product.price),
+        mrp: Number(product.mrp) || Number(product.price),
+        stock: Number(product.stock),
+        images: product.images,
+        description: product.description,
+        features: product.features,
+        isFeatured: !product.isFeatured,
+        variants: product.variants,
+        videoUrl: product.videoUrl,
+        detailImages: product.detailImages,
+      };
+      
+      const updated = await api.updateProduct(product._id, payload);
+      setProducts(products.map((p) => (p._id === product._id ? updated : p)));
+      showSuccessToast(`Product is now ${!product.isFeatured ? 'Featured' : 'Standard'}`);
+    } catch (err) {
+      showErrorToast(err.message || 'Failed to update featured status');
+    }
+  };
+
   const handleImportProducts = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
@@ -401,13 +426,22 @@ export const AdminProducts = () => {
                       </span>
                     </td>
                     <td className="p-4">
-                      {product.isFeatured ? (
-                        <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full text-[10px] font-bold border border-amber-200">
-                          <Sparkles className="w-3 h-3 text-amber-500" /> Featured
-                        </span>
-                      ) : (
-                        <span className="text-slate-400 text-[10px]">Standard</span>
-                      )}
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={product.isFeatured}
+                          onChange={() => handleToggleFeatured(product)}
+                          className="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500 cursor-pointer"
+                          title="Toggle Featured"
+                        />
+                        {product.isFeatured ? (
+                          <span className="inline-flex items-center gap-1 bg-amber-50 text-amber-700 px-2.5 py-1 rounded-full text-[10px] font-bold border border-amber-200">
+                            <Sparkles className="w-3 h-3 text-amber-500" /> Featured
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 text-[10px]">Standard</span>
+                        )}
+                      </div>
                     </td>
                     <td className="p-4 text-right">
                       <div className="flex items-center justify-end gap-2">
@@ -471,7 +505,14 @@ export const AdminProducts = () => {
                 </div>
 
                 <div className="flex items-center justify-between pt-2">
-                  <div>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      checked={product.isFeatured}
+                      onChange={() => handleToggleFeatured(product)}
+                      className="w-4 h-4 text-brand-600 rounded border-slate-300 focus:ring-brand-500 cursor-pointer"
+                      title="Toggle Featured"
+                    />
                     {product.isFeatured ? (
                       <span className="inline-flex items-center gap-1 bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[10px] font-bold">
                         <Sparkles className="w-3 h-3 text-amber-600" /> Featured

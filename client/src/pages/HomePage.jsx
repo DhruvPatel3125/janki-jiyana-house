@@ -81,13 +81,13 @@ export const HomePage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [prodsData, catsData] = await Promise.all([
-          api.getProducts({ limit: 12 }),
+        const [prodsData, featuredProdsData, catsData] = await Promise.all([
+          api.getProducts({ limit: 20 }),
+          api.getProducts({ limit: 20, isFeatured: true }),
           api.getCategories(),
         ]);
-        const prods = prodsData.products || [];
-        setNewProducts(prods.slice(0, 6));
-        setFeaturedProducts(prods.slice(-6).reverse());
+        setNewProducts(prodsData.products || []);
+        setFeaturedProducts(featuredProdsData.products || []);
         setCategories(catsData);
       } catch (err) {
         console.error('Failed to load homepage data', err);
