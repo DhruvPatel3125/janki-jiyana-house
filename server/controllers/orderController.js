@@ -233,12 +233,34 @@ export const getOrders = async (req, res, next) => {
     if (status && status !== 'All') {
       query.status = status;
     }
-    // Allow search by customer name or order ID prefix
-    if (search) {
-      // Search by order ID if it looks like an ID
-      if (search.match(/^[a-f\d]{24}$/i)) {
-        query._id = search;
+    // Allow multi-field search (Customer Name, Phone, Email, Address, UTR Number, or Order ID)
+    if (search && search.trim()) {
+      const searchTrim = search.trim();
+      const searchRegex = new RegExp(searchTrim, 'i');
+
+      const orConditions = [
+        { 'guestInfo.name': searchRegex },
+        { 'guestInfo.phone': searchRegex },
+        { 'guestInfo.email': searchRegex },
+        { 'shippingAddress.phone': searchRegex },
+        { 'shippingAddress.street': searchRegex },
+        { 'shippingAddress.city': searchRegex },
+        { 'paymentProof.utrNumber': searchRegex },
+      ];
+
+      if (searchTrim.match(/^[a-f\d]{24}$/i)) {
+        orConditions.push({ _id: searchTrim });
       }
+
+      const matchingUsers = await User.find({
+        $or: [{ name: searchRegex }, { email: searchRegex }, { phone: searchRegex }],
+      }).select('_id');
+
+      if (matchingUsers.length > 0) {
+        orConditions.push({ user: { $in: matchingUsers.map((u) => u._id) } });
+      }
+
+      query.$or = orConditions;
     }
 
     const [orders, totalOrders] = await Promise.all([
@@ -284,7 +306,10 @@ export const updateOrderStatus = async (req, res, next) => {
         prevStatus !== 'Cancelled' && prevStatus !== 'Return Requested'
       ) {
         for (const item of order.items) {
-          await Product.updateOne({ _id: item.product }, { $inc: { stock: item.quantity } });
+          // Only restore stock for items that are still Active (not already individually cancelled)
+          if (item.status === 'Active') {
+            await Product.updateOne({ _id: item.product }, { $inc: { stock: item.quantity } });
+          }
         }
       }
 
@@ -510,8 +535,6 @@ export const verifyPayment = async (req, res) => {
       order.paymentProof.verifiedBy = req.user._id;
     } else {
       order.paymentStatus = 'rejected';
-      // Do not change order status from Verification Pending, let them try again.
-      // But clearing proof so they can re-upload if needed (optional)
       if (!order.paymentProof) order.paymentProof = {};
       order.paymentProof.verifiedAt = Date.now();
       order.paymentProof.verifiedBy = req.user._id;
@@ -524,43 +547,113 @@ export const verifyPayment = async (req, res) => {
   }
 };
 
+let adminStatsCache = null;
+let adminStatsCacheTime = 0;
+const STATS_CACHE_TTL = 30 * 1000; // 30 seconds cache TTL
+
 // @desc    Get admin analytics overview (total sales, counts, dynamic charts)
 // @route   GET /api/orders/stats
 export const getAdminStats = async (req, res, next) => {
   try {
-    const totalOrdersCount = await Order.countDocuments();
-    const pendingOrdersCount = await Order.countDocuments({ status: 'Pending' });
-    const confirmedOrdersCount = await Order.countDocuments({ status: 'Confirmed' });
-    const shippedOrdersCount = await Order.countDocuments({ status: 'Shipped' });
-    const deliveredOrdersCount = await Order.countDocuments({ status: 'Delivered' });
+    // Return cached stats if within 30 seconds TTL
+    if (adminStatsCache && Date.now() - adminStatsCacheTime < STATS_CACHE_TTL) {
+      return res.json(adminStatsCache);
+    }
 
-    // Calculate total sales from non-cancelled orders
-    const salesAggregation = await Order.aggregate([
-      { $match: { status: { $ne: 'Cancelled' } } },
-      { $group: { _id: null, totalRevenue: { $sum: '$totalAmount' } } },
-    ]);
+    const currentYear = new Date().getFullYear();
+    const yearStart = new Date(`${currentYear}-01-01T00:00:00.000Z`);
+    const yearEnd = new Date(`${currentYear}-12-31T23:59:59.999Z`);
 
-    const totalRevenue = salesAggregation.length > 0 ? salesAggregation[0].totalRevenue : 0;
-    const productsCount = await Product.countDocuments();
-    const lowStockProductsCount = await Product.countDocuments({ stock: { $lte: 5 } });
-    const usersCount = await User.countDocuments({ role: 'customer' });
+    // ── Run all 3 collections in parallel (was 10+ sequential queries before) ──
+    const [orderFacet, productFacet, usersCount] = await Promise.all([
 
-    // Dynamic Monthly Sales Trend Aggregation
-    const monthlyAggregation = await Order.aggregate([
-      { $match: { status: { $ne: 'Cancelled' } } },
-      {
-        $group: {
-          _id: { $month: '$createdAt' },
-          revenue: { $sum: '$totalAmount' },
-          orders: { $sum: 1 },
+      // Single $facet aggregation covers: status counts, revenue, monthly trend, recent orders
+      Order.aggregate([
+        {
+          $facet: {
+            // Count per status in ONE collection scan
+            statusCounts: [
+              { $group: { _id: '$status', count: { $sum: 1 } } },
+            ],
+            // Total revenue (non-cancelled)
+            revenue: [
+              { $match: { status: { $ne: 'Cancelled' } } },
+              { $group: { _id: null, total: { $sum: '$totalAmount' } } },
+            ],
+            // Monthly sales — current year only (fixes cross-year bug)
+            monthlySales: [
+              {
+                $match: {
+                  status: { $ne: 'Cancelled' },
+                  createdAt: { $gte: yearStart, $lte: yearEnd },
+                },
+              },
+              {
+                $group: {
+                  _id: { month: { $month: '$createdAt' } },
+                  revenue: { $sum: '$totalAmount' },
+                  orders: { $sum: 1 },
+                },
+              },
+              { $sort: { '_id.month': 1 } },
+            ],
+            // Recent 6 orders (no separate find() needed)
+            recentOrders: [
+              { $sort: { createdAt: -1 } },
+              { $limit: 6 },
+              {
+                $lookup: {
+                  from: 'users',
+                  localField: 'user',
+                  foreignField: '_id',
+                  as: 'userInfo',
+                  pipeline: [{ $project: { name: 1, email: 1 } }],
+                },
+              },
+              { $addFields: { user: { $arrayElemAt: ['$userInfo', 0] } } },
+              { $project: { userInfo: 0 } },
+            ],
+          },
         },
-      },
-      { $sort: { _id: 1 } },
+      ]),
+
+      // Single $facet aggregation covers: product count, low stock, category distribution
+      Product.aggregate([
+        {
+          $facet: {
+            total: [{ $count: 'count' }],
+            lowStock: [
+              { $match: { stock: { $lte: 5 } } },
+              { $count: 'count' },
+            ],
+            categoryDistribution: [
+              { $group: { _id: '$category', count: { $sum: 1 } } },
+            ],
+          },
+        },
+      ]),
+
+      // Simple count for users
+      User.countDocuments({ role: 'customer' }),
     ]);
 
+    // ── Extract order stats from $facet result ──
+    const oFacet = orderFacet[0];
+    const statusMap = {};
+    for (const s of oFacet.statusCounts) {
+      statusMap[s._id] = s.count;
+    }
+    const totalOrdersCount = Object.values(statusMap).reduce((a, b) => a + b, 0);
+    const pendingOrdersCount = (statusMap['Pending'] || 0) + (statusMap['Pending Payment'] || 0);
+    const confirmedOrdersCount = statusMap['Confirmed'] || 0;
+    const shippedOrdersCount = statusMap['Shipped'] || 0;
+    const deliveredOrdersCount = statusMap['Delivered'] || 0;
+    const totalRevenue = oFacet.revenue.length > 0 ? oFacet.revenue[0].total : 0;
+
+    // ── Build 12-month trend (current year) ──
     const monthsMap = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
     const monthlySalesData = monthsMap.map((m, idx) => {
-      const found = monthlyAggregation.find((a) => a._id === idx + 1);
+      const found = oFacet.monthlySales.find((a) => a._id.month === idx + 1);
       return {
         month: m,
         revenue: found ? found.revenue : 0,
@@ -568,29 +661,18 @@ export const getAdminStats = async (req, res, next) => {
       };
     });
 
-    // Dynamic Category Distribution Aggregation
-    const categoryAggregation = await Product.aggregate([
-      {
-        $group: {
-          _id: '$category',
-          count: { $sum: 1 },
-        },
-      },
-    ]);
-
+    // ── Extract product stats ──
+    const pFacet = productFacet[0];
+    const productsCount = pFacet.total.length > 0 ? pFacet.total[0].count : 0;
+    const lowStockProductsCount = pFacet.lowStock.length > 0 ? pFacet.lowStock[0].count : 0;
     const colorsList = ['#0d9488', '#f97316', '#0284c7', '#8b5cf6', '#ec4899', '#10b981'];
-    const categoryDistributionData = categoryAggregation.map((cat, idx) => ({
+    const categoryDistributionData = pFacet.categoryDistribution.map((cat, idx) => ({
       name: cat._id || 'General',
       value: cat.count,
       color: colorsList[idx % colorsList.length],
     }));
 
-    const recentOrders = await Order.find({})
-      .populate('user', 'name email')
-      .sort({ createdAt: -1 })
-      .limit(6);
-
-    res.json({
+    const responsePayload = {
       totalRevenue,
       totalOrdersCount,
       pendingOrdersCount,
@@ -602,8 +684,14 @@ export const getAdminStats = async (req, res, next) => {
       usersCount,
       monthlySalesData,
       categoryDistributionData,
-      recentOrders,
-    });
+      recentOrders: oFacet.recentOrders,
+    };
+
+    // Cache the payload
+    adminStatsCache = responsePayload;
+    adminStatsCacheTime = Date.now();
+
+    res.json(responsePayload);
   } catch (error) {
     next(error);
   }

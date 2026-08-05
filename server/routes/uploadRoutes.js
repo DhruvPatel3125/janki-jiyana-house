@@ -23,14 +23,32 @@ const storage = new CloudinaryStorage({
   },
 });
 
-const upload = multer({ storage: storage });
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB Maximum file size limit
+});
 
 const router = express.Router();
+
+// Helper middleware to handle multer file size limit errors
+const handleUpload = (field) => (req, res, next) => {
+  upload.single(field)(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ message: 'File size exceeds 5MB limit. Please upload a smaller image.' });
+      }
+      return res.status(400).json({ message: err.message });
+    } else if (err) {
+      return res.status(400).json({ message: err.message || 'File upload error' });
+    }
+    next();
+  });
+};
 
 // @route   POST /api/upload
 // @desc    Upload an image to Cloudinary
 // @access  Private/Admin
-router.post('/', protect, admin, upload.single('image'), (req, res) => {
+router.post('/', protect, admin, handleUpload('image'), (req, res) => {
   if (req.file && req.file.path) {
     res.json({
       message: 'Image uploaded successfully',
@@ -44,7 +62,7 @@ router.post('/', protect, admin, upload.single('image'), (req, res) => {
 // @route   POST /api/upload/payment-proof
 // @desc    Upload payment screenshot (Public/Customer)
 // @access  Public
-router.post('/payment-proof', upload.single('image'), (req, res) => {
+router.post('/payment-proof', handleUpload('image'), (req, res) => {
   if (req.file && req.file.path) {
     res.json({
       message: 'Payment proof uploaded successfully',

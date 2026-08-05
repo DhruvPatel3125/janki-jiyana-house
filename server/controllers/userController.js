@@ -4,7 +4,7 @@ import { sendOtpEmail } from '../config/nodemailer.js';
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: '30d',
+    expiresIn: process.env.JWT_EXPIRE || '7d',
   });
 };
 
@@ -302,12 +302,39 @@ export const changePassword = async (req, res, next) => {
   }
 };
 
-// @desc    Get all users (admin)
+// @desc    Get all users (admin, paginated & searchable)
 // @route   GET /api/users
 export const getUsers = async (req, res, next) => {
   try {
-    const users = await User.find({}).select('-password').sort({ createdAt: -1 });
-    res.json(users);
+    const { page = 1, limit = 20, search } = req.query;
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
+    const skip = (pageNum - 1) * limitNum;
+
+    let query = {};
+    if (search) {
+      const searchRegex = new RegExp(search.trim(), 'i');
+      query = {
+        $or: [
+          { name: searchRegex },
+          { email: searchRegex },
+          { phone: searchRegex },
+          { 'address.phone': searchRegex },
+        ],
+      };
+    }
+
+    const [users, totalUsers] = await Promise.all([
+      User.find(query).select('-password').sort({ createdAt: -1 }).skip(skip).limit(limitNum),
+      User.countDocuments(query),
+    ]);
+
+    res.json({
+      users,
+      totalUsers,
+      totalPages: Math.ceil(totalUsers / limitNum),
+      currentPage: pageNum,
+    });
   } catch (error) {
     next(error);
   }

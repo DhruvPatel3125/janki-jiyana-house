@@ -27,15 +27,17 @@ const app = express();
 app.use(helmet({
   contentSecurityPolicy: false, // Avoid blocking inline images/scripts in dev/prod
 }));
+const allowedOrigins = [
+  process.env.CLIENT_URL,
+  ...(process.env.NODE_ENV !== 'production' ? ['http://localhost:3000', 'http://localhost:5173'] : []),
+].filter(Boolean);
+
 app.use(cors({
-  origin: [
-    'http://localhost:3000', 
-    'http://localhost:5173', 
-    process.env.CLIENT_URL
-  ].filter(Boolean),
+  origin: allowedOrigins,
   credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: '2mb' }));
+app.use(express.urlencoded({ extended: true, limit: '2mb' }));
 
 // Rate Limiting
 const apiLimiter = rateLimit({

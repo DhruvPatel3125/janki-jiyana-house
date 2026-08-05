@@ -14,8 +14,12 @@ export const getProducts = async (req, res, next) => {
     }
 
     if (search) {
-      // Use $text index if available, fallback to regex for partial matches
-      query.name = { $regex: search, $options: 'i' };
+      // Use $text index for fast indexed text search, falling back to regex for partial word prefix
+      const searchTrim = search.trim();
+      query.$or = [
+        { $text: { $search: searchTrim } },
+        { name: { $regex: searchTrim, $options: 'i' } }
+      ];
     }
     
     if (isFeatured === 'true') {

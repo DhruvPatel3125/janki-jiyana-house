@@ -27,12 +27,25 @@ export const startCronJobs = () => {
         order.status = 'Cancelled';
         order.paymentStatus = 'rejected'; // or 'cancelled' if we add that to enum, but rejected works to indicate failed payment
         
-        // Restock items
+        // Restock items (main stock + variant stock)
         for (const item of order.items) {
           await Product.updateOne(
             { _id: item.product },
             { $inc: { stock: item.quantity } }
           );
+
+          if (item.variant) {
+            const productObj = await Product.findById(item.product);
+            if (productObj && productObj.variants && productObj.variants.length > 0) {
+              const variantIndex = productObj.variants.findIndex(
+                (v) => v.name === item.variant.name && v.value === item.variant.value
+              );
+              if (variantIndex !== -1) {
+                productObj.variants[variantIndex].stock += item.quantity;
+                await productObj.save();
+              }
+            }
+          }
         }
 
         await order.save();

@@ -162,6 +162,32 @@ export const productSchema = Joi.object({
   ).optional(),
 });
 
+// Product Update Schema (Partial Updates allowed)
+export const updateProductSchema = Joi.object({
+  name: Joi.string().trim().optional(),
+  category: Joi.string().trim().optional(),
+  price: Joi.number().min(0).optional(),
+  mrp: Joi.number().min(0).optional().allow(null, ''),
+  stock: Joi.number().integer().min(0).optional(),
+  images: Joi.array().items(Joi.string().trim().allow('')).optional(),
+  videoUrl: Joi.string().trim().optional().allow(''),
+  detailImages: Joi.array().items(Joi.string().trim().allow('')).optional(),
+  description: Joi.string().trim().optional(),
+  features: Joi.array().items(Joi.string().trim().allow('')).optional(),
+  isFeatured: Joi.boolean().optional(),
+  variants: Joi.array().items(
+    Joi.object({
+      name: Joi.string().optional(),
+      value: Joi.string().optional(),
+      price: Joi.number().min(0).optional().allow(null, ''),
+      mrp: Joi.number().min(0).optional().allow(null, ''),
+      stock: Joi.number().integer().min(0).optional().allow(null, ''),
+      sku: Joi.string().trim().optional().allow(''),
+      image: Joi.string().trim().optional().allow('')
+    })
+  ).optional(),
+});
+
 // Category Schema (Create/Update)
 export const categorySchema = Joi.object({
   name: Joi.string().trim().required().messages({

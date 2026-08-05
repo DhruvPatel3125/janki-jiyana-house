@@ -9,20 +9,35 @@ export const AdminUsers = () => {
   const [users, setUsers] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalUsers, setTotalUsers] = useState(0);
   const { confirm } = useConfirm();
 
   // Debounced Search Hook (300ms)
   const debouncedSearch = useDebounce(searchQuery, 300);
 
   useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
+
+  useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [currentPage, debouncedSearch]);
 
   const fetchUsers = async () => {
     setLoading(true);
     try {
-      const data = await api.getUsers();
-      setUsers(data);
+      const data = await api.getUsers({ page: currentPage, limit: 20, search: debouncedSearch });
+      if (Array.isArray(data)) {
+        setUsers(data);
+        setTotalUsers(data.length);
+        setTotalPages(1);
+      } else {
+        setUsers(data.users || []);
+        setTotalUsers(data.totalUsers || 0);
+        setTotalPages(data.totalPages || 1);
+      }
     } catch (err) {
       console.error('Failed to load users', err);
     } finally {
@@ -78,12 +93,7 @@ export const AdminUsers = () => {
     }
   };
 
-  const filteredUsers = users.filter(
-    (u) =>
-      (u.name || '').toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      (u.email || '').toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      (u.phone || u.address?.phone || '').includes(debouncedSearch)
-  );
+  const filteredUsers = users;
 
   return (
     <div className="space-y-6">
@@ -96,7 +106,7 @@ export const AdminUsers = () => {
           </p>
         </div>
         <div className="bg-brand-50 text-brand-700 font-extrabold px-4 py-2 rounded-2xl border border-brand-100 text-xs flex items-center gap-1.5 shrink-0">
-          <Users className="w-4 h-4 text-brand-600" /> Total Users: {users.length}
+          <Users className="w-4 h-4 text-brand-600" /> Total Users: {totalUsers}
         </div>
       </div>
 
@@ -322,6 +332,34 @@ export const AdminUsers = () => {
           </>
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between pt-2">
+          <p className="text-xs font-semibold text-slate-500">
+            Page {currentPage} of {totalPages} ({totalUsers} total users)
+          </p>
+          <div className="flex items-center gap-2">
+            <button
+              disabled={currentPage <= 1}
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              Previous
+            </button>
+            <span className="text-xs font-black text-slate-800 px-2">
+              {currentPage} / {totalPages}
+            </span>
+            <button
+              disabled={currentPage >= totalPages}
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              className="px-3 py-1.5 rounded-xl border border-slate-200 bg-white text-xs font-bold text-slate-700 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
