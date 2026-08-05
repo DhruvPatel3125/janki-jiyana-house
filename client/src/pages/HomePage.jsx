@@ -9,11 +9,13 @@ import { ProductSkeleton } from '../components/skeletons/ProductSkeleton';
 import { SEO } from '../components/SEO';
 
 
+
 export const HomePage = () => {
 
   const [newProducts, setNewProducts] = useState([]);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [discountBanners, setDiscountBanners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -81,14 +83,16 @@ export const HomePage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [prodsData, featuredProdsData, catsData] = await Promise.all([
+        const [prodsData, featuredProdsData, catsData, bannersData] = await Promise.all([
           api.getProducts({ limit: 20 }),
           api.getProducts({ limit: 20, isFeatured: true }),
           api.getCategories(),
+          api.getBanners().catch(() => []),
         ]);
         setNewProducts(prodsData.products || []);
         setFeaturedProducts(featuredProdsData.products || []);
-        setCategories(catsData);
+        setCategories(catsData || []);
+        setDiscountBanners(bannersData || []);
       } catch (err) {
         console.error('Failed to load homepage data', err);
         setError('Unable to connect to the server. Please check your internet connection or try again later.');
@@ -337,26 +341,99 @@ export const HomePage = () => {
         </div>
 
         {/* Circular Round Category Cards Row (Touch Horizontal Scrollable) */}
-        <div className="flex items-center gap-4 sm:gap-8 overflow-x-auto pb-4 pt-1 scrollbar-none justify-start md:justify-center">
+        <div className="flex items-center gap-6 sm:gap-10 overflow-x-auto pb-4 pt-2 scrollbar-none justify-start md:justify-center">
           {categories.filter(cat => !cat.parentCategory).map((cat, idx) => (
             <Link
               key={cat._id || idx}
               to={`/shop?category=${encodeURIComponent(cat.name).replace(/%20/g, '+')}`}
-              className="flex flex-col items-center text-center space-y-2 group shrink-0"
+              className="flex flex-col items-center text-center space-y-3 group shrink-0"
             >
-              <div className="w-20 h-20 sm:w-28 sm:h-28 rounded-full p-1 bg-gradient-to-tr from-brand-200 via-orange-100 to-teal-200 shadow-md group-hover:shadow-xl group-hover:scale-105 transition-all duration-300 border-2 border-white relative overflow-hidden">
+              <div className="w-28 h-28 sm:w-36 sm:h-36 lg:w-40 lg:h-40 rounded-full p-1.5 bg-gradient-to-tr from-brand-300 via-orange-200 to-teal-300 shadow-lg group-hover:shadow-2xl group-hover:scale-105 transition-all duration-300 border-4 border-white relative overflow-hidden">
                 <img
                   src={cat.image || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500'}
                   alt={cat.name}
                   className="w-full h-full object-cover rounded-full group-hover:rotate-3 transition-transform duration-500"
                 />
               </div>
-              <span className="font-bold text-xs text-slate-800 group-hover:text-brand-600 transition-colors max-w-[95px] sm:max-w-[110px] leading-tight line-clamp-2">
+              <span className="font-extrabold text-xs sm:text-sm text-slate-800 group-hover:text-brand-600 transition-colors max-w-[120px] sm:max-w-[150px] leading-tight line-clamp-2">
                 {cat.name}
               </span>
             </Link>
           ))}
         </div>
+      </section>
+
+      {/* 🎁 DISCOUNT BANNERS SECTION — Big Discount, Big Saving */}
+      <section className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 space-y-6">
+        <div className="text-center space-y-1">
+          <h2 className="text-2xl sm:text-4xl font-black text-rose-500 tracking-tight">
+            Big Discount, Big Saving
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 font-semibold tracking-wide">
+            Today's Best Deals
+          </p>
+        </div>
+
+        {discountBanners.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {discountBanners.map((banner) => (
+              <Link
+                key={banner._id}
+                to={`/shop?category=${encodeURIComponent(banner.category).replace(/%20/g, '+')}`}
+                className="group relative rounded-3xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-500 border border-slate-200/80 bg-white w-full flex items-center justify-center"
+              >
+                <img
+                  src={banner.image}
+                  alt={banner.title || banner.category}
+                  className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-700 rounded-3xl"
+                />
+              </Link>
+            ))}
+          </div>
+        ) : (
+          /* Default Promo Banners fallback if no admin banners added yet */
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Link
+              to="/shop?category=Baby+Care"
+              className="group relative rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-rose-200/80 bg-gradient-to-r from-rose-50 via-pink-50 to-orange-50 p-6 sm:p-8 flex items-center justify-between aspect-[2/1] w-full"
+            >
+              <div className="space-y-2 z-10 max-w-[65%]">
+                <span className="bg-rose-500 text-white text-[10px] sm:text-xs font-black uppercase px-3 py-1 rounded-full shadow-sm">
+                  Special Offer
+                </span>
+                <h3 className="text-lg sm:text-2xl font-black text-slate-900 leading-tight">
+                  Baby Care & Diapers Mega Savings
+                </h3>
+                <p className="text-xs font-bold text-rose-600 flex items-center gap-1 pt-1">
+                  Shop Category <ArrowRight className="w-3.5 h-3.5" />
+                </p>
+              </div>
+              <div className="w-24 h-24 sm:w-36 sm:h-36 rounded-2xl overflow-hidden shrink-0 shadow-lg border-2 border-white">
+                <img src="https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=500" alt="Baby Care Deal" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              </div>
+            </Link>
+
+            <Link
+              to="/shop?category=Sanitary+Pads"
+              className="group relative rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-teal-200/80 bg-gradient-to-r from-teal-50 via-sky-50 to-blue-50 p-6 sm:p-8 flex items-center justify-between aspect-[2/1] w-full"
+            >
+              <div className="space-y-2 z-10 max-w-[65%]">
+                <span className="bg-teal-600 text-white text-[10px] sm:text-xs font-black uppercase px-3 py-1 rounded-full shadow-sm">
+                  100% Rash-Free
+                </span>
+                <h3 className="text-lg sm:text-2xl font-black text-slate-900 leading-tight">
+                  Cooling Mint Sanitary Pads
+                </h3>
+                <p className="text-xs font-bold text-teal-600 flex items-center gap-1 pt-1">
+                  Shop Category <ArrowRight className="w-3.5 h-3.5" />
+                </p>
+              </div>
+              <div className="w-24 h-24 sm:w-36 sm:h-36 rounded-2xl overflow-hidden shrink-0 shadow-lg border-2 border-white">
+                <img src="https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?w=500" alt="Sanitary Pads Deal" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+              </div>
+            </Link>
+          </div>
+        )}
       </section>
 
       {/* OUR TRENDING VIDEO SHORTS SECTION */}
@@ -467,30 +544,89 @@ export const HomePage = () => {
       {/* Trust Badges Bar */}
       <TrustBadges />
 
-      {/* Discreet Packaging Banner */}
+      {/* 🏪 Physical Store Showcase Section */}
       <section className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12">
-        <div className="bg-slate-900 text-white rounded-3xl p-6 sm:p-10 lg:p-12 relative overflow-hidden flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8">
-          <div className="space-y-3 max-w-xl text-center md:text-left z-10">
-            <span className="bg-brand-500/20 text-brand-300 text-[10px] sm:text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-              Privacy First Promise
-            </span>
-            <h3 className="text-xl sm:text-3xl font-black text-white leading-tight">
-              100% Plain & Unbranded Packaging
-            </h3>
-            <p className="text-slate-400 text-xs sm:text-sm leading-relaxed">
-              We understand privacy matters. All orders for sanitary pads and adult diapers are shipped in plain brown boxes with zero product names or logos on the outer box.
-            </p>
-          </div>
-          <div className="shrink-0 z-10 w-full sm:w-auto">
-            <Link
-              to="/shop"
-              className="w-full sm:w-auto bg-brand-500 hover:bg-brand-600 text-white px-8 py-3.5 rounded-2xl font-bold text-xs sm:text-sm transition-colors text-center inline-block"
-            >
-              Shop Privately Now
-            </Link>
+        <div className="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white rounded-3xl p-6 sm:p-10 lg:p-12 border border-slate-700/60 shadow-2xl overflow-hidden relative group">
+          {/* Subtle Glow background */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/10 blur-3xl rounded-full pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 w-96 h-96 bg-teal-500/10 blur-3xl rounded-full pointer-events-none"></div>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center relative z-10">
+            {/* Storefront Image with Frame */}
+            <div className="relative rounded-2xl overflow-hidden shadow-2xl border-2 border-amber-400/40 group-hover:border-amber-400 transition-all duration-500 aspect-[4/3] bg-slate-950 flex items-center justify-center">
+              <img
+                src="/shop-storefront.jpg"
+                alt="Janki Jiyana House Physical Store Surat"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-4 sm:p-6">
+                <span className="bg-amber-500 text-slate-950 text-[11px] sm:text-xs font-black uppercase px-3 py-1.5 rounded-full shadow-lg flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 fill-slate-950" /> Janki Jiyana House Outlet
+                </span>
+              </div>
+            </div>
+
+            {/* Store Info & Details */}
+            <div className="space-y-6">
+              <div className="space-y-2">
+                <span className="text-amber-400 text-xs font-black uppercase tracking-widest bg-amber-400/10 px-3.5 py-1 rounded-full border border-amber-400/20 inline-block">
+                  Visit Our Physical Store
+                </span>
+                <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight leading-tight">
+                  Experience Trust & Quality In-Person 🏪
+                </h2>
+                <p className="text-slate-300 text-xs sm:text-sm leading-relaxed font-medium">
+                  Welcome to <strong className="text-amber-400">Janki Jiyana House</strong>! Visit our retail store in Surat for New Born Baby Care, Kids Wear, Toys, Sanitary Pads, Adult Diapers & Personal Hygiene products with expert guidance.
+                </p>
+              </div>
+
+              {/* Info Badges */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-2">
+                <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/60 flex items-start gap-3">
+                  <div className="p-2 bg-amber-500/20 text-amber-400 rounded-xl shrink-0">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-200">Ladva Aanana Specialist</h4>
+                    <p className="text-[11px] text-slate-400">New Born & Kids Wear, Baby Accessories</p>
+                  </div>
+                </div>
+
+                <div className="bg-slate-800/80 p-3.5 rounded-2xl border border-slate-700/60 flex items-start gap-3">
+                  <div className="p-2 bg-teal-500/20 text-teal-400 rounded-xl shrink-0">
+                    <ShieldCheck className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h4 className="text-xs font-bold text-slate-200">Contact / Helpline</h4>
+                    <p className="text-[11px] text-slate-400 font-mono">+91 97374 74672 (Jignesh Trapasiya)</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Buttons */}
+              <div className="flex flex-wrap items-center gap-3 pt-3">
+                <a
+                  href="https://wa.me/919737474672?text=Hello%20Janki%20Jiyana%20House,%20I%20want%20to%20visit%20your%20store"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold px-6 py-3.5 rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20 transition-all"
+                >
+                  <MessageCircle className="w-4 h-4" /> Chat on WhatsApp
+                </a>
+                <Link
+                  to="/shop"
+                  className="bg-slate-800 hover:bg-slate-700 text-white border border-slate-600 font-bold px-6 py-3.5 rounded-2xl text-xs sm:text-sm flex items-center justify-center gap-2 transition-all"
+                >
+                  Browse Catalog Online <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
           </div>
         </div>
       </section>
+
+      {/* Discreet Packaging Banner */}
+     
     </div>
   );
 };

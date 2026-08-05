@@ -13,12 +13,13 @@ export const getProducts = async (req, res, next) => {
       query.category = { $in: categories };
     }
 
-    if (search) {
-      // Use $text index for fast indexed text search, falling back to regex for partial word prefix
+    if (search && search.trim()) {
       const searchTrim = search.trim();
+      const searchRegex = new RegExp(searchTrim.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&'), 'i');
       query.$or = [
-        { $text: { $search: searchTrim } },
-        { name: { $regex: searchTrim, $options: 'i' } }
+        { name: searchRegex },
+        { category: searchRegex },
+        { description: searchRegex },
       ];
     }
     
@@ -33,7 +34,7 @@ export const getProducts = async (req, res, next) => {
     if (sort === 'newest') sortOptions = { createdAt: -1 };
 
     const pageNum = Math.max(1, parseInt(page));
-    const limitNum = Math.min(100, Math.max(1, parseInt(limit))); // Cap at 100 per page
+    const limitNum = (limit === '1000' || limit === 'all') ? 5000 : Math.min(100, Math.max(1, parseInt(limit)));
     const skip = (pageNum - 1) * limitNum;
 
     const [products, totalProducts] = await Promise.all([
@@ -76,7 +77,7 @@ export const getProductById = async (req, res, next) => {
 // @route   POST /api/products
 export const createProduct = async (req, res, next) => {
   try {
-    const { name, category, price, mrp, stock, images, videoUrl, detailImages, description, features, isFeatured, variants } = req.body;
+    const { name, category, price, mrp, stock, images, videoUrl, detailImages, description, features, isFeatured, variants, aPlusContent } = req.body;
     const product = new Product({
       name,
       category,
@@ -90,6 +91,7 @@ export const createProduct = async (req, res, next) => {
       variants: variants || [],
       videoUrl: videoUrl || '',
       detailImages: detailImages || [],
+      aPlusContent: aPlusContent || [],
     });
     const createdProduct = await product.save();
     res.status(201).json(createdProduct);
@@ -119,6 +121,9 @@ export const updateProduct = async (req, res, next) => {
       }
       if (req.body.detailImages !== undefined) {
         product.detailImages = req.body.detailImages;
+      }
+      if (req.body.aPlusContent !== undefined) {
+        product.aPlusContent = req.body.aPlusContent;
       }
 
       const updatedProduct = await product.save();

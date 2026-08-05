@@ -74,6 +74,37 @@ const productSchema = new mongoose.Schema(
         image: { type: String },
       },
     ],
+    aPlusContent: [
+      {
+        type: {
+          type: String,
+          enum: ['hero_banner', 'feature_split', 'three_cards', 'comparison_table'],
+          required: true,
+        },
+        title: { type: String, default: '' },
+        subtitle: { type: String, default: '' },
+        image: { type: String, default: '' },
+        description: { type: String, default: '' },
+        cards: [
+          {
+            title: String,
+            description: String,
+            image: String,
+            icon: String,
+          },
+        ],
+        comparisonTable: {
+          headers: [String],
+          rows: [
+            {
+              productName: String,
+              productImage: String,
+              features: [String],
+            },
+          ],
+        },
+      },
+    ],
   },
   {
     timestamps: true,

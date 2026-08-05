@@ -135,57 +135,37 @@ export const productSchema = Joi.object({
     'number.min': 'Price cannot be negative',
     'any.required': 'Product price is required'
   }),
-  mrp: Joi.number().min(0).optional().allow(null, ''),
+  mrp: Joi.number().min(0).optional().allow(null, '', 0),
   stock: Joi.number().integer().min(0).required().messages({
     'number.base': 'Stock must be a valid number',
     'number.min': 'Stock cannot be negative',
     'any.required': 'Stock quantity is required'
   }),
-  images: Joi.array().items(Joi.string().trim().allow('')).required(),
-  videoUrl: Joi.string().trim().optional().allow(''),
-  detailImages: Joi.array().items(Joi.string().trim().allow('')).optional(),
-  description: Joi.string().trim().required().messages({
-    'string.empty': 'Description is required'
-  }),
-  features: Joi.array().items(Joi.string().trim().allow('')).optional(),
+  images: Joi.array().items(Joi.string().trim().allow('')).optional().allow(null),
+  videoUrl: Joi.string().trim().optional().allow(null, ''),
+  detailImages: Joi.array().items(Joi.string().trim().allow('')).optional().allow(null),
+  description: Joi.string().trim().allow('').optional().allow(null),
+  features: Joi.array().items(Joi.string().trim().allow('')).optional().allow(null),
   isFeatured: Joi.boolean().optional(),
-  variants: Joi.array().items(
-    Joi.object({
-      name: Joi.string().required(),
-      value: Joi.string().required(),
-      price: Joi.number().min(0).optional().allow(null, ''),
-      mrp: Joi.number().min(0).optional().allow(null, ''),
-      stock: Joi.number().integer().min(0).optional().allow(null, ''),
-      sku: Joi.string().trim().optional().allow(''),
-      image: Joi.string().trim().optional().allow('')
-    })
-  ).optional(),
+  variants: Joi.array().items(Joi.object().unknown(true)).optional().allow(null),
+  aPlusContent: Joi.array().items(Joi.object().unknown(true)).optional().allow(null),
 });
 
 // Product Update Schema (Partial Updates allowed)
 export const updateProductSchema = Joi.object({
   name: Joi.string().trim().optional(),
   category: Joi.string().trim().optional(),
-  price: Joi.number().min(0).optional(),
-  mrp: Joi.number().min(0).optional().allow(null, ''),
-  stock: Joi.number().integer().min(0).optional(),
-  images: Joi.array().items(Joi.string().trim().allow('')).optional(),
-  videoUrl: Joi.string().trim().optional().allow(''),
-  detailImages: Joi.array().items(Joi.string().trim().allow('')).optional(),
-  description: Joi.string().trim().optional(),
-  features: Joi.array().items(Joi.string().trim().allow('')).optional(),
+  price: Joi.number().min(0).optional().allow(null, ''),
+  mrp: Joi.number().min(0).optional().allow(null, '', 0),
+  stock: Joi.number().integer().min(0).optional().allow(null, ''),
+  images: Joi.array().items(Joi.string().trim().allow('')).optional().allow(null),
+  videoUrl: Joi.string().trim().optional().allow(null, ''),
+  detailImages: Joi.array().items(Joi.string().trim().allow('')).optional().allow(null),
+  description: Joi.string().trim().allow('').optional().allow(null),
+  features: Joi.array().items(Joi.string().trim().allow('')).optional().allow(null),
   isFeatured: Joi.boolean().optional(),
-  variants: Joi.array().items(
-    Joi.object({
-      name: Joi.string().optional(),
-      value: Joi.string().optional(),
-      price: Joi.number().min(0).optional().allow(null, ''),
-      mrp: Joi.number().min(0).optional().allow(null, ''),
-      stock: Joi.number().integer().min(0).optional().allow(null, ''),
-      sku: Joi.string().trim().optional().allow(''),
-      image: Joi.string().trim().optional().allow('')
-    })
-  ).optional(),
+  variants: Joi.array().items(Joi.object().unknown(true)).optional().allow(null),
+  aPlusContent: Joi.array().items(Joi.object().unknown(true)).optional().allow(null),
 });
 
 // Category Schema (Create/Update)
@@ -212,9 +192,21 @@ export const videoSchema = Joi.object({
   isActive: Joi.boolean().optional(),
 });
 
+// Banner Schema (Create/Update)
+export const bannerSchema = Joi.object({
+  title: Joi.string().trim().optional().allow(null, ''),
+  image: Joi.string().trim().required().messages({
+    'string.empty': 'Banner image is required'
+  }),
+  category: Joi.string().trim().required().messages({
+    'string.empty': 'Category is required'
+  }),
+  isActive: Joi.boolean().optional(),
+});
+
 // Express Validation Middleware
 export const validateBody = (schema) => (req, res, next) => {
-  const { error } = schema.validate(req.body, { abortEarly: false });
+  const { error } = schema.validate(req.body, { abortEarly: false, allowUnknown: true });
   if (error) {
     const errorMessages = error.details.map((detail) => detail.message).join('. ');
     return res.status(400).json({ message: errorMessages });

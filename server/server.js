@@ -13,6 +13,7 @@ import videoRoutes from './routes/videoRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import settingsRoutes from './routes/settingsRoutes.js';
 import sitemapRoutes from './routes/sitemapRoutes.js';
+import bannerRoutes from './routes/bannerRoutes.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import { startCronJobs } from './utils/cronJobs.js';
 
@@ -74,6 +75,7 @@ app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/videos', videoRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/banners', bannerRoutes);
 
 
 

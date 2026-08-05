@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { Link, NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   Package,
@@ -16,6 +16,7 @@ import {
   Banknote,
   CheckCircle,
   Key,
+  Tag,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { SEO } from '../../components/SEO';
@@ -23,13 +24,20 @@ import { SEO } from '../../components/SEO';
 export const AdminLayout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Scroll to top on every admin route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
 
   const navItems = [
     { label: 'Overview', path: '/admin', icon: LayoutDashboard, end: true },
     { label: 'Products', path: '/admin/products', icon: Package },
     { label: 'Categories', path: '/admin/categories', icon: FolderTree },
+    { label: 'Discount Banners', path: '/admin/banners', icon: Tag },
     { label: 'Orders', path: '/admin/orders', icon: ShoppingBag },
     { label: 'Users', path: '/admin/users', icon: Users },
     { label: 'Trending Videos', path: '/admin/videos', icon: Youtube },
@@ -80,7 +88,7 @@ export const AdminLayout = () => {
 
       {/* Sidebar Navigation */}
       <aside
-        className={`fixed md:sticky md:top-0 h-[100dvh] inset-y-0 left-0 z-50 w-64 shrink-0 bg-slate-900 text-slate-300 flex flex-col justify-between transition-transform duration-300 transform ${
+        className={`fixed md:sticky md:top-0 h-[100dvh] inset-y-0 left-0 z-50 w-64 shrink-0 bg-slate-900 text-slate-300 flex flex-col justify-between transition-transform duration-300 transform overflow-y-auto ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
         }`}
       >

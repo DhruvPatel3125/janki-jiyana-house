@@ -419,4 +419,43 @@ export const api = {
     });
     return handleResponse(res, 'Failed to update settings');
   },
+
+  // Banners
+  async getBanners() {
+    const res = await fetch(`${API_BASE}/banners`);
+    return handleResponse(res, 'Failed to fetch discount banners');
+  },
+
+  async getAdminBanners() {
+    const res = await fetch(`${API_BASE}/banners/admin`, {
+      headers: getHeaders(),
+    });
+    return handleResponse(res, 'Failed to fetch admin banners');
+  },
+
+  async createBanner(bannerData) {
+    const res = await fetch(`${API_BASE}/banners`, {
+      method: 'POST',
+      headers: getHeaders(),
+      body: JSON.stringify(bannerData),
+    });
+    return handleResponse(res, 'Failed to create discount banner');
+  },
+
+  async updateBanner(id, bannerData) {
+    const res = await fetch(`${API_BASE}/banners/${id}`, {
+      method: 'PUT',
+      headers: getHeaders(),
+      body: JSON.stringify(bannerData),
+    });
+    return handleResponse(res, 'Failed to update discount banner');
+  },
+
+  async deleteBanner(id) {
+    const res = await fetch(`${API_BASE}/banners/${id}`, {
+      method: 'DELETE',
+      headers: getHeaders(),
+    });
+    return handleResponse(res, 'Failed to delete discount banner');
+  },
 };

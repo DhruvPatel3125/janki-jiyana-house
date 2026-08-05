@@ -97,6 +97,7 @@ export const AdminProducts = () => {
       variants: [],
       videoUrl: '',
       detailImages: [],
+      aPlusContent: [],
     });
     setModalOpen(true);
   };
@@ -116,6 +117,7 @@ export const AdminProducts = () => {
       variants: Array.isArray(product.variants) ? product.variants : [],
       videoUrl: product.videoUrl || '',
       detailImages: Array.isArray(product.detailImages) ? product.detailImages : [],
+      aPlusContent: Array.isArray(product.aPlusContent) ? product.aPlusContent : [],
     });
     setModalOpen(true);
   };
@@ -220,6 +222,7 @@ export const AdminProducts = () => {
         variants: variantsArr,
         videoUrl: formData.videoUrl,
         detailImages: detailImagesArr,
+        aPlusContent: formData.aPlusContent || [],
       };
 
       if (editingProduct) {
@@ -335,6 +338,81 @@ export const AdminProducts = () => {
   };
   const removeVariantInput = (index) => {
     setFormData({ ...formData, variants: formData.variants.filter((_, i) => i !== index) });
+  };
+
+  // A+ Content Builder Helpers
+  const addAPlusBlock = (type) => {
+    const newBlocks = [...(formData.aPlusContent || [])];
+    if (type === 'hero_banner') {
+      newBlocks.push({ type: 'hero_banner', title: '', subtitle: '', image: '', description: '' });
+    } else if (type === 'feature_split') {
+      newBlocks.push({ type: 'feature_split', title: '', subtitle: '', image: '', description: '' });
+    } else if (type === 'three_cards') {
+      newBlocks.push({
+        type: 'three_cards',
+        title: 'Key Feature Highlights',
+        subtitle: '',
+        cards: [
+          { title: 'Feature 1', description: '', image: '' },
+          { title: 'Feature 2', description: '', image: '' },
+          { title: 'Feature 3', description: '', image: '' },
+        ]
+      });
+    }
+    setFormData({ ...formData, aPlusContent: newBlocks });
+  };
+
+  const removeAPlusBlock = (index) => {
+    const newBlocks = (formData.aPlusContent || []).filter((_, i) => i !== index);
+    setFormData({ ...formData, aPlusContent: newBlocks });
+  };
+
+  const updateAPlusBlock = (index, field, value) => {
+    const newBlocks = [...(formData.aPlusContent || [])];
+    newBlocks[index] = { ...newBlocks[index], [field]: value };
+    setFormData({ ...formData, aPlusContent: newBlocks });
+  };
+
+  const updateAPlusCard = (blockIndex, cardIndex, field, value) => {
+    const newBlocks = [...(formData.aPlusContent || [])];
+    const cards = [...(newBlocks[blockIndex].cards || [])];
+    cards[cardIndex] = { ...cards[cardIndex], [field]: value };
+    newBlocks[blockIndex] = { ...newBlocks[blockIndex], cards };
+    setFormData({ ...formData, aPlusContent: newBlocks });
+  };
+
+  const uploadAPlusBlockImageHandler = async (e, bIdx) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const data = await api.uploadFile(file);
+      updateAPlusBlock(bIdx, 'image', data.imageUrl);
+      showSuccessToast('A+ banner image uploaded successfully');
+    } catch (err) {
+      showErrorToast(err.message || 'Image upload failed');
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
+    }
+  };
+
+  const uploadAPlusCardImageHandler = async (e, bIdx, cIdx) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploadingImage(true);
+    try {
+      const data = await api.uploadFile(file);
+      updateAPlusCard(bIdx, cIdx, 'image', data.imageUrl);
+      showSuccessToast('A+ card image uploaded successfully');
+    } catch (err) {
+      showErrorToast(err.message || 'Image upload failed');
+    } finally {
+      setUploadingImage(false);
+      e.target.value = '';
+    }
   };
 
   // Server-side search — no client-side filter needed
@@ -879,6 +957,162 @@ export const AdminProducts = () => {
                   placeholder="Super Absorbent Core&#10;Zero Leakage Wings&#10;100% Organic Cotton"
                   className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 focus:outline-none focus:border-brand-500"
                 ></textarea>
+              </div>
+
+              {/* Amazon A+ Content Builder Section */}
+              <div className="bg-gradient-to-r from-amber-500/10 via-brand-500/10 to-teal-500/10 p-5 rounded-2xl border border-amber-200/80 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <h3 className="font-black text-slate-900 text-sm flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-amber-500" /> Amazon-Style A+ Content Builder
+                    </h3>
+                    <p className="text-[11px] text-slate-500 font-medium">Add visual hero banners, 2-column feature splits, or 3-card highlights.</p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => addAPlusBlock('hero_banner')}
+                      className="px-2.5 py-1.5 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-bold text-[11px] flex items-center gap-1 shadow-sm transition-all"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> + Hero Banner
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => addAPlusBlock('feature_split')}
+                      className="px-2.5 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-lg font-bold text-[11px] flex items-center gap-1 shadow-sm transition-all"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> + Feature Split
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => addAPlusBlock('three_cards')}
+                      className="px-2.5 py-1.5 bg-brand-600 hover:bg-brand-700 text-white rounded-lg font-bold text-[11px] flex items-center gap-1 shadow-sm transition-all"
+                    >
+                      <Plus className="w-3.5 h-3.5" /> + 3-Cards Grid
+                    </button>
+                  </div>
+                </div>
+
+                {formData.aPlusContent && formData.aPlusContent.length > 0 ? (
+                  <div className="space-y-4 pt-2">
+                    {formData.aPlusContent.map((block, bIdx) => (
+                      <div key={bIdx} className="bg-white p-4 rounded-xl border border-slate-200 space-y-3 relative shadow-sm">
+                        <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                          <span className="text-[11px] font-black uppercase text-brand-600 tracking-wider">
+                            Block #{bIdx + 1}: {block.type.replace('_', ' ')}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeAPlusBlock(bIdx)}
+                            className="text-rose-500 hover:bg-rose-50 p-1 rounded-lg text-xs font-bold transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        {/* Title & Subtitle */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1">Block Title</label>
+                            <input
+                              type="text"
+                              value={block.title || ''}
+                              onChange={(e) => updateAPlusBlock(bIdx, 'title', e.target.value)}
+                              placeholder="e.g. 100% Organic Cotton Absorbency"
+                              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-semibold"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-[10px] font-bold text-slate-500 mb-1">Subtitle / Badge</label>
+                            <input
+                              type="text"
+                              value={block.subtitle || ''}
+                              onChange={(e) => updateAPlusBlock(bIdx, 'subtitle', e.target.value)}
+                              placeholder="e.g. Dermatologically Tested"
+                              className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-semibold"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Image URL & Description */}
+                        {block.type !== 'three_cards' && (
+                          <div className="space-y-3">
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-500 mb-1">Banner / Image URL</label>
+                              <div className="flex items-center gap-2">
+                                <input
+                                  type="url"
+                                  value={block.image || ''}
+                                  onChange={(e) => updateAPlusBlock(bIdx, 'image', e.target.value)}
+                                  placeholder="https://images.unsplash.com/..."
+                                  className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-semibold flex-1"
+                                />
+                                <label className="cursor-pointer text-slate-700 hover:text-brand-600 bg-slate-100 hover:bg-slate-200 border border-slate-200 px-3 py-2 rounded-lg text-[11px] font-bold flex items-center justify-center transition-colors shrink-0 shadow-sm">
+                                  <Upload className="w-4 h-4" />
+                                  <input type="file" onChange={(e) => uploadAPlusBlockImageHandler(e, bIdx)} className="hidden" accept="image/jpeg, image/png, image/webp" />
+                                </label>
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-[10px] font-bold text-slate-500 mb-1">Description Paragraph</label>
+                              <textarea
+                                rows={2}
+                                value={block.description || ''}
+                                onChange={(e) => updateAPlusBlock(bIdx, 'description', e.target.value)}
+                                placeholder="Explain the key feature or benefit in detail..."
+                                className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-xs font-semibold"
+                              ></textarea>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* Three Cards Inputs */}
+                        {block.type === 'three_cards' && (
+                          <div className="space-y-3 pt-1">
+                            <label className="block text-[10px] font-bold text-slate-700">3 Cards Data</label>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                              {(block.cards || []).map((card, cIdx) => (
+                                <div key={cIdx} className="bg-slate-50 p-2.5 rounded-lg border border-slate-200 space-y-2">
+                                  <input
+                                    type="text"
+                                    value={card.title || ''}
+                                    onChange={(e) => updateAPlusCard(bIdx, cIdx, 'title', e.target.value)}
+                                    placeholder={`Card #${cIdx + 1} Title`}
+                                    className="w-full bg-white border border-slate-200 rounded p-1.5 text-xs font-bold"
+                                  />
+                                  <div className="flex items-center gap-1.5">
+                                    <input
+                                      type="url"
+                                      value={card.image || ''}
+                                      onChange={(e) => updateAPlusCard(bIdx, cIdx, 'image', e.target.value)}
+                                      placeholder="Image URL"
+                                      className="w-full bg-white border border-slate-200 rounded p-1.5 text-[11px] flex-1"
+                                    />
+                                    <label className="cursor-pointer text-slate-700 hover:text-brand-600 bg-white border border-slate-200 p-1.5 rounded text-[11px] font-bold flex items-center justify-center transition-colors shrink-0">
+                                      <Upload className="w-3.5 h-3.5" />
+                                      <input type="file" onChange={(e) => uploadAPlusCardImageHandler(e, bIdx, cIdx)} className="hidden" accept="image/jpeg, image/png, image/webp" />
+                                    </label>
+                                  </div>
+                                  <textarea
+                                    rows={2}
+                                    value={card.description || ''}
+                                    onChange={(e) => updateAPlusCard(bIdx, cIdx, 'description', e.target.value)}
+                                    placeholder="Short description..."
+                                    className="w-full bg-white border border-slate-200 rounded p-1.5 text-[11px]"
+                                  ></textarea>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-[11px] text-slate-500 font-semibold italic text-center py-2">
+                    No A+ Content blocks added yet. Click above buttons to add visual banners or feature grids.
+                  </p>
+                )}
               </div>
 
               <div className="flex items-center gap-2 pt-2">

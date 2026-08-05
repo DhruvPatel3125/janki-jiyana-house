@@ -50,9 +50,7 @@ export const ShopPage = () => {
     setSelectedCategory(cat);
     setCurrentPage(1);
     setProducts([]);
-    if (search) {
-      setSearchQuery(search);
-    }
+    setSearchQuery(search);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [searchParams]);
 

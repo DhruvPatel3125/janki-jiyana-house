@@ -28,8 +28,11 @@ export const AdminCategories = () => {
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [cats, prodsData] = await Promise.all([api.getCategories(), api.getProducts()]);
-      setCategories(cats);
+      const [cats, prodsData] = await Promise.all([
+        api.getCategories(),
+        api.getProducts({ limit: 1000 }),
+      ]);
+      setCategories(cats || []);
       setProducts(prodsData.products || []);
     } catch (err) {
       setError(err.message || 'Failed to load categories');
@@ -145,8 +148,26 @@ export const AdminCategories = () => {
     }
   };
 
-  const getProductCountForCategory = (catName) => {
-    return products.filter((p) => p.category === catName).length;
+  const getProductCountForCategory = (categoryObj) => {
+    if (!categoryObj) return 0;
+    const catNameLower = (typeof categoryObj === 'string' ? categoryObj : categoryObj.name || '').trim().toLowerCase();
+
+    // Find all subcategories belonging to this category
+    const subCatNames = categories
+      .filter((c) => {
+        if (!c.parentCategory) return false;
+        const parentId = typeof c.parentCategory === 'object' ? c.parentCategory._id : c.parentCategory;
+        const parentName = typeof c.parentCategory === 'object' ? c.parentCategory.name : '';
+        const curId = typeof categoryObj === 'object' ? categoryObj._id : '';
+        return (curId && parentId === curId) || (parentName && parentName.trim().toLowerCase() === catNameLower);
+      })
+      .map((c) => c.name.trim().toLowerCase());
+
+    return products.filter((p) => {
+      if (!p.category) return false;
+      const pCat = p.category.trim().toLowerCase();
+      return pCat === catNameLower || subCatNames.includes(pCat);
+    }).length;
   };
 
   const filteredCategories = categories.filter(
@@ -311,7 +332,7 @@ export const AdminCategories = () => {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {filteredCategories.map((cat) => {
-                const count = getProductCountForCategory(cat.name);
+                const count = getProductCountForCategory(cat);
                 return (
                   <div
                     key={cat._id || cat.name}

@@ -9,6 +9,7 @@ import { ProductCard } from '../components/ProductCard';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 import { showCartToast, showSuccessToast } from '../utils/toast';
 import { SEO } from '../components/SEO';
+import { APlusContentRenderer } from '../components/APlusContentRenderer';
 
 
 const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&auto=format&fit=crop&q=80';
@@ -457,61 +458,40 @@ export const ProductDetailPage = () => {
               <button
                 onClick={handleBuyNow}
                 disabled={currentStock <= 0}
-                className="flex-1 h-14 bg-brand-600 hover:bg-brand-700 text-white font-black rounded-2xl shadow-lg shadow-brand-600/20 transition-all hover:-translate-y-0.5 text-sm flex items-center justify-center gap-2"
+                className="flex-1 h-14 bg-gradient-to-r from-brand-600 to-emerald-600 hover:from-brand-700 hover:to-emerald-700 text-white font-black rounded-2xl shadow-lg shadow-brand-600/30 transition-all hover:-translate-y-0.5 text-sm flex items-center justify-center gap-2 animate-vibrate-bounce"
               >
-                <Sparkles className="w-4 h-4" /> Buy it Now
+                <Sparkles className="w-4 h-4 fill-white" /> Buy it Now
               </button>
             </div>
           </div>
 
-          {/* Description & Detail Images */}
-          {(product.description || (product.detailImages && product.detailImages.length > 0)) && (
-            <div className="pt-8 border-t border-slate-100">
-              <div className="flex items-center justify-between cursor-pointer group">
-                <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                  Product Details :-
-                </h2>
-                <Minus className="w-5 h-5 text-slate-400 group-hover:text-brand-600 transition-colors" />
+          {/* Product Details :- (Text Description) */}
+          {product.description && (
+            <div className="space-y-3 pt-6 border-t border-slate-100">
+              <h3 className="font-extrabold text-slate-900 text-base sm:text-lg flex items-center gap-2">
+                Product Details :-
+              </h3>
+              <div className="text-slate-600 text-xs sm:text-sm leading-relaxed space-y-2 font-medium">
+                {product.description.split('\n').filter(line => line.trim() !== '').map((line, idx) => (
+                  <p key={idx}>{line.replace(/^[-\d.)]+\s*/, '')}</p>
+                ))}
               </div>
-              {product.detailImages && product.detailImages.length > 0 && (
-                <div className="mt-6 space-y-4">
-                  {product.detailImages.map((imgUrl, idx) => (
-                    <div key={idx} className="w-full rounded-2xl overflow-hidden border border-slate-200/60 shadow-sm bg-white p-1.5 sm:p-3">
-                      <img 
-                        src={imgUrl} 
-                        alt={`Product Detail ${idx + 1}`} 
-                        loading="lazy" 
-                        className="w-full h-auto object-contain rounded-xl"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-              {product.description && (
-                <div className="mt-5 text-slate-600 text-sm sm:text-[15px] leading-relaxed font-medium space-y-4">
-                  {product.description?.split('\n').filter(line => line.trim() !== '').map((line, idx) => (
-                    <p key={idx} className="text-justify">
-                      {line.replace(/^[-\d.)]+\s*/, '')}
-                    </p>
-                  ))}
-                </div>
-              )}
             </div>
           )}
 
-          {/* Features */}
+          {/* Key Features: (Checkmarks list) */}
           {product.features && product.features.length > 0 && (
-            <div className="pt-8">
-              <h2 className="text-2xl sm:text-3xl font-black text-slate-600 tracking-tight flex items-center gap-3 mb-5">
-                <Sparkles className="w-7 h-7" /> Key Features:
-              </h2>
-              <ul className="space-y-3">
+            <div className="space-y-3 pt-6 border-t border-slate-100">
+              <h3 className="font-extrabold text-slate-900 text-base sm:text-lg flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-brand-600" /> Key Features:
+              </h3>
+              <ul className="space-y-2">
                 {product.features.map((feat, idx) => {
                   let text = feat;
                   text = text.replace(/^[-\d.)]+\s*/, '');
                   return (
-                    <li key={idx} className="flex items-start gap-3 text-sm sm:text-[15px] text-slate-700 font-semibold">
-                      <div className="mt-1 shrink-0 text-blue-600">
+                    <li key={idx} className="flex items-start gap-2.5 text-xs sm:text-sm text-slate-700 font-semibold">
+                      <div className="mt-0.5 shrink-0 text-brand-600">
                         <Check className="w-4 h-4 stroke-[3]" />
                       </div>
                       <span className="leading-snug">{text}</span>
@@ -523,6 +503,15 @@ export const ProductDetailPage = () => {
           )}
         </div>
       </div>
+
+      {/* Amazon A+ Brand Content (Full Page Width) */}
+      {product.aPlusContent && product.aPlusContent.length > 0 && (
+        <section className="pt-10 border-t border-slate-200/80">
+          <APlusContentRenderer
+            aPlusContent={product.aPlusContent}
+          />
+        </section>
+      )}
 
       {/* Similar Products */}
       {similarProducts.length > 0 && (
@@ -550,7 +539,7 @@ export const ProductDetailPage = () => {
             {isItemInCart ? <Trash2 className="w-3.5 h-3.5" /> : <ShoppingBag className="w-3.5 h-3.5" />}
             {isItemInCart ? 'Drop' : 'Add'}
           </button>
-          <button onClick={handleBuyNow} disabled={currentStock <= 0} className="bg-brand-600 text-white font-bold py-2.5 px-5 rounded-xl text-xs shadow-md">
+          <button onClick={handleBuyNow} disabled={currentStock <= 0} className="bg-gradient-to-r from-brand-600 to-emerald-600 text-white font-bold py-2.5 px-5 rounded-xl text-xs shadow-md animate-vibrate-bounce">
             Buy Now
           </button>
         </div>
