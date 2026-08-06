@@ -87,8 +87,9 @@ export const ProductCard = ({ product }) => {
         <img
           src={product.images[0] || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600'}
           alt={product.name}
-          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
+          decoding="async"
+          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
         />
       </Link>
 

@@ -165,24 +165,6 @@ export const api = {
     return handleResponse(res, 'Registration failed');
   },
 
-  async sendOtp(email, phone = '') {
-    const res = await fetch(`${API_BASE}/users/send-otp`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, phone }),
-    });
-    return handleResponse(res, 'Failed to send OTP email');
-  },
-
-  async verifyOtp(email, otp, name = '') {
-    const res = await fetch(`${API_BASE}/users/verify-otp`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, otp, name }),
-    });
-    return handleResponse(res, 'OTP Verification failed');
-  },
-
   async getProfile() {
     const res = await fetch(`${API_BASE}/users/profile`, {
       headers: getHeaders(),

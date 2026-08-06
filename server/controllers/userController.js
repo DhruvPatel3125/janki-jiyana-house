@@ -1,6 +1,5 @@
 import User from '../models/User.js';
 import jwt from 'jsonwebtoken';
-import { sendOtpEmail } from '../config/nodemailer.js';
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -146,8 +145,8 @@ export const sendOtp = async (req, res, next) => {
     }
     await user.save();
 
-    // Send real email via Gmail SMTP
-    await sendOtpEmail(targetEmail, generatedOtp, user.name);
+    // Log OTP to server console (Nodemailer removed)
+    console.log(`[OTP Verification] Generated 6-digit OTP for ${targetEmail}: ${generatedOtp}`);
 
     res.json({
       success: true,

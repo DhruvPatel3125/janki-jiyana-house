@@ -10,7 +10,7 @@ import { showSuccessToast, showErrorToast } from '../utils/toast';
 
 export const CheckoutPage = () => {
   const { cartItems, cartSubtotal, clearCart } = useCart();
-  const { user, sendOtp, verifyOtp } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const idempotencyKeyRef = useRef(crypto.randomUUID());
 
@@ -22,7 +22,7 @@ export const CheckoutPage = () => {
     city: user?.address?.city || '',
     state: user?.address?.state || 'Gujarat',
     zipCode: user?.address?.zipCode || '',
-    paymentMethod: 'UPI_QR',
+    paymentMethod: 'WhatsApp',
   });
 
   // Sync formData with user data if user loads after mount
@@ -87,7 +87,7 @@ export const CheckoutPage = () => {
     }
 
     if (!formData.email || !formData.email.trim()) {
-      errors.email = 'Email address is required for invoice & OTP verification';
+      errors.email = 'Email address is required for invoice & order updates';
     } else if (!formData.email.includes('@') || !formData.email.includes('.')) {
       errors.email = 'Please enter a valid email address (e.g. name@example.com)';
     }
@@ -299,7 +299,7 @@ export const CheckoutPage = () => {
 
               {/* Email Address */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Email Address (OTP Verification) *</label>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Email Address *</label>
                 <input
                   type="email"
                   name="email"
@@ -420,28 +420,6 @@ export const CheckoutPage = () => {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 sm:gap-4 pt-1">
               <label
-                className={`p-4 rounded-2xl border-2 cursor-pointer flex items-start gap-3 transition-all ${formData.paymentMethod === 'UPI_QR'
-                    ? 'border-brand-600 bg-brand-50/40 shadow-sm'
-                    : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
-                  }`}
-              >
-                <input
-                  type="radio"
-                  name="paymentMethod"
-                  value="UPI_QR"
-                  checked={formData.paymentMethod === 'UPI_QR'}
-                  onChange={handleChange}
-                  className="mt-1 accent-brand-600"
-                />
-                <div>
-                  <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs sm:text-sm">
-                    <Banknote className="w-4 h-4 text-emerald-600 shrink-0" /> Pay via UPI QR
-                  </div>
-                  <p className="text-[11px] text-slate-500 mt-0.5">Google Pay, PhonePe, Paytm, BHIM.</p>
-                </div>
-              </label>
-
-              <label
                 className={`p-4 rounded-2xl border-2 cursor-pointer flex items-start gap-3 transition-all ${formData.paymentMethod === 'WhatsApp'
                     ? 'border-brand-600 bg-brand-50/40 shadow-sm'
                     : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
@@ -460,6 +438,28 @@ export const CheckoutPage = () => {
                     <MessageCircle className="w-4 h-4 text-emerald-600 shrink-0" /> Order via WhatsApp
                   </div>
                   <p className="text-[11px] text-slate-500 mt-0.5">Send order details directly to our WhatsApp to confirm.</p>
+                </div>
+              </label>
+
+              <label
+                className={`p-4 rounded-2xl border-2 cursor-pointer flex items-start gap-3 transition-all ${formData.paymentMethod === 'UPI_QR'
+                    ? 'border-brand-600 bg-brand-50/40 shadow-sm'
+                    : 'border-slate-200 bg-slate-50 hover:bg-slate-100'
+                  }`}
+              >
+                <input
+                  type="radio"
+                  name="paymentMethod"
+                  value="UPI_QR"
+                  checked={formData.paymentMethod === 'UPI_QR'}
+                  onChange={handleChange}
+                  className="mt-1 accent-brand-600"
+                />
+                <div>
+                  <div className="flex items-center gap-1.5 font-bold text-slate-900 text-xs sm:text-sm">
+                    <Banknote className="w-4 h-4 text-emerald-600 shrink-0" /> Pay via UPI QR
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-0.5">Google Pay, PhonePe, Paytm, BHIM.</p>
                 </div>
               </label>
             </div>

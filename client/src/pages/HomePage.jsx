@@ -194,7 +194,7 @@ export const HomePage = () => {
             className="flex transition-transform duration-700 ease-in-out h-full"
             style={{ transform: `translateX(-${currentSlide * 100}%)` }}
           >
-            {heroSlides.map((slide) => (
+            {heroSlides.map((slide, idx) => (
               <div
                 key={slide.id}
                 className={`w-full flex-shrink-0 bg-gradient-to-br ${slide.bgGradient} py-10 sm:py-14 lg:py-16 px-6 sm:px-10 lg:px-16 xl:px-24 flex items-center`}
@@ -281,6 +281,9 @@ export const HomePage = () => {
                       <img
                         src={slide.image}
                         alt={slide.title}
+                        loading={idx === 0 ? 'eager' : 'lazy'}
+                        fetchpriority={idx === 0 ? 'high' : 'auto'}
+                        decoding="async"
                         className="h-full w-full object-contain drop-shadow-2xl hover:scale-[1.03] transition-transform duration-500"
                       />
                     </div>
@@ -352,6 +355,8 @@ export const HomePage = () => {
                 <img
                   src={cat.image || 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=500'}
                   alt={cat.name}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover rounded-full group-hover:rotate-3 transition-transform duration-500"
                 />
               </div>
@@ -364,17 +369,17 @@ export const HomePage = () => {
       </section>
 
       {/* 🎁 DISCOUNT BANNERS SECTION — Big Discount, Big Saving */}
-      <section className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 space-y-6">
-        <div className="text-center space-y-1">
-          <h2 className="text-2xl sm:text-4xl font-black text-rose-500 tracking-tight">
-            Big Discount, Big Saving
-          </h2>
-          <p className="text-xs sm:text-sm text-slate-500 font-semibold tracking-wide">
-            Today's Best Deals
-          </p>
-        </div>
+      {discountBanners.length > 0 && (
+        <section className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 space-y-6">
+          <div className="text-center space-y-1">
+            <h2 className="text-2xl sm:text-4xl font-black text-rose-500 tracking-tight">
+              Big Discount, Big Saving
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 font-semibold tracking-wide">
+              Today's Best Deals
+            </p>
+          </div>
 
-        {discountBanners.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {discountBanners.map((banner) => (
               <Link
@@ -385,56 +390,15 @@ export const HomePage = () => {
                 <img
                   src={banner.image}
                   alt={banner.title || banner.category}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-auto object-contain group-hover:scale-105 transition-transform duration-700 rounded-3xl"
                 />
               </Link>
             ))}
           </div>
-        ) : (
-          /* Default Promo Banners fallback if no admin banners added yet */
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Link
-              to="/shop?category=Baby+Care"
-              className="group relative rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-rose-200/80 bg-gradient-to-r from-rose-50 via-pink-50 to-orange-50 p-6 sm:p-8 flex items-center justify-between aspect-[2/1] w-full"
-            >
-              <div className="space-y-2 z-10 max-w-[65%]">
-                <span className="bg-rose-500 text-white text-[10px] sm:text-xs font-black uppercase px-3 py-1 rounded-full shadow-sm">
-                  Special Offer
-                </span>
-                <h3 className="text-lg sm:text-2xl font-black text-slate-900 leading-tight">
-                  Baby Care & Diapers Mega Savings
-                </h3>
-                <p className="text-xs font-bold text-rose-600 flex items-center gap-1 pt-1">
-                  Shop Category <ArrowRight className="w-3.5 h-3.5" />
-                </p>
-              </div>
-              <div className="w-24 h-24 sm:w-36 sm:h-36 rounded-2xl overflow-hidden shrink-0 shadow-lg border-2 border-white">
-                <img src="https://images.unsplash.com/photo-1515488042361-ee00e0ddd4e4?w=500" alt="Baby Care Deal" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-              </div>
-            </Link>
-
-            <Link
-              to="/shop?category=Sanitary+Pads"
-              className="group relative rounded-3xl overflow-hidden shadow-sm hover:shadow-xl transition-all border border-teal-200/80 bg-gradient-to-r from-teal-50 via-sky-50 to-blue-50 p-6 sm:p-8 flex items-center justify-between aspect-[2/1] w-full"
-            >
-              <div className="space-y-2 z-10 max-w-[65%]">
-                <span className="bg-teal-600 text-white text-[10px] sm:text-xs font-black uppercase px-3 py-1 rounded-full shadow-sm">
-                  100% Rash-Free
-                </span>
-                <h3 className="text-lg sm:text-2xl font-black text-slate-900 leading-tight">
-                  Cooling Mint Sanitary Pads
-                </h3>
-                <p className="text-xs font-bold text-teal-600 flex items-center gap-1 pt-1">
-                  Shop Category <ArrowRight className="w-3.5 h-3.5" />
-                </p>
-              </div>
-              <div className="w-24 h-24 sm:w-36 sm:h-36 rounded-2xl overflow-hidden shrink-0 shadow-lg border-2 border-white">
-                <img src="https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?w=500" alt="Sanitary Pads Deal" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-              </div>
-            </Link>
-          </div>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* OUR TRENDING VIDEO SHORTS SECTION */}
       <div className="max-w-[1600px] mx-auto">
@@ -557,6 +521,8 @@ export const HomePage = () => {
               <img
                 src="/shop-storefront.jpg"
                 alt="Janki Jiyana House Physical Store Surat"
+                loading="lazy"
+                decoding="async"
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent flex items-end p-4 sm:p-6">
@@ -598,7 +564,7 @@ export const HomePage = () => {
                   </div>
                   <div>
                     <h4 className="text-xs font-bold text-slate-200">Contact / Helpline</h4>
-                    <p className="text-[11px] text-slate-400 font-mono">+91 97374 74672 (Jignesh Trapasiya)</p>
+                    <p className="text-[11px] text-slate-400 font-mono">+91 97374 74672 (Jignaben Vekariya)</p>
                   </div>
                 </div>
               </div>

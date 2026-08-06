@@ -30,24 +30,13 @@ export const AuthProvider = ({ children }) => {
     return userData;
   };
 
-  const sendOtp = async (email, phone = '') => {
-    return await api.sendOtp(email, phone);
-  };
-
-  const verifyOtp = async (email, otp, name = '') => {
-    const userData = await api.verifyOtp(email, otp, name);
-    setUser(userData);
-    localStorage.setItem('userInfo', JSON.stringify(userData));
-    return userData;
-  };
-
   const logout = () => {
     setUser(null);
     localStorage.removeItem('userInfo');
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, googleLogin, register, sendOtp, verifyOtp, logout }}>
+    <AuthContext.Provider value={{ user, login, googleLogin, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

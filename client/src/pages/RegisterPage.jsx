@@ -133,7 +133,7 @@ export const RegisterPage = () => {
 
           {/* Email Address */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">Email Address (For OTP Verification) *</label>
+            <label className="block text-xs font-bold text-slate-700 mb-1">Email Address *</label>
             <div className="relative">
               <input
                 type="email"

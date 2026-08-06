@@ -9,6 +9,30 @@ export const CartProvider = ({ children }) => {
   // Helper to generate user-scoped localStorage key
   const getCartKey = (u) => (u && u._id ? `cartItems_${u._id}` : 'cartItems_guest');
 
+  // Helper to merge cart items without duplicates
+  const mergeCartItems = (existingItems, itemsToMerge) => {
+    const merged = [...existingItems];
+    itemsToMerge.forEach((item) => {
+      const uniqueId = item.uniqueId || (item.variant ? `${item.product}_${item.variant.name}_${item.variant.value}` : item.product);
+      const existingIndex = merged.findIndex((m) => {
+        const mUniqueId = m.uniqueId || (m.variant ? `${m.product}_${m.variant.name}_${m.variant.value}` : m.product);
+        return mUniqueId === uniqueId;
+      });
+
+      if (existingIndex > -1) {
+        const existing = merged[existingIndex];
+        const maxStock = existing.stock || item.stock || 999;
+        merged[existingIndex] = {
+          ...existing,
+          quantity: Math.min(existing.quantity + item.quantity, maxStock),
+        };
+      } else {
+        merged.push(item);
+      }
+    });
+    return merged;
+  };
+
   // Initialize cart state for current logged-in user or guest
   const [cartItems, setCartItems] = useState(() => {
     // Remove legacy un-scoped key if present
@@ -27,11 +51,37 @@ export const CartProvider = ({ children }) => {
   // Sync and isolate cart items whenever active user changes (Login / Logout / Switch User)
   useEffect(() => {
     const currentUserId = user?._id;
-    if (prevUserIdRef.current !== currentUserId) {
+    const prevUserId = prevUserIdRef.current;
+
+    if (prevUserId !== currentUserId) {
       prevUserIdRef.current = currentUserId;
-      const key = getCartKey(user);
-      const saved = localStorage.getItem(key);
-      setCartItems(saved ? JSON.parse(saved) : []);
+
+      if (!prevUserId && currentUserId) {
+        // Transitioning from Guest -> Logged In: Merge guest cart into user cart
+        const guestSaved = localStorage.getItem('cartItems_guest');
+        let guestItems = guestSaved ? JSON.parse(guestSaved) : [];
+        if (guestItems.length === 0 && cartItems.length > 0) {
+          guestItems = cartItems;
+        }
+
+        const userKey = `cartItems_${currentUserId}`;
+        const userSaved = localStorage.getItem(userKey);
+        const userItems = userSaved ? JSON.parse(userSaved) : [];
+
+        if (guestItems.length > 0) {
+          const mergedCart = mergeCartItems(userItems, guestItems);
+          localStorage.removeItem('cartItems_guest');
+          localStorage.setItem(userKey, JSON.stringify(mergedCart));
+          setCartItems(mergedCart);
+        } else {
+          setCartItems(userItems);
+        }
+      } else {
+        // Switching logged in users or logging out
+        const key = getCartKey(user);
+        const saved = localStorage.getItem(key);
+        setCartItems(saved ? JSON.parse(saved) : []);
+      }
     }
   }, [user]);
 
