@@ -155,8 +155,8 @@ export const ProductCard = ({ product }) => {
                 onClick={handleIncrease}
                 disabled={cartItem.quantity >= product.stock}
                 className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all text-white ${cartItem.quantity >= product.stock
-                    ? 'opacity-40 cursor-not-allowed'
-                    : 'hover:bg-brand-700 active:scale-90'
+                  ? 'opacity-40 cursor-not-allowed'
+                  : 'hover:bg-brand-700 active:scale-90'
                   }`}
                 title="Increase quantity"
               >

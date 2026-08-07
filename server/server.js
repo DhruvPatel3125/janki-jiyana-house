@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import helmet from 'helmet';
+import compression from 'compression';
 import rateLimit from 'express-rate-limit';
 import connectDB from './config/db.js';
 import productRoutes from './routes/productRoutes.js';
@@ -23,6 +24,9 @@ dotenv.config();
 connectDB();
 
 const app = express();
+
+// Enable Gzip/Brotli response compression
+app.use(compression());
 
 // Middleware
 app.use(helmet({

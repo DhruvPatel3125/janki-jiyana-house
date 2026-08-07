@@ -38,7 +38,7 @@ export const getProducts = async (req, res, next) => {
     const skip = (pageNum - 1) * limitNum;
 
     const [products, totalProducts] = await Promise.all([
-      Product.find(query).sort(sortOptions).skip(skip).limit(limitNum),
+      Product.find(query).sort(sortOptions).skip(skip).limit(limitNum).lean(),
       Product.countDocuments(query),
     ]);
 
@@ -62,7 +62,7 @@ export const getProducts = async (req, res, next) => {
 // @route   GET /api/products/:id
 export const getProductById = async (req, res, next) => {
   try {
-    const product = await Product.findById(req.params.id);
+    const product = await Product.findById(req.params.id).lean();
     if (product) {
       res.json(product);
     } else {

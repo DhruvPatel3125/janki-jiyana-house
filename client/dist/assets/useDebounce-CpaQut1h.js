@@ -1,0 +1,1 @@
+import{r as o}from"./vendor-react-CaNurFTR.js";function c(e,t=350){const[r,u]=o.useState(e);return o.useEffect(()=>{const n=setTimeout(()=>{u(e)},t);return()=>{clearTimeout(n)}},[e,t]),r}export{c as u};
