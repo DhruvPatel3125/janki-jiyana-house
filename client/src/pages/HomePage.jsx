@@ -7,6 +7,7 @@ import { TrustBadges } from '../components/TrustBadges';
 import { TrendingVideosSection } from '../components/TrendingVideosSection';
 import { ProductSkeleton } from '../components/skeletons/ProductSkeleton';
 import { SEO } from '../components/SEO';
+import { FaqSection } from '../components/FaqSection';
 
 
 
@@ -180,7 +181,7 @@ export const HomePage = () => {
     <div className="space-y-10 sm:space-y-16 pb-16">
       <SEO
         title="Baby Care, Adult Diapers & Personal Hygiene Store Surat"
-        description="Shop premium baby diaper pants, adult pull-up diapers, 320mm cooling mint sanitary pads & kids wear at Janki Jiyana House Surat. Fast cash on delivery & discreet packaging."
+        description="Shop premium baby diaper pants, adult pull-up diapers, 320mm cooling mint sanitary pads & kids wear at Janki Jiyana House Surat. Express home delivery & discreet packaging."
         keywords="Janki Jiyana House, baby diapers Surat, adult diapers Surat, sanitary pads, pull up diapers, baby care Surat, kids clothing"
         schema={homeSchema}
       />
@@ -455,14 +456,14 @@ export const HomePage = () => {
         )}
       </section>
 
-      {/* BEST-SELLING PRODUCTS SECTION (Horizontally Scrollable) */}
+      {/* FEATURED PRODUCTS SECTION (Horizontally Scrollable) */}
       <section className="max-w-[1600px] mx-auto px-4 sm:px-8 lg:px-12 space-y-4 sm:space-y-6">
         <div className="flex items-end justify-between border-b border-slate-100 pb-3">
           <div>
             <span className="inline-flex items-center gap-1 text-[10px] sm:text-[11px] font-extrabold text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full uppercase tracking-wider mb-1">
-              <Flame className="w-3 h-3 fill-rose-500" /> Popular Choices
+              <Flame className="w-3 h-3 fill-rose-500" /> Handpicked For You
             </span>
-            <h2 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight">Best-Selling Hygiene Care</h2>
+            <h2 className="text-xl sm:text-3xl font-black text-slate-900 tracking-tight">Featured Products</h2>
           </div>
 
           <div className="flex items-center gap-1.5">
@@ -504,6 +505,9 @@ export const HomePage = () => {
           </div>
         )}
       </section>
+
+      {/* Frequently Asked Questions (FAQ) Section */}
+      <FaqSection />
 
       {/* Trust Badges Bar */}
       <TrustBadges />

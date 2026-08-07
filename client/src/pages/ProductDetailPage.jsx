@@ -225,7 +225,7 @@ export const ProductDetailPage = () => {
     <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 lg:py-8 space-y-6 pb-28 md:pb-16">
       <SEO
         title={`${product.name} - Buy Online at Best Price`}
-        description={`Buy ${product.name} (${product.category}) at ₹${currentPrice} in Surat. 100% genuine product, fast delivery & cash on delivery at Janki Jiyana House.`}
+        description={`Buy ${product.name} (${product.category}) at ₹${currentPrice} in Surat. 100% genuine product, fast express delivery & discreet packaging at Janki Jiyana House.`}
         keywords={`${product.name}, ${product.category}, buy ${product.name} online, Janki Jiyana House`}
         ogImage={selectedImage}
         ogType="product"
